@@ -10,6 +10,10 @@ export const COPY = {
     navServices: "Services",
     navWhatsApp: "WhatsApp Support",
     navComplaint: "Submit Complaint",
+    complaintButton: "Submit Complaint",
+    complaintLead:
+      "Tell us what went wrong. Attach a screenshot so we can help you faster.",
+    backToHome: "Back to services",
     heroCta: "Browse Subscriptions",
     supportTitle: "Dedicated WhatsApp Support",
     supportBody: "Orders route directly to our support team on WhatsApp.",
@@ -39,6 +43,10 @@ export const COPY = {
     navServices: "الخدمات",
     navWhatsApp: "دعم واتساب",
     navComplaint: "تقديم شكوى",
+    complaintButton: "تقديم شكوى",
+    complaintLead:
+      "أخبرنا بالمشكلة. أرفق لقطة شاشة لنتمكن من مساعدتك بشكل أسرع.",
+    backToHome: "العودة إلى الخدمات",
     heroCta: "تصفح الاشتراكات",
     supportTitle: "دعم واتساب مخصص",
     supportBody: "تُوجَّه الطلبات مباشرة إلى فريق الدعم عبر واتساب.",
