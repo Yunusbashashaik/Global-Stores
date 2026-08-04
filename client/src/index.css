@@ -1,15 +1,17 @@
 :root {
   --bg: #0b0d12;
-  --bg-elevated: #141820;
-  --border: #2a3140;
+  --bg-elevated: rgba(20, 24, 32, 0.82);
+  --border: rgba(255, 255, 255, 0.14);
   --text: #f4f6fb;
-  --muted: #9aa3b5;
+  --muted: #c3cad8;
   --accent: #d4af37;
   --accent-hover: #e8c547;
   --whatsapp: #25d366;
   --radius: 14px;
   --font-en: "Inter", system-ui, sans-serif;
   --font-ar: "Tajawal", "Inter", sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hover-lift: translateY(-3px);
 }
 
 * {
@@ -23,10 +25,17 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(ellipse at top, #1a2030 0%, var(--bg) 55%);
   color: var(--text);
   font-family: var(--font-en);
   line-height: 1.5;
+  background-color: #1a2233;
+  background-image:
+    linear-gradient(180deg, rgba(8, 12, 20, 0.72) 0%, rgba(10, 14, 22, 0.78) 45%, rgba(8, 12, 20, 0.88) 100%),
+    url("/site-wallpaper.png");
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 body.rtl {
@@ -37,6 +46,7 @@ body.rtl {
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.25s var(--ease), opacity 0.25s var(--ease), transform 0.25s var(--ease);
 }
 
 button,
@@ -45,10 +55,34 @@ textarea {
   font: inherit;
 }
 
+button,
+.btn,
+.social-link,
+.nav-links a,
+.footer-links a,
+.logo,
+.carousel-arrow,
+.carousel-dot,
+.price-toggle button,
+.admin-service-btn,
+.lang-switch button,
+.fab {
+  transition:
+    transform 0.28s var(--ease),
+    background 0.28s var(--ease),
+    background-color 0.28s var(--ease),
+    border-color 0.28s var(--ease),
+    color 0.28s var(--ease),
+    box-shadow 0.28s var(--ease),
+    filter 0.28s var(--ease),
+    opacity 0.28s var(--ease);
+}
+
 .app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .container {
@@ -60,9 +94,10 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 20;
-  backdrop-filter: blur(12px);
-  background: rgba(11, 13, 18, 0.85);
+  backdrop-filter: blur(16px);
+  background: rgba(10, 14, 22, 0.72);
   border-bottom: 1px solid var(--border);
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
 }
 
 .header-inner {
@@ -77,6 +112,11 @@ textarea {
   display: inline-flex;
   align-items: center;
   color: var(--accent);
+}
+
+.logo:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
 }
 
 .brand-logo {
@@ -278,8 +318,31 @@ textarea {
   flex: 1;
 }
 
+.nav-links a {
+  position: relative;
+  padding: 0.2rem 0;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.15rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.28s var(--ease);
+}
+
 .nav-links a:hover {
   color: var(--accent);
+}
+
+.nav-links a:hover::after {
+  transform: scaleX(1);
 }
 
 .lang-switch {
@@ -313,11 +376,18 @@ textarea {
 
 .btn-complaint-header:hover {
   background: rgba(212, 175, 55, 0.28);
+  transform: var(--hover-lift);
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.18);
 }
 
 .btn-complaint-header.active {
   background: var(--accent);
   color: #111;
+}
+
+.lang-switch button:hover:not(.active) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .complaint-page {
@@ -366,13 +436,15 @@ textarea {
 }
 
 .hero h1 {
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  margin: 0 0 0.75rem;
+  font-size: clamp(1.55rem, 3.6vw, 2.55rem);
+  margin: 0 auto 0.75rem;
+  max-width: 34ch;
+  line-height: 1.2;
 }
 
 .hero p {
   color: var(--muted);
-  max-width: 52ch;
+  max-width: 48ch;
   margin: 0 auto 1.5rem;
 }
 
@@ -398,7 +470,10 @@ textarea {
   padding: 0.7rem 1.25rem;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.15s, background 0.2s;
+}
+
+.btn:hover {
+  transform: var(--hover-lift);
 }
 
 .btn:active {
@@ -408,25 +483,40 @@ textarea {
 .btn-primary {
   background: linear-gradient(135deg, var(--accent), #b8922e);
   color: #111;
+  box-shadow: 0 8px 22px rgba(212, 175, 55, 0.2);
 }
 
 .btn-primary:hover {
   background: linear-gradient(135deg, var(--accent-hover), var(--accent));
+  box-shadow: 0 12px 28px rgba(212, 175, 55, 0.3);
 }
 
 .btn-whatsapp {
   background: var(--whatsapp);
   color: #fff;
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.22);
 }
 
 .btn-whatsapp:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 26px rgba(37, 211, 102, 0.32);
 }
 
 .intro {
   padding: 1rem 0 2rem;
   text-align: center;
   color: var(--muted);
+}
+
+.intro h2 {
+  margin: 0 0 0.75rem;
+  color: var(--text);
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+}
+
+.intro p {
+  max-width: 62ch;
+  margin: 0 auto;
 }
 
 .catalog {
@@ -438,10 +528,103 @@ textarea {
   margin-bottom: 1.5rem;
 }
 
-.grid {
+.services-carousel {
+  position: relative;
+}
+
+.carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+  border-radius: calc(var(--radius) + 4px);
+}
+
+.carousel-track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.55s var(--ease);
+  will-change: transform;
+}
+
+.carousel-page {
+  flex: 0 0 100%;
+  min-width: 100%;
+  padding: 0.15rem;
+}
+
+.grid,
+.carousel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.35rem;
+}
+
+.carousel-arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(20, 24, 32, 0.75);
+  color: var(--accent);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+.carousel-arrow svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.carousel-arrow:hover {
+  transform: var(--hover-lift) scale(1.04);
+  background: rgba(212, 175, 55, 0.18);
+  border-color: var(--accent);
+  box-shadow: 0 12px 28px rgba(212, 175, 55, 0.22);
+}
+
+.carousel-arrow-next {
+  box-shadow: 0 10px 26px rgba(212, 175, 55, 0.2);
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.carousel-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+}
+
+.carousel-dot:hover {
+  background: rgba(212, 175, 55, 0.65);
+  transform: scale(1.15);
+}
+
+.carousel-dot.active {
+  width: 22px;
+  background: var(--accent);
+}
+
+body.rtl .carousel-arrow svg {
+  transform: scaleX(-1);
 }
 
 .card {
@@ -452,12 +635,20 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  transition: border-color 0.2s, transform 0.2s;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  transition:
+    border-color 0.28s var(--ease),
+    transform 0.28s var(--ease),
+    box-shadow 0.28s var(--ease),
+    background 0.28s var(--ease);
 }
 
 .card:hover {
-  border-color: rgba(212, 175, 55, 0.45);
-  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.55);
+  transform: translateY(-6px);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(212, 175, 55, 0.12);
+  background: rgba(24, 29, 40, 0.9);
 }
 
 .card h3 {
@@ -489,6 +680,11 @@ textarea {
   cursor: pointer;
 }
 
+.price-toggle button:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.08);
+}
+
 .price-toggle button.active {
   border-color: var(--accent);
   background: rgba(212, 175, 55, 0.12);
@@ -500,22 +696,9 @@ textarea {
   text-align: center;
 }
 
-.support-section,
 .complaint-section {
   padding: 2.5rem 0;
   border-top: 1px solid var(--border);
-}
-
-.support-section {
-  text-align: center;
-}
-
-.support-lines {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
-  margin-top: 1rem;
 }
 
 .complaint-form {
@@ -548,20 +731,128 @@ textarea {
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
-  padding: 2rem 0;
+  padding: 2.25rem 0;
   color: var(--muted);
   font-size: 0.92rem;
+  background: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(12px);
 }
 
 .footer-grid {
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
+}
+
+.footer-brand-block {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.footer-about {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 64ch;
+}
+
+.footer-about h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.footer-about p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(20, 24, 32, 0.78);
+  color: var(--text);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.social-link svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  transition: transform 0.28s var(--ease);
+}
+
+.social-link:hover {
+  transform: var(--hover-lift) scale(1.06);
+  border-color: rgba(212, 175, 55, 0.55);
+  color: var(--accent);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+}
+
+.social-link:hover svg {
+  transform: scale(1.08);
+}
+
+.social-whatsapp:hover {
+  color: #25d366;
+  border-color: rgba(37, 211, 102, 0.55);
+  box-shadow: 0 12px 24px rgba(37, 211, 102, 0.18);
+}
+
+.social-instagram:hover {
+  color: #e1306c;
+  border-color: rgba(225, 48, 108, 0.55);
+  box-shadow: 0 12px 24px rgba(225, 48, 108, 0.18);
+}
+
+.social-tiktok:hover {
+  color: #69c9d0;
+  border-color: rgba(105, 201, 208, 0.55);
+  box-shadow: 0 12px 24px rgba(105, 201, 208, 0.18);
+}
+
+.social-youtube:hover {
+  color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.55);
+  box-shadow: 0 12px 24px rgba(255, 68, 68, 0.18);
+}
+
+.social-facebook:hover {
+  color: #1877f2;
+  border-color: rgba(24, 119, 242, 0.55);
+  box-shadow: 0 12px 24px rgba(24, 119, 242, 0.18);
 }
 
 .footer-links {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.footer-links a:hover {
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+@media (min-width: 860px) {
+  .footer-grid {
+    grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.4fr);
+    align-items: start;
+  }
+
+  .footer-links {
+    grid-column: 1 / -1;
+  }
 }
 
 .fab {
@@ -578,11 +869,11 @@ textarea {
   font-size: 1.6rem;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  transition: transform 0.15s;
 }
 
 .fab:hover {
-  transform: scale(1.05);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 14px 30px rgba(37, 211, 102, 0.35);
 }
 
 .modal-backdrop {
@@ -622,6 +913,13 @@ textarea {
   }
 }
 
+@media (max-width: 980px) {
+  .grid,
+  .carousel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 720px) {
   .nav-links {
     display: none;
@@ -637,5 +935,29 @@ textarea {
     justify-content: center;
     padding: 0.4rem 0.65rem;
     font-size: 0.8rem;
+  }
+
+  .grid,
+  .carousel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body {
+    background-attachment: scroll;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .carousel-track {
+    transition: none;
   }
 }
