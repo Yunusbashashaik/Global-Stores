@@ -1,0 +1,143 @@
+GlobalStores.com — Website Requirements Specification (WRS)
+Project Overview & Ownership
+Platform Name: GlobalStores.com
+Business Owners: M Fareed Tariq & M Zuhaib Tariq
+Core Functionality: A high-end digital subscription marketplace. Upon opening the website, users land directly on the Subscription Services catalog with default Kuwait (KWD) pricing. Features full bilingual support (English & Arabic with LTR/RTL switching), direct WhatsApp order dispatch across two dedicated support lines, and a complaint submission module delivering directly to global2stor2@gmail.com.
+Key Functional & Interface Requirements
+1. Direct Entry, Fixed Localization & Language Toggle
+Direct Access Landing: Opening the URL routes users directly to the Subscription Services catalog without any landing page or pre-entry modals.
+Default Target Region:
+🇰🇼 Kuwait (KWD) — All pricing tags display directly in Kuwaiti Dinar (KD / KWD).
+Bilingual Switcher (Top-Right Placement):
+Location: Fixed in the top-right corner of the global header navigation bar across all device sizes.
+Supported Languages: English (EN) and Arabic (AR / العربية).
+Behavior: Dynamic client-side language switching without page reloads, accompanied by full LTR-to-RTL layout transitions when switching to Arabic.
+Persistence: Saved in local storage.
+2. Homepage & UI/UX Standards
+Design Aesthetic: Dark or modern luxury palette, clean bilingual typography (Inter / Tajawal), high-contrast CTA buttons, and smooth micro-interactions.
+Core Layout Sections:
+Hero Section: High-converting visual showcase highlighting instant digital delivery in Kuwait.
+Brand Introduction: Brief overview establishing marketplace trust under ownership of M Fareed Tariq & M Zuhaib Tariq.
+Subscription Catalog Grid: Immediate display of all digital subscription cards with KWD price tags.
+Customer Support & WhatsApp Showcase: Highlights direct order routing to dedicated WhatsApp lines.
+Global Header & Footer: Persistent layout containers across all pages.
+3. Subscription Catalog & Package Content Specifications
+Note on Pricing Architecture: As specified, price values are kept separate from card body descriptions. Prices are rendered exclusively on the dedicated Price Tags / Package Selection Toggles (1 Month vs. 1 Year).
+
+Service 1: Netflix Private Screen 👑
+Price Tag Data: 1 Month = 2 KD | 1 Year = 14 KD
+Card Description Data:
+Plaintext
+✨ Enjoy your own private Netflix profile
+
+👤 Personal Profile
+🔐 Private PIN Protection
+🎭 Custom Profile Picture
+📺 HD Streaming
+⚡ Instant Activation
+🛟 24/7 Support
+Service 2: Netflix & Prime Video Sharing (Bundle) 🍿
+Price Tag Data: 1 Month = 1 KD | 1 Year = 8 KD
+Card Description Data:
+Plaintext
+✨ Premium streaming at the best price
+
+👥 Shared Screen Access
+📺 HD Quality Streaming
+🚀 Smooth & Stable Service
+⚡ Instant Activation
+🛟 24/7 Customer Support
+Service 3: YouTube Premium 🎬
+Price Tag Data: 1 Month = 1 KD | 1 Year = 8 KD
+Card Description Data:
+Plaintext
+✨ Enjoy YouTube without limits
+
+🚫 Ad-Free Videos
+🎧 Background Play
+📥 Offline Downloads
+🎵 YouTube Music Premium
+⚡ Instant Activation
+🛟 24/7 Customer Support
+Service 4: IPTV Premium 📡
+Price Tag Data: 1 Month = 1 KD | 1 Year = 8 KD
+Card Description Data:
+Plaintext
+✨ Unlimited entertainment, anytime, anywhere
+
+🔹 Live TV Channels
+🎬 Movies & TV Series
+⚽ Sports & Premium Channels
+📺 HD & FHD Streaming
+⚡ Instant Activation
+🛟 24/7 Customer Support
+Service 5: Canva Pro 🎨
+Price Tag Data: 1 Month = 1 KD | 1 Year = 8 KD
+Card Description Data:
+Plaintext
+✨ Create stunning designs with premium tools
+
+🎯 Full Canva Pro Access
+📂 Millions of Premium Templates
+🖼️ Premium Photos, Videos & Fonts
+🪄 Background Remover & Magic Resize
+🤖 AI Design Tools & Brand Kit
+🚀 Instant Activation
+🛟 24/7 Customer Support
+Service 6: NordVPN 🔐 🌍
+Price Tag Data: 1 Month = 1 KD | 1 Year = 8 KD
+Card Description Data:
+Plaintext
+⚡ Fast & Secure Connection
+🌎 Access Global Content
+🛡️ Protect Your Privacy
+📱 Works on Multiple Devices
+✅ Instant Activation
+4. Direct WhatsApp Ordering System & Multi-Number Logic
+Checkout routes directly to customer support over WhatsApp using two configured support numbers:
+Configured Support Numbers:
+Line 1: +923228791573
+Line 2: +923014968769
+Routing Logic: Dynamic distribution (round-robin or sequential fallback) between both numbers.
+Order Payload Format
+English Payload:
+Plaintext
+Hello GlobalStores.com Support Team, I would like to purchase the following subscription:
+
+Country: Kuwait
+Service: [Subscription Name]
+Duration: [Selected Duration: 1 Month / 1 Year]
+Price: [Calculated Price in KD]
+
+Please provide payment details and complete my order.
+Arabic Payload:
+Plaintext
+مرحباً فريق دعم GlobalStores.com، أود شراء الاشتراك التالي:
+
+الدولة: الكويت
+الخدمة: [اسم الاشتراك]
+المدة: [المدة المحددة: شهر واحد / سنة واحدة]
+السعر: [السعر بالدينار الكويتي]
+
+يرجى تزويدي بتفاصيل الدفع وإتمام طلبي.
+5. Floating Support & Complaint Handling
+Persistent WhatsApp Button
+Floating action button (FAB) fixed on the bottom corner of all pages targeting +923228791573 or +923014968769.
+Complaint Submission System
+Form Inputs: Full Name, Phone Number, Subject, Complaint Details, Screenshot Upload (Required).
+Target Delivery Email:
+📧 global2stor2@gmail.com
+Success Message: Displays an inline confirmation modal upon submission.
+6. Navigation & Layout Architecture
+Navigation Bar
+Branding: GlobalStores.com Logo
+Center Links: Services, WhatsApp Support, Submit Complaint
+Top-Right (Fixed): Language Switcher (EN | العربية)
+Footer Section
+Branding & Credits: "GlobalStores.com — Owned & Managed by M Fareed Tariq & M Zuhaib Tariq"
+Support Contacts: +923228791573 | +923014968769 | global2stor2@gmail.com
+Quick Links: Services, Submit Complaint, Terms & Support
+7. Non-Functional & Technical Requirements
+WhatsApp Deep Linking: Built using standard [https://wa.me/](https://wa.me/) format for universal app/browser launching.
+Email Service Integration: Node.js/SMTP transactional email configuration to deliver complaint tickets with attached image files to global2stor2@gmail.com.
+RTL/LTR Support: Clean stylesheet toggling for smooth Arabic rendering.
