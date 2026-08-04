@@ -29,9 +29,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          element={<Layout lang={lang} setLang={setLang} t={t} />}
-        >
+        <Route element={<Layout lang={lang} setLang={setLang} t={t} />}>
           <Route index element={<HomePage lang={lang} t={t} />} />
           <Route path="complaint" element={<ComplaintPage t={t} />} />
         </Route>
