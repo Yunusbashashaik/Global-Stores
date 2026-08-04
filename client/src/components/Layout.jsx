@@ -1,10 +1,12 @@
 import { useCallback } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { buildWhatsAppUrl, nextSupportNumber } from "../data/catalog.js";
+import Logo from "./Logo.jsx";
 
 export default function Layout({ lang, setLang, t }) {
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const isAdmin = location.pathname.startsWith("/admin");
 
   const openFab = useCallback(() => {
     const phone = nextSupportNumber();
@@ -22,20 +24,28 @@ export default function Layout({ lang, setLang, t }) {
     <div className="app-shell">
       <header className="site-header">
         <div className="container header-inner">
-          <Link to="/" className="logo">
-            GlobalStores.com
+          <Link to="/" className="logo" aria-label="GlobalStores.com">
+            <Logo />
           </Link>
-          <nav className="nav-links" aria-label="Main">
-            <a href={servicesHref}>{t.navServices}</a>
-            <a href={whatsappHref}>{t.navWhatsApp}</a>
-          </nav>
+          {!isAdmin ? (
+            <nav className="nav-links" aria-label="Main">
+              <a href={servicesHref}>{t.navServices}</a>
+              <a href={whatsappHref}>{t.navWhatsApp}</a>
+            </nav>
+          ) : (
+            <nav className="nav-links" aria-label="Main">
+              <span className="nav-muted">{t.adminNavLabel}</span>
+            </nav>
+          )}
           <div className="header-actions">
-            <Link
-              to="/complaint"
-              className={`btn btn-complaint-header${location.pathname === "/complaint" ? " active" : ""}`}
-            >
-              {t.complaintButton}
-            </Link>
+            {!isAdmin ? (
+              <Link
+                to="/complaint"
+                className={`btn btn-complaint-header${location.pathname === "/complaint" ? " active" : ""}`}
+              >
+                {t.complaintButton}
+              </Link>
+            ) : null}
             <div className="lang-switch" aria-label="Language">
               <button
                 type="button"
@@ -60,7 +70,9 @@ export default function Layout({ lang, setLang, t }) {
 
       <footer className="site-footer">
         <div className="container footer-grid">
-          <strong>GlobalStores.com</strong>
+          <strong className="footer-brand">
+            <Logo className="logo-footer" />
+          </strong>
           <div>{t.footerOwners}</div>
           <div>
             +923228791573 | +923014968769 | global2stor2@gmail.com
@@ -69,18 +81,21 @@ export default function Layout({ lang, setLang, t }) {
             <a href={servicesHref}>{t.navServices}</a>
             <Link to="/complaint">{t.navComplaint}</Link>
             <Link to="/">{t.footerTerms}</Link>
+            <Link to="/admin">{t.navAdmin}</Link>
           </div>
         </div>
       </footer>
 
-      <button
-        type="button"
-        className="fab"
-        aria-label={t.fabLabel}
-        onClick={openFab}
-      >
-        💬
-      </button>
+      {!isAdmin ? (
+        <button
+          type="button"
+          className="fab"
+          aria-label={t.fabLabel}
+          onClick={openFab}
+        >
+          💬
+        </button>
+      ) : null}
     </div>
   );
 }
