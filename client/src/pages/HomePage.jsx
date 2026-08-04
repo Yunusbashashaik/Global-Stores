@@ -34,14 +34,15 @@ export default function HomePage({ lang, t }) {
     <main>
       <section className="hero container" id="top">
         <div className="region-badge">🇰🇼 {t.region}</div>
-        <h1>{t.catalogTitle}</h1>
+        <h1>{t.heroHeadline}</h1>
         <p>{t.tagline}</p>
         <a href="#services" className="btn btn-primary">
           {t.heroCta}
         </a>
       </section>
 
-      <section className="intro container">
+      <section className="intro container" id="about">
+        <h2>{t.aboutTitle}</h2>
         <p>{t.brandIntro}</p>
       </section>
 
