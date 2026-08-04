@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import FaqSection from "../components/FaqSection.jsx";
 import ServicesCarousel from "../components/ServicesCarousel.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
 
@@ -26,9 +27,8 @@ export default function HomePage({ lang, t }) {
   }, [t.servicesLoadFallback]);
 
   return (
-    <main>
+    <main className="home-main">
       <section className="hero container" id="top">
-        <div className="region-badge">🇰🇼 {t.region}</div>
         <h1>{t.heroHeadline}</h1>
         <p>{t.tagline}</p>
         <a href="#services" className="btn btn-primary">
@@ -41,6 +41,8 @@ export default function HomePage({ lang, t }) {
         {loadError ? <p className="catalog-note">{loadError}</p> : null}
         <ServicesCarousel services={services} lang={lang} t={t} />
       </section>
+
+      <FaqSection t={t} />
     </main>
   );
 }

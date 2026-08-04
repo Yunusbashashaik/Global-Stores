@@ -1,6 +1,6 @@
 # Global-Stores
 
-GlobalStores.com — bilingual digital subscription marketplace for Kuwait (KWD).
+GlobalStore.com — bilingual digital subscription marketplace for Kuwait (KWD).
 
 ## Development
 
