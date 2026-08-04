@@ -1,0 +1,377 @@
+:root {
+  --bg: #0b0d12;
+  --bg-elevated: #141820;
+  --border: #2a3140;
+  --text: #f4f6fb;
+  --muted: #9aa3b5;
+  --accent: #d4af37;
+  --accent-hover: #e8c547;
+  --whatsapp: #25d366;
+  --radius: 14px;
+  --font-en: "Inter", system-ui, sans-serif;
+  --font-ar: "Tajawal", "Inter", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, #1a2030 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: var(--font-en);
+  line-height: 1.5;
+}
+
+body.rtl {
+  font-family: var(--font-ar);
+  direction: rtl;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: min(1120px, 92vw);
+  margin: 0 auto;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+  background: rgba(11, 13, 18, 0.85);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+}
+
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex: 1;
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+.lang-switch {
+  display: flex;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem;
+  background: var(--bg-elevated);
+}
+
+.lang-switch button {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lang-switch button.active {
+  background: var(--accent);
+  color: #111;
+  font-weight: 600;
+}
+
+.hero {
+  padding: 3.5rem 0 2rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin: 0 0 0.75rem;
+}
+
+.hero p {
+  color: var(--muted);
+  max-width: 52ch;
+  margin: 0 auto 1.5rem;
+}
+
+.region-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  padding: 0.7rem 1.25rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.15s, background 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #b8922e);
+  color: #111;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--accent-hover), var(--accent));
+}
+
+.btn-whatsapp {
+  background: var(--whatsapp);
+  color: #fff;
+}
+
+.btn-whatsapp:hover {
+  filter: brightness(1.05);
+}
+
+.intro {
+  padding: 1rem 0 2rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.catalog {
+  padding: 1rem 0 3rem;
+}
+
+.catalog h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.card:hover {
+  border-color: rgba(212, 175, 55, 0.45);
+  transform: translateY(-2px);
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.card pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--muted);
+  flex: 1;
+}
+
+.price-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.price-toggle button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.55rem;
+  cursor: pointer;
+}
+
+.price-toggle button.active {
+  border-color: var(--accent);
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.price-tag {
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+}
+
+.support-section,
+.complaint-section {
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.support-section {
+  text-align: center;
+}
+
+.support-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.complaint-form {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.complaint-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.complaint-form input,
+.complaint-form textarea {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+
+.complaint-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 2rem 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.footer-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.fab {
+  position: fixed;
+  bottom: 1.25rem;
+  inset-inline-end: 1.25rem;
+  z-index: 30;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--whatsapp);
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s;
+}
+
+.fab:hover {
+  transform: scale(1.05);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: grid;
+  place-items: center;
+  z-index: 40;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal h3 {
+  margin-top: 0;
+}
+
+.error-text {
+  color: #ff8a8a;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .nav-links {
+    display: none;
+  }
+}
