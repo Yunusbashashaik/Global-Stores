@@ -4,8 +4,8 @@ export default function Logo({ className = "" }) {
       <svg
         className="brand-mark"
         viewBox="0 0 40 40"
-        width="36"
-        height="36"
+        width="42"
+        height="42"
         aria-hidden="true"
         focusable="false"
       >
@@ -36,7 +36,7 @@ export default function Logo({ className = "" }) {
         />
       </svg>
       <span className="brand-wordmark">
-        Global<span>Store</span>.com
+        Global <span>Store</span>
       </span>
     </span>
   );

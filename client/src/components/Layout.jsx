@@ -25,12 +25,13 @@ export default function Layout({ lang, setLang, t }) {
     <div className="app-shell">
       <header className="site-header">
         <div className="container header-inner">
-          <Link to="/" className="logo" aria-label="GlobalStore.com">
+          <Link to="/" className="logo" aria-label="Global Store">
             <Logo />
           </Link>
           {!isAdmin ? (
             <nav className="nav-links" aria-label="Main">
               <a href={servicesHref}>{t.navServices}</a>
+              <a href={isHome ? "#faq" : "/#faq"}>{t.faqTitle}</a>
               <a href={aboutHref}>{t.aboutTitle}</a>
             </nav>
           ) : (
@@ -93,6 +94,7 @@ export default function Layout({ lang, setLang, t }) {
 
           <div className="footer-links">
             <a href={servicesHref}>{t.navServices}</a>
+            <a href={isHome ? "#faq" : "/#faq"}>{t.faqTitle}</a>
             <a href={aboutHref}>{t.aboutTitle}</a>
             <Link to="/complaint">{t.navComplaint}</Link>
             <Link to="/">{t.footerTerms}</Link>
