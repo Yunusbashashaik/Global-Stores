@@ -24,9 +24,9 @@ export async function sendComplaintEmail(ticket, screenshotPath) {
   const screenshot = await fs.readFile(screenshotPath);
 
   const mail = {
-    from: process.env.SMTP_FROM || "noreply@globalstores.com",
+    from: process.env.SMTP_FROM || "noreply@globalstore.com",
     to: TARGET_EMAIL,
-    subject: `[GlobalStores Complaint] ${ticket.subject}`,
+    subject: `[GlobalStore Complaint] ${ticket.subject}`,
     text: [
       `Ticket: ${ticket.id}`,
       `Name: ${ticket.fullName}`,

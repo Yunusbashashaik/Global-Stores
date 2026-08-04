@@ -36,7 +36,7 @@ export default function Logo({ className = "" }) {
         />
       </svg>
       <span className="brand-wordmark">
-        Global<span>Stores</span>.com
+        Global<span>Store</span>.com
       </span>
     </span>
   );

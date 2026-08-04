@@ -16,7 +16,7 @@ export function buildOrderMessage(service, durationKey, priceKd, lang) {
   const durationEn = durationKey === "month" ? "1 Month" : "1 Year";
   const durationAr = durationKey === "month" ? "شهر واحد" : "سنة واحدة";
   if (lang === "ar") {
-    return `مرحباً فريق دعم GlobalStores.com، أود شراء الاشتراك التالي:
+    return `مرحباً فريق دعم GlobalStore.com، أود شراء الاشتراك التالي:
 
 الدولة: الكويت
 الخدمة: ${service.nameAr}
@@ -25,7 +25,7 @@ export function buildOrderMessage(service, durationKey, priceKd, lang) {
 
 يرجى تزويدي بتفاصيل الدفع وإتمام طلبي.`;
   }
-  return `Hello GlobalStores.com Support Team, I would like to purchase the following subscription:
+  return `Hello GlobalStore.com Support Team, I would like to purchase the following subscription:
 
 Country: Kuwait
 Service: ${service.nameEn}

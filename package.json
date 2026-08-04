@@ -2,7 +2,7 @@
   "name": "global-stores",
   "private": true,
   "version": "1.0.0",
-  "description": "GlobalStores.com — digital subscription marketplace (Kuwait / KWD)",
+  "description": "GlobalStore.com — digital subscription marketplace (Kuwait / KWD)",
   "workspaces": [
     "client",
     "server"

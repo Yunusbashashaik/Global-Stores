@@ -2,7 +2,7 @@
 
 ## Cursor Cloud specific instructions
 
-This repository implements **GlobalStores.com** from `Tech. Document` as an npm workspace (`client` + `server`).
+This repository implements **GlobalStore.com** from `Tech. Document` as an npm workspace (`client` + `server`).
 
 ### Services
 

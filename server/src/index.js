@@ -17,7 +17,7 @@ app.use(cors({ origin: true }));
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "global-stores-api" });
+  res.json({ ok: true, service: "global-store-api" });
 });
 
 app.use("/api/services", servicesRouter);
@@ -37,7 +37,7 @@ await fs.mkdir(DATA_DIR, { recursive: true });
 await readServices();
 
 app.listen(PORT, () => {
-  console.log(`GlobalStores API listening on http://localhost:${PORT}`);
+  console.log(`GlobalStore API listening on http://localhost:${PORT}`);
 });
 
 export { app, DATA_DIR };
