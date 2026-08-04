@@ -36,11 +36,6 @@ export default function HomePage({ lang, t }) {
         </a>
       </section>
 
-      <section className="intro container" id="about">
-        <h2>{t.aboutTitle}</h2>
-        <p>{t.brandIntro}</p>
-      </section>
-
       <section className="catalog container" id="services">
         <h2>{t.catalogTitle}</h2>
         {loadError ? <p className="catalog-note">{loadError}</p> : null}
