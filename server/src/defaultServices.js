@@ -1,42 +1,5 @@
-export const SUPPORT_NUMBERS = ["923228791573", "923014968769"];
-
-let orderLineIndex = 0;
-
-export function nextSupportNumber() {
-  const num = SUPPORT_NUMBERS[orderLineIndex % SUPPORT_NUMBERS.length];
-  orderLineIndex += 1;
-  return num;
-}
-
-export function buildWhatsAppUrl(phone, message) {
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-}
-
-export function buildOrderMessage(service, durationKey, priceKd, lang) {
-  const durationEn = durationKey === "month" ? "1 Month" : "1 Year";
-  const durationAr = durationKey === "month" ? "شهر واحد" : "سنة واحدة";
-  if (lang === "ar") {
-    return `مرحباً فريق دعم GlobalStores.com، أود شراء الاشتراك التالي:
-
-الدولة: الكويت
-الخدمة: ${service.nameAr}
-المدة: ${durationAr}
-السعر: ${priceKd} د.ك
-
-يرجى تزويدي بتفاصيل الدفع وإتمام طلبي.`;
-  }
-  return `Hello GlobalStores.com Support Team, I would like to purchase the following subscription:
-
-Country: Kuwait
-Service: ${service.nameEn}
-Duration: ${durationEn}
-Price: ${priceKd} KD
-
-Please provide payment details and complete my order.`;
-}
-
-/** Fallback catalog if the API is unavailable. */
-export const SERVICES = [
+/** Seed catalog used when server/data/services.json does not exist yet. */
+export const DEFAULT_SERVICES = [
   {
     id: "netflix-private",
     icon: "👑",
@@ -170,15 +133,3 @@ export const SERVICES = [
 ✅ تفعيل فوري`,
   },
 ];
-
-export async function fetchServices() {
-  const res = await fetch("/api/services");
-  if (!res.ok) {
-    throw new Error("Failed to load services");
-  }
-  const data = await res.json();
-  if (!Array.isArray(data.services)) {
-    throw new Error("Invalid services response");
-  }
-  return data.services;
-}

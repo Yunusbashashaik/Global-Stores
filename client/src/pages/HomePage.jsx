@@ -1,7 +1,30 @@
-import { SERVICES, buildWhatsAppUrl } from "../data/catalog.js";
+import { useEffect, useState } from "react";
 import ServiceCard from "../components/ServiceCard.jsx";
+import { SERVICES, buildWhatsAppUrl, fetchServices } from "../data/catalog.js";
 
 export default function HomePage({ lang, t }) {
+  const [services, setServices] = useState(SERVICES);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchServices()
+      .then((list) => {
+        if (!cancelled) {
+          setServices(list);
+          setLoadError("");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLoadError(t.servicesLoadFallback);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [t.servicesLoadFallback]);
+
   const supportLinks = [
     { label: "+923228791573", phone: "923228791573" },
     { label: "+923014968769", phone: "923014968769" },
@@ -24,8 +47,9 @@ export default function HomePage({ lang, t }) {
 
       <section className="catalog container" id="services">
         <h2>{t.catalogTitle}</h2>
+        {loadError ? <p className="catalog-note">{loadError}</p> : null}
         <div className="grid">
-          {SERVICES.map((service) => (
+          {services.map((service) => (
             <ServiceCard key={service.id} service={service} lang={lang} t={t} />
           ))}
         </div>
