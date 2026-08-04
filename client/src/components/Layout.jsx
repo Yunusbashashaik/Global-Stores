@@ -19,7 +19,6 @@ export default function Layout({ lang, setLang, t }) {
   }, [lang]);
 
   const servicesHref = isHome ? "#services" : "/#services";
-  const whatsappHref = isHome ? "#whatsapp" : "/#whatsapp";
   const aboutHref = isHome ? "#about" : "/#about";
 
   return (
@@ -32,7 +31,7 @@ export default function Layout({ lang, setLang, t }) {
           {!isAdmin ? (
             <nav className="nav-links" aria-label="Main">
               <a href={servicesHref}>{t.navServices}</a>
-              <a href={whatsappHref}>{t.navWhatsApp}</a>
+              <a href={aboutHref}>{t.aboutTitle}</a>
             </nav>
           ) : (
             <nav className="nav-links" aria-label="Main">
