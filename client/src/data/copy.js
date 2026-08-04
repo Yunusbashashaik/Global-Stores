@@ -1,8 +1,12 @@
 export const COPY = {
   en: {
-    tagline: "Instant digital delivery in Kuwait — premium subscriptions in KWD",
+    heroHeadline:
+      "Your Gateway to Unlimited Entertainment in Kuwait — Top Premium Subscriptions at Unbeatable Prices.",
+    tagline:
+      "Stream More, Pay Less: Premium OTT Subscriptions Delivered Instantly Across Kuwait.",
+    aboutTitle: "About Us",
     brandIntro:
-      "GlobalStores.com is a trusted digital marketplace owned and managed by M Fareed Tariq & M Zuhaib Tariq.",
+      "At Global Store, we bring world-class entertainment right to your screen without breaking the bank. We offer instant access to top premium OTT subscriptions in Kuwait at reasonable, budget-friendly prices—making streaming simple, affordable, and seamless.",
     catalogTitle: "Subscription Services",
     month: "1 Month",
     year: "1 Year",
@@ -54,9 +58,13 @@ export const COPY = {
     adminSaved: "Service updated successfully.",
   },
   ar: {
-    tagline: "توصيل رقمي فوري في الكويت — اشتراكات مميزة بالدينار الكويتي",
+    heroHeadline:
+      "بوابتك إلى ترفيه بلا حدود في الكويت — أفضل الاشتراكات المميزة بأسعار لا تُقاوم.",
+    tagline:
+      "شاهد أكثر وادفع أقل: اشتراكات OTT المميزة تُسلَّم فوراً في جميع أنحاء الكويت.",
+    aboutTitle: "من نحن",
     brandIntro:
-      "GlobalStores.com سوق رقمي موثوق يملكه ويديره م. فريد طارق وم. زهيب طارق.",
+      "في Global Store، نقدم لك ترفيهاً عالمياً على شاشتك دون إرهاق ميزانيتك. نوفر وصولاً فورياً إلى أفضل اشتراكات OTT المميزة في الكويت بأسعار معقولة وصديقة للميزانية—لتجعل البث بسيطاً وميسور التكلفة وسلساً.",
     catalogTitle: "خدمات الاشتراك",
     month: "شهر واحد",
     year: "سنة واحدة",
