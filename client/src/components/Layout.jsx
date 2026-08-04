@@ -81,7 +81,11 @@ export default function Layout({ lang, setLang, t }) {
             </div>
           </div>
 
-          <section className="footer-about" aria-labelledby="footer-about-title">
+          <section
+            className="footer-about"
+            id="about"
+            aria-labelledby="footer-about-title"
+          >
             <h2 id="footer-about-title">{t.aboutTitle}</h2>
             <p>{t.brandIntro}</p>
             <SocialLinks t={t} />
