@@ -4,14 +4,14 @@
   --glass: rgba(255, 255, 255, 0.1);
   --glass-strong: rgba(255, 255, 255, 0.16);
   --border: rgba(255, 255, 255, 0.18);
-  --border-strong: rgba(165, 243, 252, 0.45);
+  --border-strong: rgba(125, 211, 252, 0.45);
   --text: #f5fbff;
   --muted: #b7c7d6;
-  --accent: #2dd4bf;
-  --accent-hover: #5eead4;
+  --accent: #38bdf8;
+  --accent-hover: #7dd3fc;
   --accent-deep: #0ea5e9;
-  --accent-soft: rgba(45, 212, 191, 0.16);
-  --accent-glow: rgba(45, 212, 191, 0.28);
+  --accent-soft: rgba(56, 189, 248, 0.16);
+  --accent-glow: rgba(56, 189, 248, 0.3);
   --whatsapp: #25d366;
   --radius: 22px;
   --radius-sm: 14px;
@@ -38,14 +38,12 @@ body {
   color: var(--text);
   font-family: var(--font-en);
   line-height: 1.55;
-  background-color: #07131f;
+  background-color: #02060f;
   background-image:
-    radial-gradient(ellipse at 15% 10%, rgba(45, 212, 191, 0.22), transparent 42%),
-    radial-gradient(ellipse at 85% 0%, rgba(14, 165, 233, 0.2), transparent 40%),
-    linear-gradient(180deg, rgba(6, 16, 28, 0.55) 0%, rgba(6, 14, 24, 0.72) 55%, rgba(5, 12, 22, 0.86) 100%),
-    url("/site-wallpaper.png");
+    linear-gradient(180deg, rgba(2, 8, 20, 0.42) 0%, rgba(2, 8, 18, 0.55) 48%, rgba(1, 6, 14, 0.72) 100%),
+    url("/Global_bg.JPG");
   background-size: cover;
-  background-position: center top;
+  background-position: center center;
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
@@ -142,7 +140,7 @@ button,
 .brand-mark {
   flex-shrink: 0;
   display: block;
-  filter: drop-shadow(0 0 12px rgba(45, 212, 191, 0.25));
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.25));
 }
 
 .brand-wordmark {
@@ -314,7 +312,7 @@ button,
 .admin-service-btn:hover,
 .admin-service-btn.active {
   border-color: var(--border-strong);
-  background: linear-gradient(165deg, rgba(45, 212, 191, 0.2), rgba(14, 165, 233, 0.08));
+  background: linear-gradient(165deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.08));
 }
 
 .admin-editor {
@@ -418,7 +416,7 @@ button,
 }
 
 .btn-complaint-header:hover {
-  background: rgba(45, 212, 191, 0.28);
+  background: rgba(56, 189, 248, 0.28);
   transform: var(--hover-lift);
   box-shadow: 0 10px 24px var(--accent-glow);
 }
@@ -485,7 +483,7 @@ button,
   line-height: 1.15;
   letter-spacing: -0.02em;
   text-wrap: balance;
-  background: linear-gradient(180deg, #ffffff 10%, #c7f5ff 55%, #7ee7d8 100%);
+  background: linear-gradient(180deg, #ffffff 10%, #dbeafe 50%, #7dd3fc 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -523,14 +521,14 @@ button,
   background: linear-gradient(135deg, var(--accent-hover), var(--accent) 45%, var(--accent-deep));
   color: #04202a;
   box-shadow:
-    0 12px 30px rgba(45, 212, 191, 0.28),
+    0 12px 30px rgba(56, 189, 248, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .btn-primary:hover {
   filter: brightness(1.05);
   box-shadow:
-    0 16px 36px rgba(45, 212, 191, 0.38),
+    0 16px 36px rgba(56, 189, 248, 0.38),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -623,7 +621,7 @@ button,
 }
 
 .carousel-arrow-next {
-  box-shadow: 0 12px 28px rgba(45, 212, 191, 0.22);
+  box-shadow: 0 12px 28px rgba(56, 189, 248, 0.22);
 }
 
 .carousel-dots {
@@ -643,7 +641,7 @@ button,
 }
 
 .carousel-dot:hover {
-  background: rgba(45, 212, 191, 0.7);
+  background: rgba(56, 189, 248, 0.7);
   transform: scale(1.15);
 }
 
@@ -685,9 +683,9 @@ body.rtl .carousel-arrow svg {
   transform: translateY(-8px) scale(1.01);
   box-shadow:
     0 24px 48px rgba(4, 16, 28, 0.38),
-    0 0 0 1px rgba(45, 212, 191, 0.18),
+    0 0 0 1px rgba(56, 189, 248, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.18), rgba(45, 212, 191, 0.08));
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.18), rgba(56, 189, 248, 0.08));
 }
 
 .card h3 {
@@ -727,7 +725,7 @@ body.rtl .carousel-arrow svg {
 
 .price-toggle button.active {
   border-color: var(--accent);
-  background: linear-gradient(145deg, rgba(45, 212, 191, 0.24), rgba(14, 165, 233, 0.14));
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.24), rgba(14, 165, 233, 0.14));
   color: #ecfeff;
 }
 
@@ -736,7 +734,7 @@ body.rtl .carousel-arrow svg {
   color: var(--accent-hover);
   text-align: center;
   letter-spacing: 0.02em;
-  text-shadow: 0 0 18px rgba(45, 212, 191, 0.35);
+  text-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
 }
 
 .complaint-section {
@@ -844,7 +842,7 @@ body.rtl .carousel-arrow svg {
   transform: var(--hover-lift) scale(1.07);
   border-color: var(--border-strong);
   color: var(--accent-hover);
-  box-shadow: 0 14px 28px rgba(45, 212, 191, 0.2);
+  box-shadow: 0 14px 28px rgba(56, 189, 248, 0.2);
 }
 
 .social-link:hover svg {

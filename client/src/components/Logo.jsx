@@ -11,9 +11,9 @@ export default function Logo({ className = "" }) {
       >
         <defs>
           <linearGradient id="gs-glass" x1="8" y1="4" x2="34" y2="36" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#a5f3fc" />
-            <stop offset="0.45" stopColor="#2dd4bf" />
-            <stop offset="1" stopColor="#0ea5e9" />
+            <stop stopColor="#e0f2fe" />
+            <stop offset="0.45" stopColor="#38bdf8" />
+            <stop offset="1" stopColor="#0284c7" />
           </linearGradient>
         </defs>
         <rect
