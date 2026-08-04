@@ -1,17 +1,27 @@
 :root {
-  --bg: #0b0d12;
-  --bg-elevated: rgba(20, 24, 32, 0.82);
-  --border: rgba(255, 255, 255, 0.14);
-  --text: #f4f6fb;
-  --muted: #c3cad8;
-  --accent: #d4af37;
-  --accent-hover: #e8c547;
+  --bg: #07111c;
+  --bg-elevated: rgba(255, 255, 255, 0.08);
+  --glass: rgba(255, 255, 255, 0.1);
+  --glass-strong: rgba(255, 255, 255, 0.16);
+  --border: rgba(255, 255, 255, 0.18);
+  --border-strong: rgba(165, 243, 252, 0.45);
+  --text: #f5fbff;
+  --muted: #b7c7d6;
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-deep: #0ea5e9;
+  --accent-soft: rgba(45, 212, 191, 0.16);
+  --accent-glow: rgba(45, 212, 191, 0.28);
   --whatsapp: #25d366;
-  --radius: 14px;
-  --font-en: "Inter", system-ui, sans-serif;
-  --font-ar: "Tajawal", "Inter", sans-serif;
+  --radius: 22px;
+  --radius-sm: 14px;
+  --font-en: "Sora", system-ui, sans-serif;
+  --font-ar: "Tajawal", "Sora", sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --hover-lift: translateY(-3px);
+  --hover-lift: translateY(-4px);
+  --glass-shadow:
+    0 18px 50px rgba(4, 12, 24, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 * {
@@ -27,10 +37,12 @@ body {
   min-height: 100vh;
   color: var(--text);
   font-family: var(--font-en);
-  line-height: 1.5;
-  background-color: #1a2233;
+  line-height: 1.55;
+  background-color: #07131f;
   background-image:
-    linear-gradient(180deg, rgba(8, 12, 20, 0.72) 0%, rgba(10, 14, 22, 0.78) 45%, rgba(8, 12, 20, 0.88) 100%),
+    radial-gradient(ellipse at 15% 10%, rgba(45, 212, 191, 0.22), transparent 42%),
+    radial-gradient(ellipse at 85% 0%, rgba(14, 165, 233, 0.2), transparent 40%),
+    linear-gradient(180deg, rgba(6, 16, 28, 0.55) 0%, rgba(6, 14, 24, 0.72) 55%, rgba(5, 12, 22, 0.86) 100%),
     url("/site-wallpaper.png");
   background-size: cover;
   background-position: center top;
@@ -46,7 +58,7 @@ body.rtl {
 a {
   color: inherit;
   text-decoration: none;
-  transition: color 0.25s var(--ease), opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  transition: color 0.28s var(--ease), opacity 0.28s var(--ease), transform 0.28s var(--ease);
 }
 
 button,
@@ -68,14 +80,15 @@ button,
 .lang-switch button,
 .fab {
   transition:
-    transform 0.28s var(--ease),
-    background 0.28s var(--ease),
-    background-color 0.28s var(--ease),
-    border-color 0.28s var(--ease),
-    color 0.28s var(--ease),
-    box-shadow 0.28s var(--ease),
-    filter 0.28s var(--ease),
-    opacity 0.28s var(--ease);
+    transform 0.3s var(--ease),
+    background 0.3s var(--ease),
+    background-color 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    color 0.3s var(--ease),
+    box-shadow 0.3s var(--ease),
+    filter 0.3s var(--ease),
+    opacity 0.3s var(--ease),
+    backdrop-filter 0.3s var(--ease);
 }
 
 .app-shell {
@@ -94,10 +107,11 @@ button,
   position: sticky;
   top: 0;
   z-index: 20;
-  backdrop-filter: blur(16px);
-  background: rgba(10, 14, 22, 0.72);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  background: rgba(8, 18, 30, 0.45);
   border-bottom: 1px solid var(--border);
-  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
 }
 
 .header-inner {
@@ -105,7 +119,7 @@ button,
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.9rem 0;
+  padding: 0.95rem 0;
 }
 
 .logo {
@@ -116,7 +130,7 @@ button,
 
 .logo:hover {
   transform: translateY(-1px);
-  filter: brightness(1.08);
+  filter: brightness(1.1);
 }
 
 .brand-logo {
@@ -128,18 +142,22 @@ button,
 .brand-mark {
   flex-shrink: 0;
   display: block;
+  filter: drop-shadow(0 0 12px rgba(45, 212, 191, 0.25));
 }
 
 .brand-wordmark {
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   font-size: 1.05rem;
   color: var(--text);
   white-space: nowrap;
 }
 
 .brand-wordmark span {
-  color: var(--accent);
+  background: linear-gradient(120deg, var(--accent-hover), var(--accent-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .logo-footer .brand-wordmark {
@@ -164,14 +182,16 @@ button,
 }
 
 .btn-ghost {
-  background: transparent;
+  background: var(--glass);
   color: var(--muted);
   border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
 }
 
 .btn-ghost:hover {
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--glass-strong);
 }
 
 .success-text {
@@ -209,15 +229,25 @@ button,
 }
 
 .admin-login-form,
+.admin-editor,
+.modal,
+.card,
+.admin-service-btn {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: var(--glass-shadow);
+}
+
+.admin-login-form,
 .admin-editor {
   display: grid;
   gap: 0.85rem;
   max-width: 560px;
   margin: 0 auto;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.25rem;
+  padding: 1.35rem;
 }
 
 .admin-login-form label,
@@ -229,12 +259,25 @@ button,
 
 .admin-login-form input,
 .admin-editor input,
-.admin-editor textarea {
+.admin-editor textarea,
+.complaint-form input,
+.complaint-form textarea {
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: rgba(6, 16, 28, 0.45);
   color: var(--text);
-  border-radius: 10px;
-  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.85rem;
+  backdrop-filter: blur(10px);
+}
+
+.admin-login-form input:focus,
+.admin-editor input:focus,
+.admin-editor textarea:focus,
+.complaint-form input:focus,
+.complaint-form textarea:focus {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .admin-editor textarea {
@@ -256,15 +299,12 @@ button,
 
 .admin-service-btn {
   text-align: start;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
   color: var(--text);
-  border-radius: 12px;
-  padding: 0.75rem 0.9rem;
+  border-radius: 16px;
+  padding: 0.8rem 0.95rem;
   cursor: pointer;
   display: grid;
   gap: 0.25rem;
-  transition: border-color 0.2s, background 0.2s;
 }
 
 .admin-service-btn small {
@@ -273,8 +313,8 @@ button,
 
 .admin-service-btn:hover,
 .admin-service-btn.active {
-  border-color: rgba(212, 175, 55, 0.55);
-  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--border-strong);
+  background: linear-gradient(165deg, rgba(45, 212, 191, 0.2), rgba(14, 165, 233, 0.08));
 }
 
 .admin-editor {
@@ -312,7 +352,7 @@ button,
 
 .nav-links {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.35rem;
   flex-wrap: wrap;
   justify-content: center;
   flex: 1;
@@ -320,7 +360,8 @@ button,
 
 .nav-links a {
   position: relative;
-  padding: 0.2rem 0;
+  padding: 0.25rem 0;
+  color: rgba(245, 251, 255, 0.86);
 }
 
 .nav-links a::after {
@@ -331,14 +372,14 @@ button,
   bottom: -0.15rem;
   height: 2px;
   border-radius: 999px;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
   transform: scaleX(0);
   transform-origin: center;
   transition: transform 0.28s var(--ease);
 }
 
 .nav-links a:hover {
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .nav-links a:hover::after {
@@ -351,7 +392,8 @@ button,
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0.2rem;
-  background: var(--bg-elevated);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
   flex-shrink: 0;
 }
 
@@ -364,30 +406,32 @@ button,
 
 .btn-complaint-header {
   display: none;
-  padding: 0.45rem 0.9rem;
+  padding: 0.45rem 0.95rem;
   font-size: 0.88rem;
   border-radius: 999px;
-  border: 1px solid var(--accent);
-  background: rgba(212, 175, 55, 0.15);
-  color: var(--accent);
+  border: 1px solid var(--border-strong);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
   font-weight: 600;
   white-space: nowrap;
+  backdrop-filter: blur(12px);
 }
 
 .btn-complaint-header:hover {
-  background: rgba(212, 175, 55, 0.28);
+  background: rgba(45, 212, 191, 0.28);
   transform: var(--hover-lift);
-  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.18);
+  box-shadow: 0 10px 24px var(--accent-glow);
 }
 
 .btn-complaint-header.active {
-  background: var(--accent);
-  color: #111;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #04202a;
+  border-color: transparent;
 }
 
 .lang-switch button:hover:not(.active) {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .complaint-page {
@@ -411,7 +455,7 @@ button,
 }
 
 .complaint-back a:hover {
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .lang-switch button {
@@ -421,43 +465,38 @@ button,
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
 }
 
 .lang-switch button.active {
-  background: var(--accent);
-  color: #111;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #04202a;
   font-weight: 600;
 }
 
 .hero {
-  padding: 3.5rem 0 2rem;
+  padding: 4.2rem 0 2.4rem;
   text-align: center;
 }
 
 .hero h1 {
-  font-size: clamp(1.55rem, 3.6vw, 2.55rem);
-  margin: 0 auto 0.75rem;
-  max-width: 34ch;
-  line-height: 1.2;
+  font-size: clamp(1.65rem, 4vw, 2.75rem);
+  margin: 0 auto 0.9rem;
+  max-width: 18ch;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  background: linear-gradient(180deg, #ffffff 10%, #c7f5ff 55%, #7ee7d8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 10px 30px rgba(14, 165, 233, 0.18));
 }
 
 .hero p {
   color: var(--muted);
-  max-width: 48ch;
-  margin: 0 auto 1.5rem;
-}
-
-.region-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  max-width: 46ch;
+  margin: 0 auto 1.6rem;
+  font-size: 1.02rem;
 }
 
 .btn {
@@ -467,7 +506,7 @@ button,
   gap: 0.5rem;
   border: none;
   border-radius: 999px;
-  padding: 0.7rem 1.25rem;
+  padding: 0.78rem 1.35rem;
   cursor: pointer;
   font-weight: 600;
 }
@@ -481,51 +520,40 @@ button,
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #b8922e);
-  color: #111;
-  box-shadow: 0 8px 22px rgba(212, 175, 55, 0.2);
+  background: linear-gradient(135deg, var(--accent-hover), var(--accent) 45%, var(--accent-deep));
+  color: #04202a;
+  box-shadow:
+    0 12px 30px rgba(45, 212, 191, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--accent-hover), var(--accent));
-  box-shadow: 0 12px 28px rgba(212, 175, 55, 0.3);
+  filter: brightness(1.05);
+  box-shadow:
+    0 16px 36px rgba(45, 212, 191, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .btn-whatsapp {
-  background: var(--whatsapp);
+  background: linear-gradient(145deg, #34e076, var(--whatsapp));
   color: #fff;
-  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.22);
+  box-shadow: 0 10px 24px rgba(37, 211, 102, 0.28);
 }
 
 .btn-whatsapp:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 12px 26px rgba(37, 211, 102, 0.32);
-}
-
-.intro {
-  padding: 1rem 0 2rem;
-  text-align: center;
-  color: var(--muted);
-}
-
-.intro h2 {
-  margin: 0 0 0.75rem;
-  color: var(--text);
-  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
-}
-
-.intro p {
-  max-width: 62ch;
-  margin: 0 auto;
+  filter: brightness(1.06);
+  box-shadow: 0 14px 30px rgba(37, 211, 102, 0.36);
 }
 
 .catalog {
-  padding: 1rem 0 3rem;
+  padding: 0.5rem 0 3.5rem;
 }
 
 .catalog h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.6rem;
+  font-size: clamp(1.4rem, 2.8vw, 1.9rem);
+  letter-spacing: -0.02em;
 }
 
 .services-carousel {
@@ -535,20 +563,20 @@ button,
 .carousel-viewport {
   overflow: hidden;
   width: 100%;
-  border-radius: calc(var(--radius) + 4px);
+  border-radius: calc(var(--radius) + 6px);
 }
 
 .carousel-track {
   display: flex;
   width: 100%;
-  transition: transform 0.55s var(--ease);
+  transition: transform 0.6s var(--ease);
   will-change: transform;
 }
 
 .carousel-page {
   flex: 0 0 100%;
   min-width: 100%;
-  padding: 0.15rem;
+  padding: 0.2rem;
 }
 
 .grid,
@@ -563,21 +591,22 @@ button,
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-top: 1.35rem;
+  margin-top: 1.45rem;
 }
 
 .carousel-arrow {
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border: 1px solid rgba(212, 175, 55, 0.45);
-  background: rgba(20, 24, 32, 0.75);
-  color: var(--accent);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--accent-hover);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--glass-shadow);
 }
 
 .carousel-arrow svg {
@@ -587,14 +616,14 @@ button,
 }
 
 .carousel-arrow:hover {
-  transform: var(--hover-lift) scale(1.04);
-  background: rgba(212, 175, 55, 0.18);
+  transform: var(--hover-lift) scale(1.05);
+  background: var(--accent-soft);
   border-color: var(--accent);
-  box-shadow: 0 12px 28px rgba(212, 175, 55, 0.22);
+  box-shadow: 0 14px 30px var(--accent-glow);
 }
 
 .carousel-arrow-next {
-  box-shadow: 0 10px 26px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 12px 28px rgba(45, 212, 191, 0.22);
 }
 
 .carousel-dots {
@@ -614,13 +643,13 @@ button,
 }
 
 .carousel-dot:hover {
-  background: rgba(212, 175, 55, 0.65);
+  background: rgba(45, 212, 191, 0.7);
   transform: scale(1.15);
 }
 
 .carousel-dot.active {
-  width: 22px;
-  background: var(--accent);
+  width: 24px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
 }
 
 body.rtl .carousel-arrow svg {
@@ -628,27 +657,37 @@ body.rtl .carousel-arrow svg {
 }
 
 .card {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.25rem;
+  padding: 1.3rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-  transition:
-    border-color 0.28s var(--ease),
-    transform 0.28s var(--ease),
-    box-shadow 0.28s var(--ease),
-    background 0.28s var(--ease);
+  gap: 0.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 42%);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .card:hover {
-  border-color: rgba(212, 175, 55, 0.55);
-  transform: translateY(-6px);
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(212, 175, 55, 0.12);
-  background: rgba(24, 29, 40, 0.9);
+  border-color: var(--border-strong);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow:
+    0 24px 48px rgba(4, 16, 28, 0.38),
+    0 0 0 1px rgba(45, 212, 191, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.18), rgba(45, 212, 191, 0.08));
 }
 
 .card h3 {
@@ -673,27 +712,31 @@ body.rtl .carousel-arrow svg {
 
 .price-toggle button {
   border: 1px solid var(--border);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0.55rem;
   cursor: pointer;
+  backdrop-filter: blur(8px);
 }
 
 .price-toggle button:hover {
-  border-color: rgba(212, 175, 55, 0.5);
-  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
 }
 
 .price-toggle button.active {
   border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.12);
+  background: linear-gradient(145deg, rgba(45, 212, 191, 0.24), rgba(14, 165, 233, 0.14));
+  color: #ecfeff;
 }
 
 .price-tag {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-hover);
   text-align: center;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 18px rgba(45, 212, 191, 0.35);
 }
 
 .complaint-section {
@@ -706,21 +749,18 @@ body.rtl .carousel-arrow svg {
   gap: 0.85rem;
   max-width: 560px;
   margin: 0 auto;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--glass-shadow);
 }
 
 .complaint-form label {
   display: grid;
   gap: 0.35rem;
   font-size: 0.92rem;
-}
-
-.complaint-form input,
-.complaint-form textarea {
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 0.65rem 0.75rem;
 }
 
 .complaint-form textarea {
@@ -731,11 +771,12 @@ body.rtl .carousel-arrow svg {
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
-  padding: 2.25rem 0;
+  padding: 2.4rem 0;
   color: var(--muted);
   font-size: 0.92rem;
-  background: rgba(8, 12, 20, 0.55);
-  backdrop-filter: blur(12px);
+  background: rgba(6, 14, 24, 0.42);
+  backdrop-filter: blur(22px) saturate(1.2);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
 }
 
 .footer-grid {
@@ -750,39 +791,46 @@ body.rtl .carousel-arrow svg {
 
 .footer-about {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.8rem;
   max-width: 64ch;
+  padding: 1.15rem 1.2rem;
+  border-radius: var(--radius);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--glass-shadow);
 }
 
 .footer-about h2 {
   margin: 0;
   color: var(--text);
-  font-size: 1.1rem;
+  font-size: 1.12rem;
 }
 
 .footer-about p {
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .social-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-top: 0.25rem;
+  gap: 0.7rem;
+  margin-top: 0.2rem;
 }
 
 .social-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   border: 1px solid var(--border);
-  background: rgba(20, 24, 32, 0.78);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .social-link svg {
@@ -793,10 +841,10 @@ body.rtl .carousel-arrow svg {
 }
 
 .social-link:hover {
-  transform: var(--hover-lift) scale(1.06);
-  border-color: rgba(212, 175, 55, 0.55);
-  color: var(--accent);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+  transform: var(--hover-lift) scale(1.07);
+  border-color: var(--border-strong);
+  color: var(--accent-hover);
+  box-shadow: 0 14px 28px rgba(45, 212, 191, 0.2);
 }
 
 .social-link:hover svg {
@@ -840,7 +888,7 @@ body.rtl .carousel-arrow svg {
 }
 
 .footer-links a:hover {
-  color: var(--accent);
+  color: var(--accent-hover);
   transform: translateY(-1px);
 }
 
@@ -860,26 +908,29 @@ body.rtl .carousel-arrow svg {
   bottom: 1.25rem;
   inset-inline-end: 1.25rem;
   z-index: 30;
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  border: none;
-  background: var(--whatsapp);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: linear-gradient(145deg, #34e076, var(--whatsapp));
   color: #fff;
   font-size: 1.6rem;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 12px 28px rgba(37, 211, 102, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .fab:hover {
   transform: scale(1.08) translateY(-2px);
-  box-shadow: 0 14px 30px rgba(37, 211, 102, 0.35);
+  box-shadow: 0 16px 34px rgba(37, 211, 102, 0.42);
 }
 
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(4, 12, 22, 0.62);
+  backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
   z-index: 40;
@@ -887,8 +938,6 @@ body.rtl .carousel-arrow svg {
 }
 
 .modal {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
   max-width: 420px;
@@ -940,6 +989,10 @@ body.rtl .carousel-arrow svg {
   .grid,
   .carousel-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+    max-width: 22ch;
   }
 
   body {

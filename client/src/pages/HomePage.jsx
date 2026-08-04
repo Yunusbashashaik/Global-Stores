@@ -28,7 +28,6 @@ export default function HomePage({ lang, t }) {
   return (
     <main>
       <section className="hero container" id="top">
-        <div className="region-badge">🇰🇼 {t.region}</div>
         <h1>{t.heroHeadline}</h1>
         <p>{t.tagline}</p>
         <a href="#services" className="btn btn-primary">
