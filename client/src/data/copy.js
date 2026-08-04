@@ -56,6 +56,12 @@ export const COPY = {
     adminDescAr: "Description (Arabic)",
     adminSave: "Save Changes",
     adminSaved: "Service updated successfully.",
+    socialFollow: "Follow us on social media",
+    socialWhatsApp: "WhatsApp Channel",
+    socialInstagram: "Instagram",
+    socialTikTok: "TikTok",
+    socialYouTube: "YouTube",
+    socialFacebook: "Facebook",
   },
   ar: {
     heroHeadline:
@@ -114,5 +120,11 @@ export const COPY = {
     adminDescAr: "الوصف (عربي)",
     adminSave: "حفظ التغييرات",
     adminSaved: "تم تحديث الخدمة بنجاح.",
+    socialFollow: "تابعنا على وسائل التواصل",
+    socialWhatsApp: "قناة واتساب",
+    socialInstagram: "إنستغرام",
+    socialTikTok: "تيك توك",
+    socialYouTube: "يوتيوب",
+    socialFacebook: "فيسبوك",
   },
 };

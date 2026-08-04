@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { buildWhatsAppUrl, nextSupportNumber } from "../data/catalog.js";
 import Logo from "./Logo.jsx";
+import SocialLinks from "./SocialLinks.jsx";
 
 export default function Layout({ lang, setLang, t }) {
   const location = useLocation();
@@ -19,6 +20,7 @@ export default function Layout({ lang, setLang, t }) {
 
   const servicesHref = isHome ? "#services" : "/#services";
   const whatsappHref = isHome ? "#whatsapp" : "/#whatsapp";
+  const aboutHref = isHome ? "#about" : "/#about";
 
   return (
     <div className="app-shell">
@@ -70,15 +72,25 @@ export default function Layout({ lang, setLang, t }) {
 
       <footer className="site-footer">
         <div className="container footer-grid">
-          <strong className="footer-brand">
-            <Logo className="logo-footer" />
-          </strong>
-          <div>{t.footerOwners}</div>
-          <div>
-            +923228791573 | +923014968769 | global2stor2@gmail.com
+          <div className="footer-brand-block">
+            <strong className="footer-brand">
+              <Logo className="logo-footer" />
+            </strong>
+            <div>{t.footerOwners}</div>
+            <div>
+              +923228791573 | +923014968769 | global2stor2@gmail.com
+            </div>
           </div>
+
+          <section className="footer-about" aria-labelledby="footer-about-title">
+            <h2 id="footer-about-title">{t.aboutTitle}</h2>
+            <p>{t.brandIntro}</p>
+            <SocialLinks t={t} />
+          </section>
+
           <div className="footer-links">
             <a href={servicesHref}>{t.navServices}</a>
+            <a href={aboutHref}>{t.aboutTitle}</a>
             <Link to="/complaint">{t.navComplaint}</Link>
             <Link to="/">{t.footerTerms}</Link>
             <Link to="/admin">{t.navAdmin}</Link>
