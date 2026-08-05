@@ -28,7 +28,7 @@ export default function App() {
   const t = COPY[lang];
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route element={<Layout lang={lang} setLang={setLang} t={t} />}>
           <Route index element={<HomePage lang={lang} t={t} />} />

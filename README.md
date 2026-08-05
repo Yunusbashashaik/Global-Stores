@@ -41,3 +41,12 @@ Set for production-like email delivery:
 - `COMPLAINT_EMAIL` (default: `global2stor2@gmail.com`)
 
 See `Tech. Document` for full product requirements.
+
+## Deployment (GitHub Pages)
+
+Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) and publish the **static frontend** to GitHub Pages.
+
+1. In the repo on GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. After the workflow succeeds, the site is at: **https://yunusbashashaik.github.io/Global-Stores/**
+
+The homepage uses built-in catalog data if the API is unavailable. **Admin**, **dynamic prices**, and **complaint submission** require the Node API (`npm start` on a host such as Render, Railway, or a VPS) with `VITE_API_URL` if you add a production API URL later.
