@@ -42,11 +42,21 @@ Set for production-like email delivery:
 
 See `Tech. Document` for full product requirements.
 
-## Deployment (GitHub Pages)
+## Deployment (GitHub Pages) — free account OK
 
-Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) and publish the **static frontend** to GitHub Pages.
+You **do not need a paid GitHub plan** for a **public** repository. GitHub Pages is included on free accounts.
 
-1. In the repo on GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. After the workflow succeeds, the site is at: **https://yunusbashashaik.github.io/Global-Stores/**
+Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), which builds the site and pushes to the **`gh-pages`** branch.
 
-The homepage uses built-in catalog data if the API is unavailable. **Admin**, **dynamic prices**, and **complaint submission** require the Node API (`npm start` on a host such as Render, Railway, or a VPS) with `VITE_API_URL` if you add a production API URL later.
+### One-time setup (iPhone, iPad, or computer)
+
+1. Open **https://github.com/Yunusbashashaik/Global-Stores/settings/pages**
+2. Under **Build and deployment** → **Source**, choose **Deploy from a branch**
+3. **Branch:** `gh-pages` · **Folder:** `/ (root)` · **Save**
+4. Wait 1–2 minutes, then open on your iPad:
+
+   **https://yunusbashashaik.github.io/Global-Stores/**
+
+If the workflow has not run yet, go to **Actions** → **Deploy to GitHub Pages** → **Run workflow**.
+
+The homepage uses built-in catalog data if the API is unavailable. **Admin**, **live price edits**, and **complaint email** need the Node server (`npm start` on a free host such as Render’s free tier).
