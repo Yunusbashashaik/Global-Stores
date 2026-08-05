@@ -1,7 +1,7 @@
 name: Deploy to GitHub Pages
 
-# Works on free GitHub accounts for public repos — no upgrade required.
-# After this workflow runs: Settings → Pages → Deploy from branch → gh-pages / (root)
+# Free GitHub account: repo must be PUBLIC. Settings → Pages → branch gh-pages / (root)
+# Live URL: https://yunusbashashaik.github.io/Global-Stores/
 
 on:
   push:
