@@ -1,43 +1,46 @@
 name: Deploy to GitHub Pages
 
-# Free GitHub account: repo must be PUBLIC. Settings → Pages → branch gh-pages / (root)
-# Live URL: https://yunusbashashaik.github.io/Global-Stores/
+# Public repo + free account. Enable once: Settings → Pages
+# Option A: Branch gh-pages, folder / (root)
+# Option B: Branch main, folder /docs
+# URL: https://yunusbashashaik.github.io/Global-Stores/
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: gh-pages
+  group: pages-deploy
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Build client for GitHub Pages
+      - name: Build client
         run: npm run build -w client
         env:
           VITE_BASE_PATH: /Global-Stores/
 
-      - name: SPA fallback for client-side routes
-        run: cp client/dist/index.html client/dist/404.html
+      - name: SPA fallback + Jekyll bypass
+        run: |
+          cp client/dist/index.html client/dist/404.html
+          touch client/dist/.nojekyll
 
       - name: Publish to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
@@ -45,3 +48,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./client/dist
           publish_branch: gh-pages
+
+      - name: Publish to docs/ on main (alternate Pages source)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./client/dist
+          publish_branch: main
+          destination_dir: docs
+          keep_files: false
+          commit_message: "chore: deploy site to docs/ [skip ci]"
