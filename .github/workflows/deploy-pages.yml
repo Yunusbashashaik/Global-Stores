@@ -1,13 +1,19 @@
 name: Deploy to GitHub Pages
 
-# Public repo. Enable once: Settings → Pages → main /docs OR gh-pages /(root)
 # https://yunusbashashaik.github.io/Global-Stores/
+# Pages setting: main branch, /(root) OR /docs — workflow updates both.
 
 on:
   push:
     branches: [main]
     paths-ignore:
       - "docs/**"
+      - "assets/**"
+      - "index.html"
+      - "404.html"
+      - "logo.svg"
+      - "Global_bg.JPG"
+      - ".nojekyll"
   workflow_dispatch:
 
 permissions:
@@ -40,16 +46,22 @@ jobs:
           cp client/dist/index.html client/dist/404.html
           touch client/dist/.nojekyll
 
-      - name: Update docs/ on main
+      - name: Publish static site on main (root + docs)
         run: |
-          rm -rf docs
+          rm -rf docs assets
           mkdir -p docs
           cp -r client/dist/. docs/
+          cp client/dist/index.html ./index.html
+          cp client/dist/404.html ./404.html
+          cp client/dist/logo.svg ./logo.svg
+          cp client/dist/Global_bg.JPG ./Global_bg.JPG
+          cp -r client/dist/assets ./assets
+          cp client/dist/.nojekyll ./.nojekyll
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs
+          git add docs index.html 404.html logo.svg Global_bg.JPG assets .nojekyll
           git diff --staged --quiet && exit 0
-          git commit -m "chore: deploy site to docs/ [skip ci]"
+          git commit -m "chore: deploy site [skip ci]"
           git push
 
       - name: Publish to gh-pages branch
