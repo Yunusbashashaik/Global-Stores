@@ -42,7 +42,7 @@ export default function HomePage({ lang, t }) {
         <ServicesCarousel services={services} lang={lang} t={t} />
       </section>
 
-      <FaqSection t={t} />
+      <FaqSection key={lang} t={t} />
     </main>
   );
 }

@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  adminFetchServices,
+  adminLogin,
+  adminSaveService,
+  adminValidateSession,
+} from "../lib/adminApi.js";
 
 const TOKEN_KEY = "globalstores_admin_token";
 
@@ -10,22 +16,6 @@ function getToken() {
 function setToken(token) {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
-}
-
-async function api(path, { method = "GET", body, token } = {}) {
-  const headers = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(path, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.error || `Request failed (${res.status})`);
-  }
-  return data;
 }
 
 const emptyDraft = {
@@ -55,12 +45,15 @@ export default function AdminPage({ t }) {
     }
     let cancelled = false;
     setChecking(true);
-    api("/api/admin/me", { token })
-      .then(() => api("/api/admin/services", { token }))
-      .then((data) => {
+    adminValidateSession(token)
+      .then((ok) => {
+        if (!ok) throw new Error("session");
+        return adminFetchServices(token);
+      })
+      .then((list) => {
         if (cancelled) return;
-        setServices(data.services);
-        const first = data.services[0];
+        setServices(list);
+        const first = list[0];
         if (first) {
           setSelectedId(first.id);
           setDraft(toDraft(first));
@@ -86,12 +79,9 @@ export default function AdminPage({ t }) {
     setError("");
     setMessage("");
     try {
-      const data = await api("/api/admin/login", {
-        method: "POST",
-        body: { username, password },
-      });
-      setToken(data.token);
-      setTokenState(data.token);
+      const sessionToken = await adminLogin(username, password);
+      setToken(sessionToken);
+      setTokenState(sessionToken);
       setPassword("");
     } catch (err) {
       setError(err.message);
@@ -115,24 +105,20 @@ export default function AdminPage({ t }) {
     setError("");
     setMessage("");
     try {
-      const data = await api(`/api/admin/services/${selectedId}`, {
-        method: "PUT",
-        token,
-        body: {
-          nameEn: draft.nameEn,
-          nameAr: draft.nameAr,
-          descriptionEn: draft.descriptionEn,
-          descriptionAr: draft.descriptionAr,
-          prices: {
-            month: Number(draft.prices.month),
-            year: Number(draft.prices.year),
-          },
+      const updated = await adminSaveService(token, selectedId, {
+        nameEn: draft.nameEn,
+        nameAr: draft.nameAr,
+        descriptionEn: draft.descriptionEn,
+        descriptionAr: draft.descriptionAr,
+        prices: {
+          month: Number(draft.prices.month),
+          year: Number(draft.prices.year),
         },
       });
       setServices((prev) =>
-        prev.map((s) => (s.id === selectedId ? data.service : s)),
+        prev.map((s) => (s.id === selectedId ? updated : s)),
       );
-      setDraft(toDraft(data.service));
+      setDraft(toDraft(updated));
       setMessage(t.adminSaved);
     } catch (err) {
       setError(err.message);

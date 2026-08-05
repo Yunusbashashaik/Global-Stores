@@ -122,6 +122,10 @@ button,
   padding: 1.15rem 0;
 }
 
+.header-inner--minimal {
+  grid-template-columns: 1fr auto;
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
@@ -626,6 +630,7 @@ button,
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.9rem;
   align-content: start;
+  align-items: start;
   flex: 1;
 }
 
@@ -634,6 +639,7 @@ button,
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.06);
   overflow: hidden;
+  align-self: start;
   transition: border-color 0.28s var(--ease), background 0.28s var(--ease), box-shadow 0.28s var(--ease);
 }
 
