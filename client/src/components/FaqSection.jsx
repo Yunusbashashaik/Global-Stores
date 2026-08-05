@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export default function FaqSection({ t }) {
   const items = t.faqItems || [];
-  const [openId, setOpenId] = useState(items[0]?.id ?? null);
+  const [openId, setOpenId] = useState(null);
 
   const toggle = (id) => {
     setOpenId((current) => (current === id ? null : id));

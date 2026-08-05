@@ -172,13 +172,6 @@ export const SERVICES = [
 ];
 
 export async function fetchServices() {
-  const res = await fetch("/api/services");
-  if (!res.ok) {
-    throw new Error("Failed to load services");
-  }
-  const data = await res.json();
-  if (!Array.isArray(data.services)) {
-    throw new Error("Invalid services response");
-  }
-  return data.services;
+  const { fetchPublicServices } = await import("../lib/adminApi.js");
+  return fetchPublicServices();
 }

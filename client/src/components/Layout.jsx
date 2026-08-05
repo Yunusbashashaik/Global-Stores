@@ -24,21 +24,10 @@ export default function Layout({ lang, setLang, t }) {
   return (
     <div className="app-shell">
       <header className="site-header">
-        <div className="container header-inner">
+        <div className="container header-inner header-inner--minimal">
           <Link to="/" className="logo" aria-label="Global Store">
             <Logo />
           </Link>
-          {!isAdmin ? (
-            <nav className="nav-links" aria-label="Main">
-              <a href={servicesHref}>{t.navServices}</a>
-              <a href={isHome ? "#faq" : "/#faq"}>{t.faqTitle}</a>
-              <a href={aboutHref}>{t.aboutTitle}</a>
-            </nav>
-          ) : (
-            <nav className="nav-links" aria-label="Main">
-              <span className="nav-muted">{t.adminNavLabel}</span>
-            </nav>
-          )}
           <div className="header-actions">
             {!isAdmin ? (
               <Link
