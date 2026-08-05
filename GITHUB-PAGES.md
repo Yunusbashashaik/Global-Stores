@@ -1,44 +1,28 @@
 # GitHub Pages setup (free account)
 
-## Your live site link (use this on iPad)
+## Your store URL (bookmark this on iPad)
 
-**https://yunusbashashaik.github.io/Global-Stores/**
-
-Do **not** open only `yunusbashashaik.github.io` — that is your account root and has no site until you create a `yunusbashashaik.github.io` repository.
+### **https://yunusbashashaik.github.io/Global-Stores/**
 
 ---
 
-## If you see “404 File not found”
+## Fix: seeing README text instead of the website
 
-### 1. Make the repository public (required on free plan)
+That happens when Pages uses the **`main`** branch **root** folder — GitHub can show `README.md` instead of the app.
 
-Private repos cannot publish public Pages on a free account.
+### Change one setting
 
-1. **Settings** → **General** → **Danger zone**
-2. **Change repository visibility** → **Public**
-
-### 2. Turn on Pages (pick **one**)
-
-**Option A — `gh-pages` branch (recommended)**
-
-1. **Settings** → **Pages**
+1. **https://github.com/Yunusbashashaik/Global-Stores/settings/pages**
 2. **Source:** Deploy from a branch
-3. **Branch:** `gh-pages` · **Folder:** `/ (root)` → **Save**
+3. **Branch:** `gh-pages` (not `main`)
+4. **Folder:** `/ (root)`
+5. **Save**, wait 2–3 minutes, then open the link above.
 
-**Option B — `docs` folder on `main`**
+The `gh-pages` branch contains **only** the built website (no README).
 
-1. **Settings** → **Pages**
-2. **Source:** Deploy from a branch
-3. **Branch:** `main` · **Folder:** `/docs` → **Save**
+### Wrong URLs
 
-Wait 1–3 minutes after saving.
-
-### 3. Wait for the deploy workflow
-
-After each push to `main`, **Actions** → **Deploy to GitHub Pages** should succeed and update `gh-pages`.
-
----
-
-## Bookmark on iPad
-
-Safari → open **https://yunusbashashaik.github.io/Global-Stores/** → Share → Add to Home Screen.
+| URL | Result |
+|-----|--------|
+| `yunusbashashaik.github.io` | Not your store (404 or wrong page) |
+| `yunusbashashaik.github.io/Global-Stores/` | **Correct — your homepage** |

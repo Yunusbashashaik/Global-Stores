@@ -1,4 +1,11 @@
+---
+published: false
+---
+
 # Global-Stores
+
+> **Open the website (iPad / phone):** [https://yunusbashashaik.github.io/Global-Stores/](https://yunusbashashaik.github.io/Global-Stores/)  
+> Do **not** use `yunusbashashaik.github.io` alone — that is not your store URL.
 
 GlobalStore.com — bilingual digital subscription marketplace for Kuwait (KWD).
 
