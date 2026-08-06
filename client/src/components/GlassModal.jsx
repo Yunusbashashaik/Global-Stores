@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 
-export default function GlassModal({ title, onClose, children, wide = false }) {
+export default function GlassModal({
+  title,
+  onClose,
+  children,
+  wide = false,
+  tone = "dark",
+  className = "",
+}) {
   const closeRef = useRef(null);
 
   useEffect(() => {
@@ -24,7 +31,14 @@ export default function GlassModal({ title, onClose, children, wide = false }) {
       onClick={onClose}
     >
       <div
-        className={`glass-modal${wide ? " glass-modal--wide" : ""}`}
+        className={[
+          "glass-modal",
+          wide ? "glass-modal--wide" : "",
+          tone === "light" ? "glass-modal--light" : "",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
         role="dialog"
         aria-modal="true"
         aria-labelledby="glass-modal-title"

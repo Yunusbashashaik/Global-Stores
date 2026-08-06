@@ -53,8 +53,8 @@ export const DEFAULT_SERVICES = [
   svc({
     id: "netflix-private",
     icon: "👑",
-    nameEn: "Netflix Private Screen",
-    nameAr: "شاشة نتفليكس خاصة",
+    nameEn: "Netflix",
+    nameAr: "نتفليكس",
     typeEn: "Private",
     typeAr: "خاص",
     month: 2,
@@ -64,8 +64,8 @@ export const DEFAULT_SERVICES = [
   svc({
     id: "netflix-prime",
     icon: "🍿",
-    nameEn: "Netflix & Prime Video Sharing (Bundle)",
-    nameAr: "نتفليكس وبرايم فيديو (باقة)",
+    nameEn: "Prime Video",
+    nameAr: "برايم فيديو",
     accent: "#00A8E1",
   }),
   svc({
@@ -80,6 +80,8 @@ export const DEFAULT_SERVICES = [
     icon: "📡",
     nameEn: "IPTV Premium",
     nameAr: "IPTV بريميوم",
+    typeEn: "Live TV & VOD",
+    typeAr: "بث مباشر و VOD",
     accent: "#6366F1",
   }),
   svc({

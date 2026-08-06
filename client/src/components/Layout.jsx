@@ -119,7 +119,7 @@ export default function Layout({ lang, setLang, t }) {
       <header className="site-header">
         <div className="container header-inner">
           <Link to="/" className="logo" aria-label="Global Store" onClick={() => setModal(null)}>
-            <Logo />
+            <Logo showTagline />
           </Link>
 
           <nav className={`site-nav${menuOpen ? " open" : ""}`} aria-label="Primary">

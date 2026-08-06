@@ -1,7 +1,13 @@
 export const COPY = {
   en: {
     heroKicker: "Premium Subscriptions, Global Access",
+    heroBadge: "PREMIUM OTT & DIGITAL SUBSCRIPTIONS",
     heroHeadline: "Your All-in-One Entertainment Destination.",
+    heroHeadlineParts: {
+      before: "Your All-in-One ",
+      highlight: "Entertainment",
+      after: " Destination.",
+    },
     tagline:
       "Top Premium Subscriptions at Unbeatable Prices. 100% Secure • Instant Delivery • 24/7 Support.",
     heroCta: "Explore Subscriptions",
@@ -18,6 +24,13 @@ export const COPY = {
       "All in One Place",
       "Fast & Reliable",
       "Money Back",
+    ],
+    trustBarDetailed: [
+      { icon: "💰", title: "Lowest Prices", body: "Best value plans" },
+      { icon: "✅", title: "Official Accounts", body: "Verified access" },
+      { icon: "📦", title: "All in One Place", body: "Every top service" },
+      { icon: "⚡", title: "Fast & Reliable", body: "Instant setup" },
+      { icon: "↩️", title: "Money Back", body: "Satisfaction first" },
     ],
     featureBarsLabel: "Service highlights",
     featureBarDark: [
@@ -36,6 +49,8 @@ export const COPY = {
     brandIntro:
       "At Global Store, we bring world-class entertainment right to your screen without breaking the bank. We offer instant access to top premium OTT subscriptions in Kuwait at reasonable, budget-friendly prices—making streaming simple, affordable, and seamless.",
     catalogTitle: "Popular Subscriptions",
+    viewAll: "View All",
+    allServicesTitle: "All Subscriptions",
     month: "1 Month",
     year: "1 Year",
     startingFrom: "Starting from",
@@ -166,7 +181,13 @@ export const COPY = {
   },
   ar: {
     heroKicker: "اشتراكات مميزة، وصول عالمي",
+    heroBadge: "اشتراكات OTT والرقمية المميزة",
     heroHeadline: "وجهتك الشاملة لكل الترفيه.",
+    heroHeadlineParts: {
+      before: "وجهتك الشاملة لكل ",
+      highlight: "الترفيه",
+      after: ".",
+    },
     tagline:
       "أفضل الاشتراكات المميزة بأسعار لا تُقاوم. آمن 100٪ • توصيل فوري • دعم على مدار الساعة.",
     heroCta: "استكشف الاشتراكات",
@@ -183,6 +204,13 @@ export const COPY = {
       "الكل في مكان واحد",
       "سريع وموثوق",
       "استرداد الأموال",
+    ],
+    trustBarDetailed: [
+      { icon: "💰", title: "أقل الأسعار", body: "أفضل قيمة" },
+      { icon: "✅", title: "حسابات رسمية", body: "وصول موثّق" },
+      { icon: "📦", title: "الكل في مكان واحد", body: "كل الخدمات" },
+      { icon: "⚡", title: "سريع وموثوق", body: "إعداد فوري" },
+      { icon: "↩️", title: "استرداد الأموال", body: "رضا أولاً" },
     ],
     featureBarsLabel: "مميزات الخدمة",
     featureBarDark: [
@@ -201,6 +229,8 @@ export const COPY = {
     brandIntro:
       "في Global Store، نقدم لك ترفيهاً عالمياً على شاشتك دون إرهاق ميزانيتك. نوفر وصولاً فورياً إلى أفضل اشتراكات OTT المميزة في الكويت بأسعار معقولة وصديقة للميزانية—لتجعل البث بسيطاً وميسور التكلفة وسلساً.",
     catalogTitle: "الاشتراكات الشائعة",
+    viewAll: "عرض الكل",
+    allServicesTitle: "جميع الاشتراكات",
     month: "شهر واحد",
     year: "سنة واحدة",
     startingFrom: "يبدأ من",

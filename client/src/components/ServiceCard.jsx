@@ -1,40 +1,23 @@
-import { useState } from "react";
-import {
-  buildOrderMessage,
-  buildWhatsAppUrl,
-  nextSupportNumber,
-} from "../data/catalog.js";
 import ServiceIcon from "./ServiceIcon.jsx";
 
-export default function ServiceCard({ service, lang, t }) {
-  const [duration, setDuration] = useState("month");
-  const [plansOpen, setPlansOpen] = useState(false);
-  const price = service.prices[duration];
+/** Compact card matching Picture 2 — description is hidden until View Plans. */
+export default function ServiceCard({ service, lang, t, onViewPlans }) {
   const name = lang === "ar" ? service.nameAr : service.nameEn;
   const type =
     lang === "ar"
       ? service.typeAr || "مشترك / خاص"
       : service.typeEn || "Shared / Private";
-  const description =
-    lang === "ar" ? service.descriptionAr : service.descriptionEn;
   const currency = lang === "ar" ? "د.ك" : "KD";
   const startingPrice = Math.min(
     service.prices.month ?? Infinity,
     service.prices.year ?? Infinity,
   );
 
-  const onOrder = () => {
-    const phone = nextSupportNumber();
-    const message = buildOrderMessage(service, duration, price, lang);
-    window.open(buildWhatsAppUrl(phone, message), "_blank", "noopener,noreferrer");
-  };
-
   return (
     <article className="card service-card" id={service.id}>
       <ServiceIcon service={service} />
       <h3 className="service-card-name">{name}</h3>
       <p className="service-card-type">{type}</p>
-      <pre className="service-card-desc">{description}</pre>
 
       <div className="service-price-row">
         <div className="service-price-meta">
@@ -54,46 +37,13 @@ export default function ServiceCard({ service, lang, t }) {
         </div>
       </div>
 
-      {!plansOpen ? (
-        <button
-          type="button"
-          className="btn btn-primary btn-view-plans"
-          onClick={() => setPlansOpen(true)}
-        >
-          {t.viewPlans}
-        </button>
-      ) : (
-        <div className="service-plans">
-          <div className="price-toggle" role="group" aria-label="Duration">
-            <button
-              type="button"
-              className={duration === "month" ? "active" : ""}
-              onClick={() => setDuration("month")}
-            >
-              {t.month}
-              <span className="plan-price">
-                {service.prices.month} {currency}
-              </span>
-            </button>
-            <button
-              type="button"
-              className={duration === "year" ? "active" : ""}
-              onClick={() => setDuration("year")}
-            >
-              {t.year}
-              <span className="plan-price">
-                {service.prices.year} {currency}
-              </span>
-            </button>
-          </div>
-          <div className="price-tag price-tag-selected">
-            {price} {currency}
-          </div>
-          <button type="button" className="btn btn-whatsapp" onClick={onOrder}>
-            {t.order}
-          </button>
-        </div>
-      )}
+      <button
+        type="button"
+        className="btn btn-primary btn-view-plans"
+        onClick={() => onViewPlans?.(service)}
+      >
+        {t.viewPlans}
+      </button>
     </article>
   );
 }
