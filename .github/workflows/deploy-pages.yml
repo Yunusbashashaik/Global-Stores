@@ -1,8 +1,7 @@
 name: Deploy to GitHub Pages
 
 # https://yunusbashashaik.github.io/Global-Stores/
-# Pages setting: gh-pages branch · Folder: / (root)  [preferred]
-# Also mirrors into docs/ if folder is set to /docs.
+# Pages setting: Deploy from a branch → gh-pages → / (root)
 
 on:
   push:
@@ -65,16 +64,9 @@ jobs:
           git commit -m "chore: deploy site [skip ci]"
           git push
 
-      - name: Stage gh-pages payload (root + docs mirror)
-        run: |
-          rm -rf .gh-pages-publish
-          mkdir -p .gh-pages-publish/docs
-          cp -r client/dist/. .gh-pages-publish/
-          cp -r client/dist/. .gh-pages-publish/docs/
-
-      - name: Publish to gh-pages branch
+      - name: Publish to gh-pages branch (root only)
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./.gh-pages-publish
+          publish_dir: ./client/dist
           publish_branch: gh-pages
