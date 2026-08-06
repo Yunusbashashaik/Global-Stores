@@ -1,19 +1,10 @@
 name: Deploy Pages (GitHub Actions)
 
-# Preferred Pages path: Settings → Pages → Source = GitHub Actions
-# This avoids the hanging legacy "pages-build-deployment" branch deploys.
+# Use only when Settings → Pages → Source = GitHub Actions.
+# Disabled on push while the site uses legacy gh-pages branch deploy,
+# so it does not fight pages-build-deployment / static uploads.
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "assets/**"
-      - "index.html"
-      - "404.html"
-      - "logo.svg"
-      - "Global_bg.JPG"
-      - ".nojekyll"
   workflow_dispatch:
 
 permissions:
