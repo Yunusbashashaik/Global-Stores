@@ -1,7 +1,8 @@
 name: Deploy to GitHub Pages
 
 # https://yunusbashashaik.github.io/Global-Stores/
-# Pages setting: gh-pages branch, /(root) OR /docs — workflow publishes both.
+# Pages setting: gh-pages branch · Folder: / (root)  [preferred]
+# Also mirrors into docs/ if folder is set to /docs.
 
 on:
   push:
@@ -46,7 +47,7 @@ jobs:
           cp client/dist/index.html client/dist/404.html
           touch client/dist/.nojekyll
 
-      - name: Publish static site on main (root + docs)
+      - name: Publish static site on main (docs + root mirrors)
         run: |
           rm -rf docs assets
           mkdir -p docs
@@ -64,7 +65,7 @@ jobs:
           git commit -m "chore: deploy site [skip ci]"
           git push
 
-      - name: Stage gh-pages payload (root + docs)
+      - name: Stage gh-pages payload (root + docs mirror)
         run: |
           rm -rf .gh-pages-publish
           mkdir -p .gh-pages-publish/docs
