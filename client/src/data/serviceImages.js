@@ -38,7 +38,9 @@ const assetBase = import.meta.env.BASE_URL || "/";
 export function serviceImageUrl(serviceId) {
   const file = FILES[serviceId];
   if (!file) return null;
-  return `${assetBase}${encodeURIComponent(file).replace(/%2F/g, "/")}`;
+  // Keep "+" unescaped — static hosts and Vite both serve the literal filenames.
+  const safe = file.replace(/ /g, "%20");
+  return `${assetBase}${safe}`;
 }
 
 export function wallpaperUrl() {

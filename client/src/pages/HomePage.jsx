@@ -13,7 +13,7 @@ const HERO_LOGO_IDS = [
   "hbo-max",
   "iptv",
   "canva",
-  "nordvpn",
+  "crunchyroll",
   "apple-tv-plus",
   "paramount-plus",
   "zee5",

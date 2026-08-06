@@ -22,10 +22,16 @@ export default function ServiceIcon({ service, size = "md" }) {
             alt=""
             loading="lazy"
             decoding="async"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+              const fallback = e.currentTarget.nextElementSibling;
+              if (fallback) fallback.hidden = false;
+            }}
           />
-        ) : (
-          renderFallback(id, accent, name)
-        )}
+        ) : null}
+        <span hidden={Boolean(imageUrl)} className="service-icon-fallback">
+          {renderFallback(id, accent, name)}
+        </span>
       </span>
     </div>
   );
