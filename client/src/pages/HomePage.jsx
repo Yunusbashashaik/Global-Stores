@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ServiceIcon from "../components/ServiceIcon.jsx";
 import ServicesSection from "../components/ServicesSection.jsx";
-import UiIcon from "../components/UiIcon.jsx";
+import { UiIcon } from "../components/UiIcon.jsx";
 import ViewPlansModal from "../components/ViewPlansModal.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
 import { wallpaperUrl } from "../data/serviceImages.js";
