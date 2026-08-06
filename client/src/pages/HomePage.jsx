@@ -179,16 +179,18 @@ export default function HomePage({ lang, t }) {
           <div className="catalog-header">
             <h2>
               <span className="catalog-bar" aria-hidden="true" />
-              {t.catalogTitle}
+              {showAll ? t.allServicesTitle : t.catalogTitle}
             </h2>
-            <button
-              type="button"
-              className="catalog-view-all catalog-view-all--header"
-              onClick={() => setShowAll(true)}
-            >
-              {t.viewAll}
-              <span aria-hidden="true">→</span>
-            </button>
+            {services.length > 6 ? (
+              <button
+                type="button"
+                className="catalog-view-all catalog-view-all--header"
+                onClick={() => setShowAll((v) => !v)}
+              >
+                {showAll ? t.showLess || "Show Less" : t.viewAll}
+                <span aria-hidden="true">{showAll ? "↑" : "→"}</span>
+              </button>
+            ) : null}
           </div>
           {loadError ? <p className="catalog-note">{loadError}</p> : null}
           <ServicesSection
@@ -197,6 +199,7 @@ export default function HomePage({ lang, t }) {
             t={t}
             onViewPlans={setPlansService}
             showAll={showAll}
+            onShowAll={() => setShowAll(true)}
             onCloseAll={() => setShowAll(false)}
           />
         </div>
