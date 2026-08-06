@@ -13,25 +13,26 @@ async function ensureDataDir() {
 
 /** Merge missing seed services into an existing catalog without overwriting edits. */
 function mergeWithDefaults(existing) {
-  const byId = new Map(existing.map((s) => [s.id, s]));
   let changed = false;
-  for (const seed of DEFAULT_SERVICES) {
-    if (!byId.has(seed.id)) {
-      byId.set(seed.id, structuredClone(seed));
-      changed = true;
+  const merged = existing.map((item) => {
+    const seed = DEFAULT_SERVICES.find((s) => s.id === item.id);
+    if (!seed) return item;
+    const next = { ...item };
+    for (const key of ["typeEn", "typeAr", "accent"]) {
+      if (!next[key] && seed[key]) {
+        next[key] = seed[key];
+        changed = true;
+      }
     }
-  }
-  // Preserve existing order, then append newly seeded services in default order.
-  const merged = [];
-  const seen = new Set();
-  for (const item of existing) {
-    merged.push(byId.get(item.id));
-    seen.add(item.id);
-  }
+    return next;
+  });
+
+  const seen = new Set(merged.map((s) => s.id));
   for (const seed of DEFAULT_SERVICES) {
     if (!seen.has(seed.id)) {
-      merged.push(byId.get(seed.id));
+      merged.push(structuredClone(seed));
       seen.add(seed.id);
+      changed = true;
     }
   }
   return { services: merged, changed };
