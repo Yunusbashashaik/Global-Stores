@@ -199,8 +199,6 @@ export default function HomePage({ lang, t }) {
             t={t}
             onViewPlans={setPlansService}
             showAll={showAll}
-            onShowAll={() => setShowAll(true)}
-            onCloseAll={() => setShowAll(false)}
           />
         </div>
       </section>

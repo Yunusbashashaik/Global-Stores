@@ -299,38 +299,21 @@ export default function Layout({ lang, setLang, t }) {
             <strong className="footer-brand">
               <Logo className="logo-footer" />
             </strong>
-            <div>{t.footerOwners}</div>
-            <div>
-              +923228791573 | +923014968769 | global2stor2@gmail.com
-            </div>
-          </div>
-
-          <div className="footer-links">
-            <button type="button" className="footer-link-btn" onClick={openServices}>
-              {t.navSubscriptions}
-            </button>
-            <button
-              type="button"
-              className="footer-link-btn"
-              onClick={() => openModal("about")}
-            >
-              {t.aboutTitle}
-            </button>
-            <button
-              type="button"
-              className="footer-link-btn"
-              onClick={() => openModal("contact")}
-            >
-              {t.navContact}
-            </button>
-            <button
-              type="button"
-              className="footer-link-btn"
-              onClick={() => openModal("complaint")}
-            >
-              {t.navComplaint}
-            </button>
-            <Link to="/admin">{t.navAdmin}</Link>
+            <p className="footer-meta-line">
+              <span>{t.footerOwners}</span>
+              <span className="footer-meta-sep" aria-hidden="true">
+                ·
+              </span>
+              <span>+923228791573</span>
+              <span className="footer-meta-sep" aria-hidden="true">
+                |
+              </span>
+              <span>+923014968769</span>
+              <span className="footer-meta-sep" aria-hidden="true">
+                |
+              </span>
+              <a href="mailto:global2stor2@gmail.com">global2stor2@gmail.com</a>
+            </p>
           </div>
         </div>
       </footer>
