@@ -136,48 +136,6 @@ export const COPY = {
     socialTikTok: "TikTok",
     socialYouTube: "YouTube",
     socialFacebook: "Facebook",
-    faqKicker: "Need quick answers?",
-    faqTitle: "FAQ",
-    faqLead:
-      "Everything you need to know about ordering, activation, payments, and support from Global Store.",
-    faqItems: [
-      {
-        id: "how-order",
-        question: "How do I order a subscription?",
-        answer:
-          "Browse our services, choose 1 Month or 1 Year, then tap Order on WhatsApp. Our team will confirm payment and activate your subscription quickly.",
-      },
-      {
-        id: "activation",
-        question: "How fast is activation?",
-        answer:
-          "Most orders are activated instantly after payment confirmation. In rare cases it may take a few minutes while we verify and set up your account.",
-      },
-      {
-        id: "payment",
-        question: "What payment methods do you accept?",
-        answer:
-          "We share secure payment options over WhatsApp after you place your order. Pricing is shown in Kuwaiti Dinar (KD).",
-      },
-      {
-        id: "kuwait",
-        question: "Do you deliver services in Kuwait?",
-        answer:
-          "Yes. Global Store is focused on Kuwait customers, with instant digital delivery for premium OTT and digital subscriptions.",
-      },
-      {
-        id: "shared-private",
-        question: "What is the difference between shared and private plans?",
-        answer:
-          "Private plans give you a dedicated profile or screen. Shared/bundle plans offer more affordable access with shared screen usage as described on each service card.",
-      },
-      {
-        id: "support",
-        question: "What if something goes wrong after purchase?",
-        answer:
-          "Contact us on WhatsApp anytime, or use Complaints with a screenshot. Our support team will review and help restore your service.",
-      },
-    ],
   },
   ar: {
     heroKicker: "اشتراكات مميزة، وصول عالمي",
@@ -316,47 +274,5 @@ export const COPY = {
     socialTikTok: "تيك توك",
     socialYouTube: "يوتيوب",
     socialFacebook: "فيسبوك",
-    faqKicker: "هل تحتاج إجابات سريعة؟",
-    faqTitle: "الأسئلة الشائعة",
-    faqLead:
-      "كل ما تحتاج معرفته عن الطلب والتفعيل والدفع والدعم من Global Store.",
-    faqItems: [
-      {
-        id: "how-order",
-        question: "كيف أطلب اشتراكاً؟",
-        answer:
-          "تصفح الخدمات، اختر شهراً أو سنة، ثم اضغط اطلب عبر واتساب. سيؤكد فريقنا الدفع ويفعل اشتراكك بسرعة.",
-      },
-      {
-        id: "activation",
-        question: "ما سرعة التفعيل؟",
-        answer:
-          "يتم تفعيل معظم الطلبات فوراً بعد تأكيد الدفع. في حالات نادرة قد يستغرق الأمر بضع دقائق لإكمال الإعداد.",
-      },
-      {
-        id: "payment",
-        question: "ما طرق الدفع المتاحة؟",
-        answer:
-          "نشارك خيارات دفع آمنة عبر واتساب بعد تقديم الطلب. الأسعار معروضة بالدينار الكويتي (د.ك).",
-      },
-      {
-        id: "kuwait",
-        question: "هل تقدمون الخدمة في الكويت؟",
-        answer:
-          "نعم. Global Store يركز على عملاء الكويت مع توصيل رقمي فوري لاشتراكات OTT والخدمات الرقمية المميزة.",
-      },
-      {
-        id: "shared-private",
-        question: "ما الفرق بين الخطط الخاصة والمشتركة؟",
-        answer:
-          "الخطط الخاصة تمنحك ملفاً أو شاشة مخصصة. الخطط المشتركة/الباقات أوفر مع استخدام شاشة مشتركة كما هو موضح في بطاقة كل خدمة.",
-      },
-      {
-        id: "support",
-        question: "ماذا لو واجهت مشكلة بعد الشراء؟",
-        answer:
-          "تواصل معنا عبر واتساب في أي وقت، أو قدّم شكوى مع لقطة شاشة. سيقوم فريق الدعم بالمراجعة ومساعدتك.",
-      },
-    ],
   },
 };

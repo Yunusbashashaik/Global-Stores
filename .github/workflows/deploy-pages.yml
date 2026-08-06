@@ -1,7 +1,7 @@
 name: Deploy to GitHub Pages
 
 # https://yunusbashashaik.github.io/Global-Stores/
-# Pages setting: main branch, /(root) OR /docs — workflow updates both.
+# Pages setting: gh-pages branch, /(root) OR /docs — workflow publishes both.
 
 on:
   push:
@@ -64,9 +64,16 @@ jobs:
           git commit -m "chore: deploy site [skip ci]"
           git push
 
+      - name: Stage gh-pages payload (root + docs)
+        run: |
+          rm -rf .gh-pages-publish
+          mkdir -p .gh-pages-publish/docs
+          cp -r client/dist/. .gh-pages-publish/
+          cp -r client/dist/. .gh-pages-publish/docs/
+
       - name: Publish to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./client/dist
+          publish_dir: ./.gh-pages-publish
           publish_branch: gh-pages

@@ -51,15 +51,15 @@ See `Tech. Document` for full product requirements.
 
 ## Deployment (GitHub Pages) — free account OK
 
-You **do not need a paid GitHub plan** for a **public** repository. GitHub Pages is included on free accounts.
+You **do not need a paid GitHub plan** for a **public** repository. GitHub Pages is included on free accounts. This repo is public.
 
-Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), which builds the site and pushes to the **`gh-pages`** branch.
+Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), which builds the site and pushes to the **`gh-pages`** branch (site files at both `/` and `/docs`).
 
 ### One-time setup (iPhone, iPad, or computer)
 
 1. Open **https://github.com/Yunusbashashaik/Global-Stores/settings/pages**
 2. Under **Build and deployment** → **Source**, choose **Deploy from a branch**
-3. **Branch:** `gh-pages` · **Folder:** `/ (root)` · **Save**
+3. **Branch:** `gh-pages` · **Folder:** `/ (root)` or `/docs` · **Save**
 4. Wait 1–2 minutes, then open on your iPad:
 
    **https://yunusbashashaik.github.io/Global-Stores/**
