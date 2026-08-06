@@ -9,7 +9,6 @@ export default function ServicesSection({
   t,
   onViewPlans,
   showAll,
-  onShowAll,
   onCloseAll,
 }) {
   const popular = services.slice(0, POPULAR_COUNT);
@@ -27,15 +26,6 @@ export default function ServicesSection({
           />
         ))}
       </div>
-
-      {services.length > POPULAR_COUNT ? (
-        <div className="catalog-view-all-wrap">
-          <button type="button" className="catalog-view-all" onClick={onShowAll}>
-            {t.viewAll}
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
-      ) : null}
 
       {showAll ? (
         <GlassModal
