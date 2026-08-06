@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
 # https://yunusbashashaik.github.io/Global-Stores/
-# Pages setting MUST be: gh-pages branch · Folder: /docs
-# (Publishing only docs/ keeps deploys small and avoids stuck Pages builds.)
+# Pages setting: gh-pages branch · Folder: / (root)  [preferred]
+# Also mirrors into docs/ if folder is set to /docs.
 
 on:
   push:
@@ -65,13 +65,12 @@ jobs:
           git commit -m "chore: deploy site [skip ci]"
           git push
 
-      - name: Stage lean gh-pages payload (docs only)
+      - name: Stage gh-pages payload (root + docs mirror)
         run: |
           rm -rf .gh-pages-publish
           mkdir -p .gh-pages-publish/docs
+          cp -r client/dist/. .gh-pages-publish/
           cp -r client/dist/. .gh-pages-publish/docs/
-          touch .gh-pages-publish/.nojekyll
-          printf '%s\n' '<!doctype html><meta http-equiv="refresh" content="0;url=./docs/"><title>Global Store</title>' > .gh-pages-publish/index.html
 
       - name: Publish to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
