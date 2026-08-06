@@ -84,4 +84,14 @@ describe("services + admin API", () => {
       .send({ prices: { month: 9 } });
     assert.equal(res.status, 401);
   });
+
+  it("includes newly seeded catalog services", async () => {
+    const res = await request(app).get("/api/services");
+    assert.equal(res.status, 200);
+    const ids = res.body.services.map((s) => s.id);
+    assert.ok(ids.includes("disney-plus"));
+    assert.ok(ids.includes("chatgpt-plus"));
+    assert.ok(ids.includes("expressvpn"));
+    assert.ok(res.body.services.length >= DEFAULT_SERVICES.length);
+  });
 });

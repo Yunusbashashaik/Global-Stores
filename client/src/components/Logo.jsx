@@ -1,42 +1,54 @@
-export default function Logo({ className = "" }) {
+export default function Logo({ className = "", showTagline = false }) {
   return (
     <span className={`brand-logo ${className}`.trim()}>
       <svg
         className="brand-mark"
-        viewBox="0 0 40 40"
-        width="42"
-        height="42"
+        viewBox="0 0 64 64"
+        width="48"
+        height="48"
         aria-hidden="true"
         focusable="false"
       >
         <defs>
-          <linearGradient id="gs-glass" x1="8" y1="4" x2="34" y2="36" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#e0f2fe" />
-            <stop offset="0.45" stopColor="#38bdf8" />
-            <stop offset="1" stopColor="#0284c7" />
+          <linearGradient id="gs-globe" x1="8" y1="4" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#7dd3fc" />
+            <stop offset="0.55" stopColor="#3b82f6" />
+            <stop offset="1" stopColor="#0055ff" />
           </linearGradient>
         </defs>
-        <rect
-          x="1.5"
-          y="1.5"
-          width="37"
-          height="37"
-          rx="12"
-          fill="rgba(255,255,255,0.08)"
-          stroke="url(#gs-glass)"
+        <circle
+          cx="32"
+          cy="32"
+          r="24"
+          fill="none"
+          stroke="url(#gs-globe)"
+          strokeWidth="2.2"
+        />
+        <ellipse
+          cx="32"
+          cy="32"
+          rx="10"
+          ry="24"
+          fill="none"
+          stroke="url(#gs-globe)"
+          strokeWidth="1.6"
+        />
+        <path
+          d="M10 32h44M14 20h36M14 44h36"
+          fill="none"
+          stroke="url(#gs-globe)"
           strokeWidth="1.5"
+          strokeLinecap="round"
         />
-        <path
-          d="M20 8.5c-6.2 0-10.5 3.7-10.5 9.2 0 5.8 4.6 9.3 10.5 9.3 4.1 0 7.4-1.5 9.2-4.1l-3.1-2.1c-1.2 1.6-3.2 2.6-6.1 2.6-3.9 0-6.6-2.3-6.6-5.7 0-3.3 2.7-5.6 6.6-5.6 2.7 0 4.7.9 5.9 2.4l3.1-2.2C27.3 10.1 24.1 8.5 20 8.5z"
-          fill="url(#gs-glass)"
-        />
-        <path
-          d="M22.2 18.2h8.6v3.1H18.8v-8.4h3.4v5.3z"
-          fill="url(#gs-glass)"
-        />
+        <circle cx="32" cy="32" r="2.4" fill="#7dd3fc" />
       </svg>
-      <span className="brand-wordmark">
-        Global <span>Store</span>
+      <span className="brand-text">
+        <span className="brand-wordmark">
+          GLOBAL <span>STORE</span>
+        </span>
+        {showTagline ? (
+          <span className="brand-tagline">Premium Subscriptions, Global Access.</span>
+        ) : null}
       </span>
     </span>
   );
