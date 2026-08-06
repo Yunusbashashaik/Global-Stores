@@ -1870,12 +1870,16 @@ body.rtl .carousel-arrow svg {
   }
 
   .header-inner {
-    grid-template-columns: auto auto 1fr;
+    grid-template-columns: auto 1fr auto;
     gap: 0.65rem;
   }
 
   .header-actions {
     justify-self: end;
+  }
+
+  .header-whatsapp {
+    display: none;
   }
 
   .nav-dropdown-panel {

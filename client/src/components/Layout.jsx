@@ -122,18 +122,6 @@ export default function Layout({ lang, setLang, t }) {
             <Logo />
           </Link>
 
-          <button
-            type="button"
-            className={`nav-toggle${menuOpen ? " open" : ""}`}
-            aria-expanded={menuOpen}
-            aria-label={t.navMenu}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-
           <nav className={`site-nav${menuOpen ? " open" : ""}`} aria-label="Primary">
             <ul className="nav-links">
               <li>
@@ -276,6 +264,18 @@ export default function Layout({ lang, setLang, t }) {
                 />
               </svg>
             </Link>
+
+            <button
+              type="button"
+              className={`nav-toggle${menuOpen ? " open" : ""}`}
+              aria-expanded={menuOpen}
+              aria-label={t.navMenu}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
           </div>
         </div>
       </header>
