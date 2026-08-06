@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import ServiceIcon from "../components/ServiceIcon.jsx";
 import ServicesSection from "../components/ServicesSection.jsx";
+import { UiIcon } from "../components/UiIcon.jsx";
 import ViewPlansModal from "../components/ViewPlansModal.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
 import { wallpaperUrl } from "../data/serviceImages.js";
 
+/** Full 4×4 OTT grid matching Point 2 reference. */
 const HERO_LOGO_IDS = [
   "netflix-private",
   "netflix-prime",
@@ -12,15 +14,16 @@ const HERO_LOGO_IDS = [
   "disney-plus",
   "hbo-max",
   "iptv",
-  "canva",
-  "crunchyroll",
+  "shahid",
   "apple-tv-plus",
-  "paramount-plus",
   "zee5",
   "sonyliv",
-  "chatgpt-plus",
+  "canva",
+  "nordvpn",
+  "paramount-plus",
+  "hulu",
   "spotify-premium",
-  "expressvpn",
+  "osn-plus",
 ];
 
 export default function HomePage({ lang, t }) {
@@ -29,6 +32,14 @@ export default function HomePage({ lang, t }) {
   const [plansService, setPlansService] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const wallpaper = wallpaperUrl();
+
+  useEffect(() => {
+    // Keep first paint at the hero — never auto-jump to Popular Subscriptions.
+    if (window.location.hash === "#services" || window.location.hash === "#top") {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,13 +63,17 @@ export default function HomePage({ lang, t }) {
   const heroLogos = (() => {
     const byId = new Map(services.map((s) => [s.id, s]));
     const picked = HERO_LOGO_IDS.map((id) => byId.get(id)).filter(Boolean);
-    return picked.length ? picked.slice(0, 15) : services.slice(0, 15);
+    return picked.length ? picked.slice(0, 16) : services.slice(0, 16);
   })();
 
   const headline = t.heroHeadlineParts || {
     before: t.heroHeadline,
     highlight: "",
     after: "",
+  };
+
+  const scrollToServices = () => {
+    document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -86,7 +101,7 @@ export default function HomePage({ lang, t }) {
               </h1>
               <p className="hero-tagline">{t.tagline}</p>
               <div className="hero-actions">
-                <a href="#services" className="btn btn-primary">
+                <button type="button" className="btn btn-primary" onClick={scrollToServices}>
                   <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
                     <path
                       fill="currentColor"
@@ -94,7 +109,7 @@ export default function HomePage({ lang, t }) {
                     />
                   </svg>
                   {t.heroCta}
-                </a>
+                </button>
                 <button
                   type="button"
                   className="btn btn-outline"
@@ -113,8 +128,13 @@ export default function HomePage({ lang, t }) {
               <ul className="hero-trust">
                 {t.heroTrust.map((item) => (
                   <li key={item.title}>
-                    <strong>{item.title}</strong>
-                    <span>{item.body}</span>
+                    <span className="hero-trust-icon" aria-hidden="true">
+                      <UiIcon name={item.icon} />
+                    </span>
+                    <div>
+                      <strong>{item.title}</strong>
+                      <span>{item.body}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -132,9 +152,6 @@ export default function HomePage({ lang, t }) {
                     <ServiceIcon service={service} size="sm" />
                   </div>
                 ))}
-                <div className="hero-logo-tile hero-logo-more">
-                  <span>&amp; {t.heroMore}</span>
-                </div>
               </div>
             </div>
           </div>
@@ -146,7 +163,7 @@ export default function HomePage({ lang, t }) {
           {t.trustBarDetailed.map((item) => (
             <div key={item.title} className="trust-bar-item">
               <span className="trust-icon" aria-hidden="true">
-                {item.icon}
+                <UiIcon name={item.icon} />
               </span>
               <div>
                 <strong>{item.title}</strong>
@@ -164,16 +181,14 @@ export default function HomePage({ lang, t }) {
               <span className="catalog-bar" aria-hidden="true" />
               {t.catalogTitle}
             </h2>
-            {services.length > 6 ? (
-              <button
-                type="button"
-                className="catalog-view-all catalog-view-all--header"
-                onClick={() => setShowAll(true)}
-              >
-                {t.viewAll}
-                <span aria-hidden="true">→</span>
-              </button>
-            ) : null}
+            <button
+              type="button"
+              className="catalog-view-all catalog-view-all--header"
+              onClick={() => setShowAll(true)}
+            >
+              {t.viewAll}
+              <span aria-hidden="true">→</span>
+            </button>
           </div>
           {loadError ? <p className="catalog-note">{loadError}</p> : null}
           <ServicesSection
@@ -182,7 +197,6 @@ export default function HomePage({ lang, t }) {
             t={t}
             onViewPlans={setPlansService}
             showAll={showAll}
-            onShowAll={() => setShowAll(true)}
             onCloseAll={() => setShowAll(false)}
           />
         </div>
@@ -191,15 +205,27 @@ export default function HomePage({ lang, t }) {
       <section className="feature-bars container" aria-label={t.featureBarsLabel}>
         <div className="feature-bar feature-bar--dark">
           {t.featureBarDark.map((item) => (
-            <div key={item} className="feature-bar-item">
-              {item}
+            <div key={item.title} className="feature-bar-item">
+              <span className="feature-bar-icon" aria-hidden="true">
+                <UiIcon name={item.icon} />
+              </span>
+              <div>
+                <strong>{item.title}</strong>
+                <span>{item.body}</span>
+              </div>
             </div>
           ))}
         </div>
         <div className="feature-bar feature-bar--support">
           {t.featureBarSupport.map((item) => (
-            <div key={item} className="feature-bar-item">
-              {item}
+            <div key={item.title} className="feature-bar-item">
+              <span className="feature-bar-icon" aria-hidden="true">
+                <UiIcon name={item.icon} />
+              </span>
+              <div>
+                <strong>{item.title}</strong>
+                <span>{item.body}</span>
+              </div>
             </div>
           ))}
         </div>

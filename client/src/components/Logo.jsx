@@ -44,7 +44,9 @@ export default function Logo({ className = "", showTagline = false }) {
       </svg>
       <span className="brand-text">
         <span className="brand-wordmark">
-          GLOBAL <span>STORE</span>
+          <span className="brand-global">GLOBAL</span>
+          <span className="brand-store">STORE</span>
+          <span className="brand-swoosh" aria-hidden="true" />
         </span>
         {showTagline ? (
           <span className="brand-tagline">Premium Subscriptions, Global Access.</span>
