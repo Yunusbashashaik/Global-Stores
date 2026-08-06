@@ -71,9 +71,12 @@ export default function Layout({ lang, setLang, t }) {
   const goHome = useCallback(() => {
     setModal(null);
     setMenuOpen(false);
+    setSubsOpen(false);
     if (isHome) {
+      if (window.location.hash) {
+        window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
-      window.location.reload();
       return;
     }
     navigate("/");
@@ -86,6 +89,7 @@ export default function Layout({ lang, setLang, t }) {
     if (isHome) {
       document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
     } else {
+      sessionStorage.setItem("gs_scroll_services", "1");
       navigate("/#services");
     }
   }, [isHome, navigate]);
@@ -99,12 +103,19 @@ export default function Layout({ lang, setLang, t }) {
   const closeModal = useCallback(() => setModal(null), []);
 
   useEffect(() => {
-    if (location.hash === "#services" && isHome) {
-      requestAnimationFrame(() => {
-        document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
-      });
+    // Only scroll to services when user navigates here intentionally via hash
+    // after the first paint — skip auto-scroll on fresh home loads.
+    if (!isHome || location.hash !== "#services") return;
+    const fromNav = sessionStorage.getItem("gs_scroll_services") === "1";
+    if (!fromNav) {
+      window.history.replaceState(null, "", `${location.pathname}${location.search}`);
+      return;
     }
-  }, [location.hash, isHome]);
+    sessionStorage.removeItem("gs_scroll_services");
+    requestAnimationFrame(() => {
+      document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
+    });
+  }, [location.hash, location.pathname, location.search, isHome]);
 
   useEffect(() => {
     const onOpen = (e) => {
