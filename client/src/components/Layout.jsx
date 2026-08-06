@@ -298,7 +298,6 @@ export default function Layout({ lang, setLang, t }) {
             <button type="button" className="footer-link-btn" onClick={openServices}>
               {t.navSubscriptions}
             </button>
-            <a href={isHome ? "#faq" : "/#faq"}>{t.faqTitle}</a>
             <button
               type="button"
               className="footer-link-btn"

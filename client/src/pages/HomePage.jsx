@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import FaqSection from "../components/FaqSection.jsx";
 import ServiceIcon from "../components/ServiceIcon.jsx";
 import ServicesSection from "../components/ServicesSection.jsx";
 import ViewPlansModal from "../components/ViewPlansModal.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
+import { wallpaperUrl } from "../data/serviceImages.js";
 
 const HERO_LOGO_IDS = [
   "netflix-private",
@@ -28,6 +28,7 @@ export default function HomePage({ lang, t }) {
   const [loadError, setLoadError] = useState("");
   const [plansService, setPlansService] = useState(null);
   const [showAll, setShowAll] = useState(false);
+  const wallpaper = wallpaperUrl();
 
   useEffect(() => {
     let cancelled = false;
@@ -62,8 +63,14 @@ export default function HomePage({ lang, t }) {
 
   return (
     <main className="home-main">
-      <section className="hero-banner" id="top">
+      <section
+        className="hero-banner"
+        id="top"
+        style={{ "--hero-wallpaper": `url(${wallpaper})` }}
+      >
+        <div className="hero-banner-media" aria-hidden="true" />
         <div className="hero-banner-glow" aria-hidden="true" />
+        <div className="hero-fiber-lines" aria-hidden="true" />
         <div className="container hero">
           <div className="hero-layout">
             <div className="hero-copy">
@@ -114,6 +121,10 @@ export default function HomePage({ lang, t }) {
             </div>
 
             <div className="hero-visual" aria-hidden="true">
+              <div
+                className="hero-planet"
+                style={{ backgroundImage: `url(${wallpaper})` }}
+              />
               <div className="hero-orb" />
               <div className="hero-logo-grid">
                 {heroLogos.map((service) => (
@@ -193,8 +204,6 @@ export default function HomePage({ lang, t }) {
           ))}
         </div>
       </section>
-
-      <FaqSection key={lang} t={t} />
 
       {plansService ? (
         <ViewPlansModal
