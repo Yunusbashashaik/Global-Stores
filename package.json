@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "GlobalStore.com — digital subscription marketplace (Kuwait / KWD)",
+  "type": "module",
   "workspaces": [
     "client",
     "server"

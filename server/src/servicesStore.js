@@ -11,6 +11,32 @@ async function ensureDataDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
 }
 
+/** Merge missing seed services into an existing catalog without overwriting edits. */
+function mergeWithDefaults(existing) {
+  const byId = new Map(existing.map((s) => [s.id, s]));
+  let changed = false;
+  for (const seed of DEFAULT_SERVICES) {
+    if (!byId.has(seed.id)) {
+      byId.set(seed.id, structuredClone(seed));
+      changed = true;
+    }
+  }
+  // Preserve existing order, then append newly seeded services in default order.
+  const merged = [];
+  const seen = new Set();
+  for (const item of existing) {
+    merged.push(byId.get(item.id));
+    seen.add(item.id);
+  }
+  for (const seed of DEFAULT_SERVICES) {
+    if (!seen.has(seed.id)) {
+      merged.push(byId.get(seed.id));
+      seen.add(seed.id);
+    }
+  }
+  return { services: merged, changed };
+}
+
 export async function readServices() {
   await ensureDataDir();
   try {
@@ -19,7 +45,11 @@ export async function readServices() {
     if (!Array.isArray(parsed) || parsed.length === 0) {
       throw new Error("empty");
     }
-    return parsed;
+    const { services, changed } = mergeWithDefaults(parsed);
+    if (changed) {
+      await writeServices(services);
+    }
+    return services;
   } catch {
     const seed = structuredClone(DEFAULT_SERVICES);
     await writeServices(seed);
@@ -56,7 +86,16 @@ export async function updateService(id, patch) {
 
 function pickEditable(patch) {
   const out = {};
-  for (const key of ["nameEn", "nameAr", "descriptionEn", "descriptionAr", "icon"]) {
+  for (const key of [
+    "nameEn",
+    "nameAr",
+    "descriptionEn",
+    "descriptionAr",
+    "icon",
+    "typeEn",
+    "typeAr",
+    "accent",
+  ]) {
     if (typeof patch[key] === "string") {
       out[key] = patch[key];
     }
