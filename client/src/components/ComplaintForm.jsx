@@ -2,9 +2,16 @@ import { useRef, useState } from "react";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i;
-/* TEMP test inbox — revert to global2stor2@gmail.com after verification */
 const COMPLAINT_EMAIL =
-  import.meta.env.VITE_COMPLAINT_EMAIL || "yunusbasha.shaik@gmail.com";
+  import.meta.env.VITE_COMPLAINT_EMAIL || "global2stor2@gmail.com";
+
+const FIELD_ORDER = [
+  "fullName",
+  "phone",
+  "subject",
+  "details",
+  "screenshot",
+];
 
 function isImageFile(file) {
   if (!file) return false;
@@ -18,8 +25,36 @@ function apiUrl(path) {
   return `${base}${path}`;
 }
 
+function fieldLabel(t, key) {
+  return t[key] || key;
+}
+
+function missingMessage(t, key) {
+  const label = fieldLabel(t, key);
+  const template = t.fieldMissing || "{field} is missing.";
+  return template.replace("{field}", label);
+}
+
+function RequiredMark() {
+  return (
+    <span className="required-asterisk" aria-hidden="true">
+      *
+    </span>
+  );
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read screenshot"));
+    reader.readAsDataURL(file);
+  });
+}
+
 /** Email the complaint via FormSubmit (works on static GitHub Pages). */
 async function sendComplaintEmail(form) {
+  const dataUrl = await fileToDataUrl(form.screenshot);
   const body = new FormData();
   body.append("fullName", form.fullName.trim());
   body.append("phone", form.phone.trim());
@@ -29,7 +64,20 @@ async function sendComplaintEmail(form) {
     `[GlobalStore Complaint] ${form.subject.trim()}`,
   );
   body.append("details", form.details.trim());
+  // Attach the image (also shown by many clients) and embed it in HTML body.
   body.append("screenshot", form.screenshot, form.screenshot.name);
+  body.append(
+    "html",
+    [
+      `<p><strong>Name:</strong> ${escapeHtml(form.fullName.trim())}</p>`,
+      `<p><strong>Phone:</strong> ${escapeHtml(form.phone.trim())}</p>`,
+      `<p><strong>Subject:</strong> ${escapeHtml(form.subject.trim())}</p>`,
+      `<p><strong>Details:</strong></p>`,
+      `<p style="white-space:pre-wrap;">${escapeHtml(form.details.trim())}</p>`,
+      `<p><strong>Screenshot:</strong></p>`,
+      `<img src="${dataUrl}" alt="Complaint screenshot" style="display:block;max-width:100%;height:auto;border:1px solid #e2e8f0;border-radius:8px;" />`,
+    ].join(""),
+  );
   body.append("_template", "table");
   body.append("_captcha", "false");
   body.append("_honey", "");
@@ -55,15 +103,22 @@ async function sendComplaintEmail(form) {
     const msg = String(data.message || data.error || "");
     if (/activat/i.test(msg)) {
       throw new Error(
-        `Activate email delivery once: open the inbox for ${COMPLAINT_EMAIL}, find the FormSubmit “Activate Form” email, and click the link. Then submit your complaint again.`,
+        "Activate email delivery once: open the administrator inbox, find the FormSubmit “Activate Form” email, and click the link. Then submit your complaint again.",
       );
     }
     throw new Error(
-      msg ||
-        `Email delivery failed. Please try again, or check ${COMPLAINT_EMAIL}.`,
+      msg || "Email delivery failed. Please try again in a moment.",
     );
   }
   return data;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /** Prefer the Node API when hosted; otherwise email directly from the browser. */
@@ -139,21 +194,24 @@ export default function ComplaintForm({ t }) {
     setForm({ ...form, screenshot: file });
   };
 
+  const firstMissingField = () => {
+    for (const key of FIELD_ORDER) {
+      if (key === "screenshot") {
+        if (!form.screenshot || !isImageFile(form.screenshot)) return key;
+        continue;
+      }
+      if (!String(form[key] || "").trim()) return key;
+    }
+    return null;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (
-      !form.fullName.trim() ||
-      !form.phone.trim() ||
-      !form.subject.trim() ||
-      !form.details.trim()
-    ) {
-      setError(t.complaintFieldsRequired || "All text fields are required");
-      return;
-    }
-    if (!form.screenshot || !isImageFile(form.screenshot)) {
-      setError(t.screenshotRequired || "Screenshot is required");
+    const missing = firstMissingField();
+    if (missing) {
+      setError(missingMessage(t, missing));
       return;
     }
     if (form.screenshot.size > MAX_SCREENSHOT_BYTES) {
@@ -174,7 +232,9 @@ export default function ComplaintForm({ t }) {
       });
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
-      setError(err.message || t.complaintEmailFailed);
+      // Never surface the admin inbox address in user-facing errors.
+      const raw = String(err.message || t.complaintEmailFailed);
+      setError(raw.replace(/[\w.+-]+@[\w.-]+\.\w+/g, "the support inbox"));
     } finally {
       setSubmitting(false);
     }
@@ -183,12 +243,11 @@ export default function ComplaintForm({ t }) {
   return (
     <>
       <form className="complaint-form" onSubmit={onSubmit} noValidate>
-        <p className="field-hint complaint-email-note">
-          {t.complaintEmailLabel}:{" "}
-          <a href={`mailto:${COMPLAINT_EMAIL}`}>{COMPLAINT_EMAIL}</a>
-        </p>
         <label>
-          {t.fullName}
+          <span>
+            {t.fullName}
+            <RequiredMark />
+          </span>
           <input
             required
             name="fullName"
@@ -199,7 +258,10 @@ export default function ComplaintForm({ t }) {
           />
         </label>
         <label>
-          {t.phone}
+          <span>
+            {t.phone}
+            <RequiredMark />
+          </span>
           <input
             required
             name="phone"
@@ -212,7 +274,10 @@ export default function ComplaintForm({ t }) {
           />
         </label>
         <label>
-          {t.subject}
+          <span>
+            {t.subject}
+            <RequiredMark />
+          </span>
           <input
             required
             name="subject"
@@ -222,7 +287,10 @@ export default function ComplaintForm({ t }) {
           />
         </label>
         <label>
-          {t.details}
+          <span>
+            {t.details}
+            <RequiredMark />
+          </span>
           <textarea
             required
             name="details"
@@ -232,7 +300,10 @@ export default function ComplaintForm({ t }) {
           />
         </label>
         <label>
-          {t.screenshot}
+          <span>
+            {t.screenshot}
+            <RequiredMark />
+          </span>
           <input
             ref={fileInputRef}
             required
@@ -243,12 +314,12 @@ export default function ComplaintForm({ t }) {
           />
           <span className="field-hint">{t.screenshotHint}</span>
         </label>
-        {error ? <p className="error-text">{error}</p> : null}
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={submitting || !form.screenshot}
-        >
+        {error ? (
+          <p className="error-text" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <button type="submit" className="btn btn-primary" disabled={submitting}>
           {submitting ? t.complaintSending || t.submit : t.submit}
         </button>
       </form>
