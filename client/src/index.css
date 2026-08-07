@@ -1513,6 +1513,13 @@ body.rtl .carousel-arrow svg {
   resize: vertical;
 }
 
+.complaint-form .field-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--border);

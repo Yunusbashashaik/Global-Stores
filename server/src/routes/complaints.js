@@ -8,35 +8,67 @@ import { sendComplaintEmail } from "../mail.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadDir = path.join(__dirname, "..", "..", "data", "uploads");
 
+export const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+
 const storage = multer.diskStorage({
   destination: async (_req, _file, cb) => {
-    await fs.mkdir(uploadDir, { recursive: true });
-    cb(null, uploadDir);
+    try {
+      await fs.mkdir(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    } catch (err) {
+      cb(err);
+    }
   },
   filename: (_req, file, cb) => {
+    // Keep only ASCII-safe characters; non-ASCII (e.g. Arabic) becomes "_".
     const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
-    cb(null, `${Date.now()}-${safe}`);
+    cb(null, `${Date.now()}-${safe || "screenshot"}`);
   },
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: MAX_SCREENSHOT_BYTES },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
-      cb(new Error("Screenshot must be an image"));
+      cb(new Error("Screenshot must be an image (PNG, JPG, WEBP, GIF, etc.)"));
       return;
     }
     cb(null, true);
   },
 });
 
+function uploadScreenshot(req, res, next) {
+  upload.single("screenshot")(req, res, (err) => {
+    if (!err) {
+      next();
+      return;
+    }
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        res.status(400).json({
+          error: "Screenshot must be 5 MB or smaller",
+        });
+        return;
+      }
+      res.status(400).json({ error: err.message || "Invalid upload" });
+      return;
+    }
+    res.status(400).json({ error: err.message || "Invalid upload" });
+  });
+}
+
 export const complaintRouter = Router();
 
-complaintRouter.post("/", upload.single("screenshot"), async (req, res) => {
+complaintRouter.post("/", uploadScreenshot, async (req, res) => {
   try {
     const { fullName, phone, subject, details } = req.body;
-    if (!fullName?.trim() || !phone?.trim() || !subject?.trim() || !details?.trim()) {
+    if (
+      !fullName?.trim() ||
+      !phone?.trim() ||
+      !subject?.trim() ||
+      !details?.trim()
+    ) {
       res.status(400).json({ error: "All text fields are required" });
       return;
     }
@@ -52,6 +84,7 @@ complaintRouter.post("/", upload.single("screenshot"), async (req, res) => {
       subject: subject.trim(),
       details: details.trim(),
       screenshotPath: req.file.path,
+      originalFilename: req.file.originalname,
       createdAt: new Date().toISOString(),
     };
 
