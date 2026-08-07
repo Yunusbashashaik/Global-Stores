@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  buildWhatsAppUrl,
+  nextSupportNumber,
+} from "../data/catalog.js";
 import { apiUrl, hasBackendApi } from "../lib/adminApi.js";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i;
+export const COMPLAINT_EMAIL = "global2stor2@gmail.com";
+
+function isImageFile(file) {
+  if (!file) return false;
+  if (file.type && file.type.startsWith("image/")) return true;
+  // Some mobile browsers leave type empty for gallery JPGs.
+  return IMAGE_EXT.test(file.name || "");
+}
 
 export default function ComplaintForm({ t }) {
   const [form, setForm] = useState({
@@ -34,7 +47,7 @@ export default function ComplaintForm({ t }) {
       setForm({ ...form, screenshot: null });
       return;
     }
-    if (!file.type.startsWith("image/")) {
+    if (!isImageFile(file)) {
       setForm({ ...form, screenshot: null });
       if (fileInputRef.current) fileInputRef.current.value = "";
       setError(t.screenshotNotImage);
@@ -49,24 +62,57 @@ export default function ComplaintForm({ t }) {
     setForm({ ...form, screenshot: file });
   };
 
+  const openWhatsAppFallback = () => {
+    const phone = nextSupportNumber();
+    const msg = [
+      t.complaintWhatsAppIntro || "GlobalStore complaint:",
+      `${t.fullName}: ${form.fullName.trim()}`,
+      `${t.phone}: ${form.phone.trim()}`,
+      `${t.subject}: ${form.subject.trim()}`,
+      "",
+      form.details.trim(),
+      "",
+      form.screenshot
+        ? `${t.complaintWhatsAppAttachHint || "I will attach a screenshot next."} (${form.screenshot.name})`
+        : "",
+      `${t.complaintEmailLabel || "Email"}: ${COMPLAINT_EMAIL}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    window.open(buildWhatsAppUrl(phone, msg), "_blank", "noopener,noreferrer");
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (apiReady === false) {
-      setError(t.complaintApiUnavailable);
+
+    if (!form.fullName.trim() || !form.phone.trim() || !form.subject.trim() || !form.details.trim()) {
+      setError(t.complaintFieldsRequired || "All text fields are required");
       return;
     }
-    if (!form.screenshot) {
+    if (!form.screenshot || !isImageFile(form.screenshot)) {
       setError(t.screenshotRequired || "Screenshot is required");
       return;
     }
+    if (form.screenshot.size > MAX_SCREENSHOT_BYTES) {
+      setError(t.screenshotTooLarge);
+      return;
+    }
+
+    // Static GitHub Pages has no API — send via WhatsApp instead.
+    if (apiReady === false) {
+      openWhatsAppFallback();
+      setSuccess(true);
+      return;
+    }
+
     setSubmitting(true);
     try {
       const body = new FormData();
-      body.append("fullName", form.fullName);
-      body.append("phone", form.phone);
-      body.append("subject", form.subject);
-      body.append("details", form.details);
+      body.append("fullName", form.fullName.trim());
+      body.append("phone", form.phone.trim());
+      body.append("subject", form.subject.trim());
+      body.append("details", form.details.trim());
       body.append("screenshot", form.screenshot);
       const res = await fetch(apiUrl("/api/complaints"), {
         method: "POST",
@@ -77,11 +123,10 @@ export default function ComplaintForm({ t }) {
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
-        throw new Error(
-          res.ok
-            ? t.complaintApiUnavailable
-            : data.error || t.complaintApiUnavailable,
-        );
+        // API missing/HTML response — fall back to WhatsApp so the live site still works.
+        openWhatsAppFallback();
+        setSuccess(true);
+        return;
       }
       if (!res.ok) throw new Error(data.error || "Failed");
       setSuccess(true);
@@ -102,16 +147,23 @@ export default function ComplaintForm({ t }) {
 
   return (
     <>
-      <form className="complaint-form" onSubmit={onSubmit}>
-        {apiReady === false ? (
-          <p className="error-text" role="status">
-            {t.complaintApiUnavailable}
-          </p>
-        ) : null}
+      <form className="complaint-form" onSubmit={onSubmit} noValidate>
+        <p className="field-hint complaint-email-note">
+          {t.complaintEmailLabel}:{" "}
+          <a href={`mailto:${COMPLAINT_EMAIL}`}>{COMPLAINT_EMAIL}</a>
+          {apiReady === false ? (
+            <>
+              {" "}
+              — {t.complaintStaticFallbackNote}
+            </>
+          ) : null}
+        </p>
         <label>
           {t.fullName}
           <input
             required
+            name="fullName"
+            autoComplete="name"
             maxLength={120}
             value={form.fullName}
             onChange={(e) => setForm({ ...form, fullName: e.target.value })}
@@ -121,8 +173,11 @@ export default function ComplaintForm({ t }) {
           {t.phone}
           <input
             required
-            maxLength={40}
+            name="phone"
+            type="text"
+            autoComplete="tel"
             inputMode="tel"
+            maxLength={40}
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
           />
@@ -131,6 +186,7 @@ export default function ComplaintForm({ t }) {
           {t.subject}
           <input
             required
+            name="subject"
             maxLength={160}
             value={form.subject}
             onChange={(e) => setForm({ ...form, subject: e.target.value })}
@@ -140,6 +196,7 @@ export default function ComplaintForm({ t }) {
           {t.details}
           <textarea
             required
+            name="details"
             maxLength={4000}
             value={form.details}
             onChange={(e) => setForm({ ...form, details: e.target.value })}
@@ -150,8 +207,9 @@ export default function ComplaintForm({ t }) {
           <input
             ref={fileInputRef}
             required
+            name="screenshot"
             type="file"
-            accept="image/*"
+            accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.heic,.heif,image/*"
             onChange={onFileChange}
           />
           <span className="field-hint">{t.screenshotHint}</span>
@@ -160,16 +218,20 @@ export default function ComplaintForm({ t }) {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={submitting || !form.screenshot || apiReady === false}
+          disabled={submitting || !form.screenshot}
         >
-          {t.submit}
+          {apiReady === false ? t.complaintWhatsAppSubmit || t.submit : t.submit}
         </button>
       </form>
       {success ? (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal">
             <h3>{t.successTitle}</h3>
-            <p>{t.successBody}</p>
+            <p>
+              {apiReady === false
+                ? t.complaintWhatsAppSuccessBody || t.successBody
+                : t.successBody}
+            </p>
             <button
               type="button"
               className="btn btn-primary"

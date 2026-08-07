@@ -100,12 +100,21 @@ export const COPY = {
     details: "Complaint Details",
     screenshot: "Screenshot (required)",
     screenshotHint:
-      "Images only (PNG, JPG, WEBP, GIF…). Max 5 MB. File name can include spaces or Arabic — it is saved safely on the server.",
-    screenshotNotImage: "Please choose an image file (PNG, JPG, WEBP, GIF…).",
+      "Images only (PNG, JPG, WEBP, GIF, HEIC…). Max 5 MB. Any file name is fine.",
+    screenshotNotImage: "Please choose an image file (PNG, JPG, WEBP, GIF, HEIC…).",
     screenshotTooLarge: "Screenshot must be 5 MB or smaller.",
     screenshotRequired: "Screenshot is required",
+    complaintFieldsRequired: "All text fields are required",
+    complaintEmailLabel: "Complaints email",
+    complaintStaticFallbackNote:
+      "This static site cannot send email directly — Submit opens WhatsApp with your details so you can attach the screenshot there.",
+    complaintWhatsAppIntro: "GlobalStore complaint:",
+    complaintWhatsAppAttachHint: "I will attach a screenshot in this chat.",
+    complaintWhatsAppSubmit: "Send via WhatsApp",
+    complaintWhatsAppSuccessBody:
+      "WhatsApp opened with your complaint. Please attach the screenshot in the chat and send it. Our team also monitors global2stor2@gmail.com.",
     complaintApiUnavailable:
-      "Complaint submission needs the API server. On the static GitHub Pages site it is unavailable — please message us on WhatsApp instead, or use the full app with the Node API running.",
+      "Complaint API is offline. Please message us on WhatsApp or email global2stor2@gmail.com.",
     submit: "Submit Complaint",
     successTitle: "Complaint Received",
     successBody: "Thank you. Our team will review your message shortly.",
@@ -247,12 +256,21 @@ export const COPY = {
     details: "تفاصيل الشكوى",
     screenshot: "لقطة شاشة (مطلوبة)",
     screenshotHint:
-      "صور فقط (PNG، JPG، WEBP، GIF…). الحد الأقصى 5 ميغابايت. يمكن أن يحتوي اسم الملف على مسافات أو العربية — يُحفظ بأمان على الخادم.",
-    screenshotNotImage: "يرجى اختيار ملف صورة (PNG، JPG، WEBP، GIF…).",
+      "صور فقط (PNG، JPG، WEBP، GIF، HEIC…). الحد الأقصى 5 ميغابايت. أي اسم ملف مقبول.",
+    screenshotNotImage: "يرجى اختيار ملف صورة (PNG، JPG، WEBP، GIF، HEIC…).",
     screenshotTooLarge: "يجب ألا يتجاوز حجم لقطة الشاشة 5 ميغابايت.",
     screenshotRequired: "لقطة الشاشة مطلوبة",
+    complaintFieldsRequired: "جميع حقول النص مطلوبة",
+    complaintEmailLabel: "بريد الشكاوى",
+    complaintStaticFallbackNote:
+      "هذا الموقع الثابت لا يرسل البريد مباشرة — الإرسال يفتح واتساب بتفاصيلك لإرفاق لقطة الشاشة هناك.",
+    complaintWhatsAppIntro: "شكوى GlobalStore:",
+    complaintWhatsAppAttachHint: "سأرفق لقطة شاشة في هذه المحادثة.",
+    complaintWhatsAppSubmit: "إرسال عبر واتساب",
+    complaintWhatsAppSuccessBody:
+      "تم فتح واتساب بشكواك. يرجى إرفاق لقطة الشاشة في المحادثة وإرسالها. فريقنا أيضاً يراقب global2stor2@gmail.com.",
     complaintApiUnavailable:
-      "إرسال الشكاوى يحتاج خادم الواجهة البرمجية. موقع GitHub Pages الثابت لا يدعم ذلك — تواصل معنا عبر واتساب، أو استخدم التطبيق مع تشغيل خادم Node.",
+      "واجهة الشكاوى غير متاحة. تواصل عبر واتساب أو راسل global2stor2@gmail.com.",
     submit: "إرسال الشكوى",
     successTitle: "تم استلام الشكوى",
     successBody: "شكراً لك. سيقوم فريقنا بمراجعة رسالتك قريباً.",
