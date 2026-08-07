@@ -84,7 +84,8 @@ export async function sendComplaintEmail(ticket, screenshotPath) {
   const mail = {
     from: process.env.SMTP_FROM || "noreply@globalstore.com",
     to: TARGET_EMAIL,
-    subject: `[GlobalStore Complaint] ${ticket.subject}`,
+    // Email subject = the Subject field from the complaint form
+    subject: ticket.subject,
     text,
     html,
     attachments: [
@@ -93,6 +94,11 @@ export async function sendComplaintEmail(ticket, screenshotPath) {
         content: screenshot,
         cid: CID,
         contentDisposition: "inline",
+      },
+      {
+        filename,
+        content: screenshot,
+        contentDisposition: "attachment",
       },
     ],
   };

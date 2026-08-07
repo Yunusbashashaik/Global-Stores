@@ -42,8 +42,13 @@ Default local credentials (override in production):
 
 Complaints are sent by **email only** (not WhatsApp) to **`global2stor2@gmail.com`**.
 
-- **GitHub Pages (live site):** the form emails via FormSubmit. The first submission sends an **Activate Form** link to that inbox — click it once, then later complaints (with screenshots) arrive by email.
-- **Node API + SMTP (optional):** when `/api/complaints` is available, tickets go through the server. Without SMTP, they are logged under `server/data/` in local/dev.
+- **Static hosting (GitHub Pages, GoDaddy static/HTML, etc.):** the form emails via **FormSubmit**. The first submission sends an **Activate Form** link to that inbox — click it once, then later complaints arrive by email with:
+  - **Subject** = the Subject field the user typed
+  - **Body** = Full Name, Phone Number, Subject, and Complaint Details
+  - **Screenshot** = file **attachment**
+- **Node API + SMTP (optional, e.g. GoDaddy Node / VPS):** when `/api/complaints` is available, tickets go through the server with the screenshot embedded/attached. Without SMTP, they are logged under `server/data/` in local/dev.
+
+FormSubmit works on **any domain** (including GoDaddy) after the one-time inbox activation — it does not depend on GitHub Pages.
 
 Optional env:
 
