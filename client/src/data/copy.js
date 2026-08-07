@@ -99,6 +99,13 @@ export const COPY = {
     subject: "Subject",
     details: "Complaint Details",
     screenshot: "Screenshot (required)",
+    screenshotHint:
+      "Images only (PNG, JPG, WEBP, GIF…). Max 5 MB. File name can include spaces or Arabic — it is saved safely on the server.",
+    screenshotNotImage: "Please choose an image file (PNG, JPG, WEBP, GIF…).",
+    screenshotTooLarge: "Screenshot must be 5 MB or smaller.",
+    screenshotRequired: "Screenshot is required",
+    complaintApiUnavailable:
+      "Complaint submission needs the API server. On the static GitHub Pages site it is unavailable — please message us on WhatsApp instead, or use the full app with the Node API running.",
     submit: "Submit Complaint",
     successTitle: "Complaint Received",
     successBody: "Thank you. Our team will review your message shortly.",
@@ -239,6 +246,13 @@ export const COPY = {
     subject: "الموضوع",
     details: "تفاصيل الشكوى",
     screenshot: "لقطة شاشة (مطلوبة)",
+    screenshotHint:
+      "صور فقط (PNG، JPG، WEBP، GIF…). الحد الأقصى 5 ميغابايت. يمكن أن يحتوي اسم الملف على مسافات أو العربية — يُحفظ بأمان على الخادم.",
+    screenshotNotImage: "يرجى اختيار ملف صورة (PNG، JPG، WEBP، GIF…).",
+    screenshotTooLarge: "يجب ألا يتجاوز حجم لقطة الشاشة 5 ميغابايت.",
+    screenshotRequired: "لقطة الشاشة مطلوبة",
+    complaintApiUnavailable:
+      "إرسال الشكاوى يحتاج خادم الواجهة البرمجية. موقع GitHub Pages الثابت لا يدعم ذلك — تواصل معنا عبر واتساب، أو استخدم التطبيق مع تشغيل خادم Node.",
     submit: "إرسال الشكوى",
     successTitle: "تم استلام الشكوى",
     successBody: "شكراً لك. سيقوم فريقنا بمراجعة رسالتك قريباً.",
