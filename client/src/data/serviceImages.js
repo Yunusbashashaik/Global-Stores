@@ -29,8 +29,7 @@ const FILES = {
   "cyberghost-vpn": "CyberGhostVPN.JPG",
   "surfshark-vpn": "Surfshark.JPG",
   expressvpn: "ExpressVPN.JPG",
-  /* No dedicated NordVPN upload — reuse Express shield art as temporary mark */
-  nordvpn: "ExpressVPN.JPG",
+  nordvpn: "NordVPN.JPG",
 };
 
 const assetBase = import.meta.env.BASE_URL || "/";

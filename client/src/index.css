@@ -2282,14 +2282,18 @@ body.rtl .catalog-view-all--header:hover {
 }
 
 .hero-logo-tile .service-icon-mark[data-brand="expressvpn"],
-.hero-logo-tile .service-icon-mark[data-brand="expressvpn"] .service-icon-img,
-.hero-logo-tile .service-icon-mark[data-brand="nordvpn"],
-.hero-logo-tile .service-icon-mark[data-brand="nordvpn"] .service-icon-img {
+.hero-logo-tile .service-icon-mark[data-brand="expressvpn"] .service-icon-img {
   background: #da291c;
 }
 
+.hero-logo-tile .service-icon-mark[data-brand="nordvpn"],
+.hero-logo-tile .service-icon-mark[data-brand="nordvpn"] .service-icon-img {
+  background: #1a2332;
+}
+
+.catalog-band .service-icon-mark[data-brand="nordvpn"],
 .catalog-band .service-icon-img {
-  object-fit: cover;
+  /* cover already set globally for catalog imgs */
 }
 
 .hero-logo-more {
