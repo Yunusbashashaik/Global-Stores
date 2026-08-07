@@ -40,9 +40,7 @@ Default local credentials (override in production):
 
 ### Complaint email
 
-Complaints are sent by **email only** (not WhatsApp).
-
-TEMP test inbox: **`yunusbasha.shaik@gmail.com`** (revert to `global2stor2@gmail.com` after verification).
+Complaints are sent by **email only** (not WhatsApp) to **`global2stor2@gmail.com`**.
 
 - **Static hosting (GitHub Pages / GoDaddy static):** FormSubmit **classic multipart POST** with the user’s real file input (`name="attachment"`) so the screenshot arrives as a **real image attachment** (FormSubmit AJAX drops files).
 - **Node API + SMTP:** screenshot is embedded in the HTML email and attached as a file.
