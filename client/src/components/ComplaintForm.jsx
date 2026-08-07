@@ -56,7 +56,10 @@ function safeScreenshotName(file) {
   return cleaned.slice(0, 120);
 }
 
-/** Host a copy of the screenshot so the email body always includes a viewable link. */
+/**
+ * Host the screenshot publicly so the FormSubmit email body always includes
+ * a clickable image URL (FormSubmit frequently drops binary attachments).
+ */
 async function hostScreenshotLink(file) {
   const body = new FormData();
   body.append("file", file, safeScreenshotName(file));
@@ -67,150 +70,88 @@ async function hostScreenshotLink(file) {
   const data = await res.json().catch(() => ({}));
   const pageUrl = data?.data?.url;
   if (!res.ok || !pageUrl) {
-    throw new Error("Could not prepare the screenshot link.");
+    throw new Error(
+      "Could not upload the screenshot for email delivery. Please try again.",
+    );
   }
+  // Prefer the download-style URL so mail clients open the image file.
   return String(pageUrl).replace("://tmpfiles.org/", "://tmpfiles.org/dl/");
 }
 
-function addHiddenField(formEl, name, value) {
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = name;
-  input.value = value;
-  formEl.appendChild(input);
-}
-
 /**
- * FormSubmit's /ajax API often drops file attachments.
- * Classic multipart POST (with name="attachment") is the documented path
- * that actually delivers the screenshot as an email attachment.
+ * Email via FormSubmit.
+ * Binary attachments are unreliable on FormSubmit, so we:
+ * 1) Host the screenshot and put the URL in the email body (required)
+ * 2) Still attempt a file attachment as a bonus
  */
-function sendComplaintEmail(form, screenshotLink) {
-  return new Promise((resolve, reject) => {
-    if (typeof document === "undefined") {
-      reject(new Error("Email delivery is only available in the browser."));
-      return;
-    }
+async function sendComplaintEmail(form) {
+  const subject = form.subject.trim();
+  const filename = safeScreenshotName(form.screenshot);
 
-    const subject = form.subject.trim();
-    const iframeName = `fs_iframe_${Date.now()}`;
-    const iframe = document.createElement("iframe");
-    iframe.name = iframeName;
-    iframe.title = "complaint-email";
-    iframe.setAttribute("aria-hidden", "true");
-    Object.assign(iframe.style, {
-      position: "fixed",
-      width: "1px",
-      height: "1px",
-      opacity: "0",
-      pointerEvents: "none",
-      border: "0",
-      left: "-9999px",
-    });
+  // Required — never send a complaint email without a screenshot URL.
+  const screenshotLink = await hostScreenshotLink(form.screenshot);
 
-    const htmlForm = document.createElement("form");
-    htmlForm.method = "POST";
-    htmlForm.action = `https://formsubmit.co/${encodeURIComponent(COMPLAINT_EMAIL)}`;
-    htmlForm.enctype = "multipart/form-data";
-    htmlForm.target = iframeName;
-    htmlForm.style.display = "none";
+  const detailsWithScreenshot = [
+    form.details.trim(),
+    "",
+    "-----",
+    "Screenshot (open this link to view the uploaded image):",
+    screenshotLink,
+  ].join("\n");
 
-    // Email subject = user Subject field
-    addHiddenField(htmlForm, "_subject", subject);
-    addHiddenField(htmlForm, "_template", "table");
-    addHiddenField(htmlForm, "_captcha", "false");
-    addHiddenField(htmlForm, "_honey", "");
+  const body = new FormData();
+  body.append("_subject", subject);
+  body.append("_template", "table");
+  body.append("_captcha", "false");
+  body.append("_honey", "");
 
-    // Body fields
-    addHiddenField(htmlForm, "Full Name", form.fullName.trim());
-    addHiddenField(htmlForm, "Phone Number", form.phone.trim());
-    addHiddenField(htmlForm, "Subject", subject);
-    addHiddenField(htmlForm, "Complaint Details", form.details.trim());
-    addHiddenField(
-      htmlForm,
-      "Screenshot Note",
-      "The uploaded screenshot is attached to this email. A backup view link is also included below.",
+  body.append("Full Name", form.fullName.trim());
+  body.append("Phone Number", form.phone.trim());
+  body.append("Subject", subject);
+  body.append("Complaint Details", detailsWithScreenshot);
+  // Dedicated rows so the image link is obvious in the FormSubmit table
+  body.append("Screenshot", screenshotLink);
+  body.append("Screenshot URL", screenshotLink);
+
+  // Best-effort attachment (many FormSubmit deliveries still omit this)
+  body.append("attachment", form.screenshot, filename);
+
+  const res = await fetch(
+    `https://formsubmit.co/ajax/${encodeURIComponent(COMPLAINT_EMAIL)}`,
+    {
+      method: "POST",
+      body,
+      headers: { Accept: "application/json" },
+    },
+  );
+
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      "Could not reach the email service. Please try again in a moment.",
     );
-    if (screenshotLink) {
-      addHiddenField(htmlForm, "Screenshot Link", screenshotLink);
-    }
+  }
 
-    // Documented FormSubmit attachment field
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.name = "attachment";
-    fileInput.accept = "image/*";
-    try {
-      const dt = new DataTransfer();
-      // Ensure the File keeps a sensible name for the attachment
-      const named =
-        form.screenshot.name && form.screenshot.name.trim()
-          ? form.screenshot
-          : new File([form.screenshot], safeScreenshotName(form.screenshot), {
-              type: form.screenshot.type || "image/png",
-            });
-      dt.items.add(named);
-      fileInput.files = dt.files;
-    } catch {
-      reject(
-        new Error(
-          "Could not attach the screenshot. Please try another image file.",
-        ),
-      );
-      return;
-    }
-    if (!fileInput.files?.length) {
-      reject(
-        new Error(
-          "Could not attach the screenshot. Please try another image file.",
-        ),
-      );
-      return;
-    }
-    htmlForm.appendChild(fileInput);
-
-    let settled = false;
-    let loadCount = 0;
-    let timer;
-
-    const cleanup = () => {
-      clearTimeout(timer);
-      iframe.removeEventListener("load", onLoad);
-      htmlForm.remove();
-      iframe.remove();
-    };
-
-    const finishOk = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve({ success: true });
-    };
-
-    const onLoad = () => {
-      loadCount += 1;
-      // First load is usually about:blank; FormSubmit navigates after POST.
-      if (loadCount >= 2) finishOk();
-    };
-
-    // FormSubmit may block reading the iframe; still treat a short wait as sent.
-    timer = setTimeout(finishOk, 7000);
-
-    iframe.addEventListener("load", onLoad);
-    document.body.appendChild(iframe);
-    document.body.appendChild(htmlForm);
-
-    try {
-      htmlForm.submit();
-    } catch (err) {
-      cleanup();
-      reject(
-        err instanceof Error
-          ? err
-          : new Error("Could not send the complaint email."),
+  if (!res.ok || data.success === "false" || data.success === false) {
+    const msg = String(data.message || data.error || "");
+    if (/activat/i.test(msg)) {
+      throw new Error(
+        "Activate email delivery once: open the administrator inbox, find the FormSubmit “Activate Form” email, and click the link. Then submit your complaint again.",
       );
     }
-  });
+    if (/server\s*error/i.test(msg)) {
+      throw new Error(
+        "Could not send the complaint right now. Please try again in a moment.",
+      );
+    }
+    throw new Error(
+      msg || "Email delivery failed. Please try again in a moment.",
+    );
+  }
+  return { success: true, screenshotLink, ...data };
 }
 
 function looksLikeApiJson(data) {
@@ -240,17 +181,11 @@ async function submitComplaint(form) {
     try {
       data = text ? JSON.parse(text) : {};
     } catch {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
+      return sendComplaintEmail(form);
     }
 
     if (!looksLikeApiJson(data)) {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
+      return sendComplaintEmail(form);
     }
 
     if (!res.ok) {
@@ -262,10 +197,7 @@ async function submitComplaint(form) {
       err instanceof TypeError ||
       /Failed to fetch|NetworkError|Load failed/i.test(String(err.message))
     ) {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
+      return sendComplaintEmail(form);
     }
     throw err;
   }
