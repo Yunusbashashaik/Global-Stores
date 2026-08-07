@@ -2249,14 +2249,47 @@ body.rtl .catalog-view-all--header:hover {
 .hero-logo-tile .service-icon-img {
   background: #0b1220;
   border-radius: 0;
-  object-fit: contain;
+  object-fit: cover;
   padding: 0;
 }
 
-/* Netflix logo art is on white — match that in the hero grid tile */
+/* Match each logo’s native artwork background in the hero grid */
 .hero-logo-tile .service-icon-mark[data-brand="netflix-private"],
-.hero-logo-tile .service-icon-mark[data-brand="netflix-private"] .service-icon-img {
+.hero-logo-tile .service-icon-mark[data-brand="netflix-private"] .service-icon-img,
+.hero-logo-tile .service-icon-mark[data-brand="osn-plus"],
+.hero-logo-tile .service-icon-mark[data-brand="osn-plus"] .service-icon-img {
   background: #fff;
+}
+
+.hero-logo-tile .service-icon-mark[data-brand="paramount-plus"],
+.hero-logo-tile .service-icon-mark[data-brand="paramount-plus"] .service-icon-img {
+  background: #0064ff;
+}
+
+.hero-logo-tile .service-icon-mark[data-brand="spotify-premium"],
+.hero-logo-tile .service-icon-mark[data-brand="spotify-premium"] .service-icon-img {
+  background: #1ed760;
+}
+
+.hero-logo-tile .service-icon-mark[data-brand="shahid"],
+.hero-logo-tile .service-icon-mark[data-brand="shahid"] .service-icon-img {
+  background: #0b1220;
+}
+
+.hero-logo-tile .service-icon-mark[data-brand="iptv"],
+.hero-logo-tile .service-icon-mark[data-brand="iptv"] .service-icon-img {
+  background: #2a1a12;
+}
+
+.hero-logo-tile .service-icon-mark[data-brand="expressvpn"],
+.hero-logo-tile .service-icon-mark[data-brand="expressvpn"] .service-icon-img,
+.hero-logo-tile .service-icon-mark[data-brand="nordvpn"],
+.hero-logo-tile .service-icon-mark[data-brand="nordvpn"] .service-icon-img {
+  background: #da291c;
+}
+
+.catalog-band .service-icon-img {
+  object-fit: cover;
 }
 
 .hero-logo-more {
