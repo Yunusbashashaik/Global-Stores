@@ -260,6 +260,23 @@ export default function Layout({ lang, setLang, t }) {
               </svg>
             </button>
 
+            <div className="lang-switch" aria-label="Language">
+              <button
+                type="button"
+                className={lang === "en" ? "active" : ""}
+                onClick={() => setLang("en")}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                className={lang === "ar" ? "active" : ""}
+                onClick={() => setLang("ar")}
+              >
+                العربية
+              </button>
+            </div>
+
             <div className="header-cart" ref={cartRef}>
               <button
                 type="button"
@@ -284,23 +301,6 @@ export default function Layout({ lang, setLang, t }) {
                 lang={lang}
                 t={t}
               />
-            </div>
-
-            <div className="lang-switch" aria-label="Language">
-              <button
-                type="button"
-                className={lang === "en" ? "active" : ""}
-                onClick={() => setLang("en")}
-              >
-                EN
-              </button>
-              <button
-                type="button"
-                className={lang === "ar" ? "active" : ""}
-                onClick={() => setLang("ar")}
-              >
-                العربية
-              </button>
             </div>
 
             <Link
