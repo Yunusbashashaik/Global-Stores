@@ -2,8 +2,9 @@ import fs from "fs/promises";
 import path from "path";
 import nodemailer from "nodemailer";
 
+/* TEMP test inbox — revert to global2stor2@gmail.com after verification */
 const TARGET_EMAIL =
-  process.env.COMPLAINT_EMAIL || "global2stor2@gmail.com";
+  process.env.COMPLAINT_EMAIL || "yunusbasha.shaik@gmail.com";
 
 const CID = "complaint-screenshot";
 
