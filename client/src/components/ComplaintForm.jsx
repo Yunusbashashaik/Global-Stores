@@ -1,19 +1,106 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  buildWhatsAppUrl,
-  nextSupportNumber,
-} from "../data/catalog.js";
-import { apiUrl, hasBackendApi } from "../lib/adminApi.js";
+import { useRef, useState } from "react";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i;
-export const COMPLAINT_EMAIL = "global2stor2@gmail.com";
+const COMPLAINT_EMAIL =
+  import.meta.env.VITE_COMPLAINT_EMAIL || "global2stor2@gmail.com";
 
 function isImageFile(file) {
   if (!file) return false;
   if (file.type && file.type.startsWith("image/")) return true;
   // Some mobile browsers leave type empty for gallery JPGs.
   return IMAGE_EXT.test(file.name || "");
+}
+
+function apiUrl(path) {
+  const base = import.meta.env.VITE_API_URL || "";
+  return `${base}${path}`;
+}
+
+/** Email the complaint via FormSubmit (works on static GitHub Pages). */
+async function sendComplaintEmail(form) {
+  const body = new FormData();
+  body.append("fullName", form.fullName.trim());
+  body.append("phone", form.phone.trim());
+  body.append("subject", form.subject.trim());
+  body.append(
+    "_subject",
+    `[GlobalStore Complaint] ${form.subject.trim()}`,
+  );
+  body.append("details", form.details.trim());
+  body.append("screenshot", form.screenshot, form.screenshot.name);
+  body.append("_template", "table");
+  body.append("_captcha", "false");
+  body.append("_honey", "");
+
+  const res = await fetch(
+    `https://formsubmit.co/ajax/${encodeURIComponent(COMPLAINT_EMAIL)}`,
+    {
+      method: "POST",
+      body,
+      headers: { Accept: "application/json" },
+    },
+  );
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      "Could not reach the email service. Please try again in a moment.",
+    );
+  }
+  if (!res.ok || data.success === "false" || data.success === false) {
+    const msg = String(data.message || data.error || "");
+    if (/activat/i.test(msg)) {
+      throw new Error(
+        `Activate email delivery once: open the inbox for ${COMPLAINT_EMAIL}, find the FormSubmit “Activate Form” email, and click the link. Then submit your complaint again.`,
+      );
+    }
+    throw new Error(
+      msg ||
+        `Email delivery failed. Please try again, or check ${COMPLAINT_EMAIL}.`,
+    );
+  }
+  return data;
+}
+
+/** Prefer the Node API when hosted; otherwise email directly from the browser. */
+async function submitComplaint(form) {
+  const body = new FormData();
+  body.append("fullName", form.fullName.trim());
+  body.append("phone", form.phone.trim());
+  body.append("subject", form.subject.trim());
+  body.append("details", form.details.trim());
+  body.append("screenshot", form.screenshot);
+
+  try {
+    const res = await fetch(apiUrl("/api/complaints"), {
+      method: "POST",
+      body,
+    });
+    const text = await res.text();
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      // Static host / HTML response — use email service instead.
+      return sendComplaintEmail(form);
+    }
+    if (!res.ok) {
+      throw new Error(data.error || "Submission failed");
+    }
+    return data;
+  } catch (err) {
+    // Network failure talking to API — fall back to email service.
+    if (
+      err instanceof TypeError ||
+      /Failed to fetch|NetworkError|Load failed/i.test(String(err.message))
+    ) {
+      return sendComplaintEmail(form);
+    }
+    throw err;
+  }
 }
 
 export default function ComplaintForm({ t }) {
@@ -27,18 +114,7 @@ export default function ComplaintForm({ t }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [apiReady, setApiReady] = useState(null);
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    hasBackendApi().then((ok) => {
-      if (!cancelled) setApiReady(ok);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const onFileChange = (e) => {
     const file = e.target.files?.[0] ?? null;
@@ -62,31 +138,16 @@ export default function ComplaintForm({ t }) {
     setForm({ ...form, screenshot: file });
   };
 
-  const openWhatsAppFallback = () => {
-    const phone = nextSupportNumber();
-    const msg = [
-      t.complaintWhatsAppIntro || "GlobalStore complaint:",
-      `${t.fullName}: ${form.fullName.trim()}`,
-      `${t.phone}: ${form.phone.trim()}`,
-      `${t.subject}: ${form.subject.trim()}`,
-      "",
-      form.details.trim(),
-      "",
-      form.screenshot
-        ? `${t.complaintWhatsAppAttachHint || "I will attach a screenshot next."} (${form.screenshot.name})`
-        : "",
-      `${t.complaintEmailLabel || "Email"}: ${COMPLAINT_EMAIL}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-    window.open(buildWhatsAppUrl(phone, msg), "_blank", "noopener,noreferrer");
-  };
-
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!form.fullName.trim() || !form.phone.trim() || !form.subject.trim() || !form.details.trim()) {
+    if (
+      !form.fullName.trim() ||
+      !form.phone.trim() ||
+      !form.subject.trim() ||
+      !form.details.trim()
+    ) {
       setError(t.complaintFieldsRequired || "All text fields are required");
       return;
     }
@@ -99,36 +160,9 @@ export default function ComplaintForm({ t }) {
       return;
     }
 
-    // Static GitHub Pages has no API — send via WhatsApp instead.
-    if (apiReady === false) {
-      openWhatsAppFallback();
-      setSuccess(true);
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const body = new FormData();
-      body.append("fullName", form.fullName.trim());
-      body.append("phone", form.phone.trim());
-      body.append("subject", form.subject.trim());
-      body.append("details", form.details.trim());
-      body.append("screenshot", form.screenshot);
-      const res = await fetch(apiUrl("/api/complaints"), {
-        method: "POST",
-        body,
-      });
-      const text = await res.text();
-      let data = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        // API missing/HTML response — fall back to WhatsApp so the live site still works.
-        openWhatsAppFallback();
-        setSuccess(true);
-        return;
-      }
-      if (!res.ok) throw new Error(data.error || "Failed");
+      await submitComplaint(form);
       setSuccess(true);
       setForm({
         fullName: "",
@@ -139,7 +173,7 @@ export default function ComplaintForm({ t }) {
       });
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
-      setError(err.message || t.complaintApiUnavailable);
+      setError(err.message || t.complaintEmailFailed);
     } finally {
       setSubmitting(false);
     }
@@ -151,12 +185,6 @@ export default function ComplaintForm({ t }) {
         <p className="field-hint complaint-email-note">
           {t.complaintEmailLabel}:{" "}
           <a href={`mailto:${COMPLAINT_EMAIL}`}>{COMPLAINT_EMAIL}</a>
-          {apiReady === false ? (
-            <>
-              {" "}
-              — {t.complaintStaticFallbackNote}
-            </>
-          ) : null}
         </p>
         <label>
           {t.fullName}
@@ -220,18 +248,14 @@ export default function ComplaintForm({ t }) {
           className="btn btn-primary"
           disabled={submitting || !form.screenshot}
         >
-          {apiReady === false ? t.complaintWhatsAppSubmit || t.submit : t.submit}
+          {submitting ? t.complaintSending || t.submit : t.submit}
         </button>
       </form>
       {success ? (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal">
             <h3>{t.successTitle}</h3>
-            <p>
-              {apiReady === false
-                ? t.complaintWhatsAppSuccessBody || t.successBody
-                : t.successBody}
-            </p>
+            <p>{t.successBody}</p>
             <button
               type="button"
               className="btn btn-primary"

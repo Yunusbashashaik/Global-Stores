@@ -38,14 +38,17 @@ Default local credentials (override in production):
 - `ADMIN_PASSWORD` (default: `globalstores`)
 - `ADMIN_SESSION_SECRET` (optional; signs admin session tokens)
 
-### Complaint email (optional)
+### Complaint email
 
-Without SMTP, complaints are logged under `server/data/` and the API still returns success (suitable for local dev).
+Complaints are sent by **email only** (not WhatsApp) to **`global2stor2@gmail.com`**.
 
-Set for production-like email delivery:
+- **GitHub Pages (live site):** the form emails via FormSubmit. The first submission sends an **Activate Form** link to that inbox — click it once, then later complaints (with screenshots) arrive by email.
+- **Node API + SMTP (optional):** when `/api/complaints` is available, tickets go through the server. Without SMTP, they are logged under `server/data/` in local/dev.
 
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
-- `COMPLAINT_EMAIL` (default: `global2stor2@gmail.com`)
+Optional env:
+
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+- `COMPLAINT_EMAIL` / `VITE_COMPLAINT_EMAIL` (default: `global2stor2@gmail.com`)
 
 See `Tech. Document` for full product requirements.
 

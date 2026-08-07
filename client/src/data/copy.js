@@ -105,19 +105,14 @@ export const COPY = {
     screenshotTooLarge: "Screenshot must be 5 MB or smaller.",
     screenshotRequired: "Screenshot is required",
     complaintFieldsRequired: "All text fields are required",
-    complaintEmailLabel: "Complaints email",
-    complaintStaticFallbackNote:
-      "This static site cannot send email directly — Submit opens WhatsApp with your details so you can attach the screenshot there.",
-    complaintWhatsAppIntro: "GlobalStore complaint:",
-    complaintWhatsAppAttachHint: "I will attach a screenshot in this chat.",
-    complaintWhatsAppSubmit: "Send via WhatsApp",
-    complaintWhatsAppSuccessBody:
-      "WhatsApp opened with your complaint. Please attach the screenshot in the chat and send it. Our team also monitors global2stor2@gmail.com.",
-    complaintApiUnavailable:
-      "Complaint API is offline. Please message us on WhatsApp or email global2stor2@gmail.com.",
+    complaintEmailLabel: "Complaints are emailed to",
+    complaintSending: "Sending email…",
+    complaintEmailFailed:
+      "Could not send the complaint email. Please try again.",
     submit: "Submit Complaint",
     successTitle: "Complaint Received",
-    successBody: "Thank you. Our team will review your message shortly.",
+    successBody:
+      "Thank you. Your complaint was emailed to global2stor2@gmail.com. Our team will review it shortly.",
     close: "Close",
     footerOwners: "Owned & Managed by M Fareed Tariq & M Zuhaib Tariq",
     footerTerms: "Terms & Support",
@@ -261,19 +256,13 @@ export const COPY = {
     screenshotTooLarge: "يجب ألا يتجاوز حجم لقطة الشاشة 5 ميغابايت.",
     screenshotRequired: "لقطة الشاشة مطلوبة",
     complaintFieldsRequired: "جميع حقول النص مطلوبة",
-    complaintEmailLabel: "بريد الشكاوى",
-    complaintStaticFallbackNote:
-      "هذا الموقع الثابت لا يرسل البريد مباشرة — الإرسال يفتح واتساب بتفاصيلك لإرفاق لقطة الشاشة هناك.",
-    complaintWhatsAppIntro: "شكوى GlobalStore:",
-    complaintWhatsAppAttachHint: "سأرفق لقطة شاشة في هذه المحادثة.",
-    complaintWhatsAppSubmit: "إرسال عبر واتساب",
-    complaintWhatsAppSuccessBody:
-      "تم فتح واتساب بشكواك. يرجى إرفاق لقطة الشاشة في المحادثة وإرسالها. فريقنا أيضاً يراقب global2stor2@gmail.com.",
-    complaintApiUnavailable:
-      "واجهة الشكاوى غير متاحة. تواصل عبر واتساب أو راسل global2stor2@gmail.com.",
+    complaintEmailLabel: "تُرسل الشكاوى بالبريد إلى",
+    complaintSending: "جارٍ إرسال البريد…",
+    complaintEmailFailed: "تعذر إرسال بريد الشكوى. يرجى المحاولة مرة أخرى.",
     submit: "إرسال الشكوى",
     successTitle: "تم استلام الشكوى",
-    successBody: "شكراً لك. سيقوم فريقنا بمراجعة رسالتك قريباً.",
+    successBody:
+      "شكراً لك. تم إرسال شكواك بالبريد إلى global2stor2@gmail.com. سيقوم فريقنا بمراجعتها قريباً.",
     close: "إغلاق",
     footerOwners: "مملوك ويدار بواسطة م. فريد طارق وم. زهيب طارق",
     footerTerms: "الشروط والدعم",
