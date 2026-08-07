@@ -21,7 +21,7 @@ describe("complaints API", () => {
       .field("subject", "Test")
       .field("details", "Details");
     assert.equal(res.status, 400);
-    assert.match(res.body.error, /Screenshot/);
+    assert.match(res.body.error, /Screenshot is missing/i);
   });
 
   it("rejects missing text fields", async () => {
@@ -36,7 +36,7 @@ describe("complaints API", () => {
         contentType: "image/png",
       });
     assert.equal(res.status, 400);
-    assert.match(res.body.error, /required/i);
+    assert.match(res.body.error, /Full Name is missing/i);
   });
 
   it("rejects non-image uploads with JSON", async () => {

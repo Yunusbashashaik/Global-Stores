@@ -63,17 +63,19 @@ export const complaintRouter = Router();
 complaintRouter.post("/", uploadScreenshot, async (req, res) => {
   try {
     const { fullName, phone, subject, details } = req.body;
-    if (
-      !fullName?.trim() ||
-      !phone?.trim() ||
-      !subject?.trim() ||
-      !details?.trim()
-    ) {
-      res.status(400).json({ error: "All text fields are required" });
+    const missing = [
+      ["fullName", "Full Name", fullName],
+      ["phone", "Phone Number", phone],
+      ["subject", "Subject", subject],
+      ["details", "Complaint Details", details],
+    ].find(([, , value]) => !String(value || "").trim());
+
+    if (missing) {
+      res.status(400).json({ error: `${missing[1]} is missing.` });
       return;
     }
     if (!req.file) {
-      res.status(400).json({ error: "Screenshot is required" });
+      res.status(400).json({ error: "Screenshot is missing." });
       return;
     }
 

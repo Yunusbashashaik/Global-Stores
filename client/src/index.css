@@ -1520,13 +1520,10 @@ body.rtl .carousel-arrow svg {
   font-weight: 400;
 }
 
-.complaint-form .complaint-email-note {
-  margin: 0;
-}
-
-.complaint-form .complaint-email-note a {
-  color: var(--accent, #3b82f6);
-  text-decoration: underline;
+.complaint-form .required-asterisk {
+  color: #ef4444;
+  margin-inline-start: 0.15em;
+  font-weight: 800;
 }
 
 .site-footer {
