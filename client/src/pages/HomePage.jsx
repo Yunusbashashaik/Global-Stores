@@ -19,7 +19,7 @@ const HERO_LOGO_IDS = [
   "zee5",
   "sonyliv",
   "canva",
-  "nordvpn",
+  "expressvpn",
   "paramount-plus",
   "hulu",
   "spotify-premium",
