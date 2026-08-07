@@ -2,7 +2,9 @@ import fs from "fs/promises";
 import path from "path";
 import nodemailer from "nodemailer";
 
-const TARGET_EMAIL = process.env.COMPLAINT_EMAIL || "global2stor2@gmail.com";
+/* TEMP test inbox — revert to global2stor2@gmail.com after verification */
+const TARGET_EMAIL =
+  process.env.COMPLAINT_EMAIL || "yunusbasha.shaik@gmail.com";
 
 function createTransport() {
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {

@@ -112,7 +112,7 @@ export const COPY = {
     submit: "Submit Complaint",
     successTitle: "Complaint Received",
     successBody:
-      "Thank you. Your complaint was emailed to global2stor2@gmail.com. Our team will review it shortly.",
+      "Thank you. Your complaint was emailed to yunusbasha.shaik@gmail.com (temporary test inbox). Our team will review it shortly.",
     close: "Close",
     footerOwners: "Owned & Managed by M Fareed Tariq & M Zuhaib Tariq",
     footerTerms: "Terms & Support",
@@ -262,7 +262,7 @@ export const COPY = {
     submit: "إرسال الشكوى",
     successTitle: "تم استلام الشكوى",
     successBody:
-      "شكراً لك. تم إرسال شكواك بالبريد إلى global2stor2@gmail.com. سيقوم فريقنا بمراجعتها قريباً.",
+      "شكراً لك. تم إرسال شكواك بالبريد إلى yunusbasha.shaik@gmail.com (صندوق اختبار مؤقت). سيقوم فريقنا بمراجعتها قريباً.",
     close: "إغلاق",
     footerOwners: "مملوك ويدار بواسطة م. فريد طارق وم. زهيب طارق",
     footerTerms: "الشروط والدعم",
