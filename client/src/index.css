@@ -2253,6 +2253,12 @@ body.rtl .catalog-view-all--header:hover {
   padding: 0;
 }
 
+/* Netflix logo art is on white — match that in the hero grid tile */
+.hero-logo-tile .service-icon-mark[data-brand="netflix-private"],
+.hero-logo-tile .service-icon-mark[data-brand="netflix-private"] .service-icon-img {
+  background: #fff;
+}
+
 .hero-logo-more {
   background: linear-gradient(165deg, rgba(8, 18, 34, 0.95), rgba(6, 14, 28, 0.92)) !important;
   color: #7dd3fc !important;
