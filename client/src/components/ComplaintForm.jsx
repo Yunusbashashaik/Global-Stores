@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i;
@@ -17,7 +17,6 @@ const FIELD_ORDER = [
 function isImageFile(file) {
   if (!file) return false;
   if (file.type && file.type.startsWith("image/")) return true;
-  // Some mobile browsers leave type empty for gallery JPGs.
   return IMAGE_EXT.test(file.name || "");
 }
 
@@ -46,30 +45,7 @@ function RequiredMark() {
 
 function sanitizeUserError(message, fallback) {
   const raw = String(message || fallback || "Submission failed");
-  // Never surface the admin inbox address in user-facing errors.
   return raw.replace(/[\w.+-]+@[\w.-]+\.\w+/g, "the support inbox");
-}
-
-function safeScreenshotName(file) {
-  const raw = String(file?.name || "screenshot.png");
-  const cleaned = raw.replace(/[^\w.\-()+ ]+/g, "_").trim() || "screenshot.png";
-  return cleaned.slice(0, 120);
-}
-
-/** Host a copy of the screenshot so the email body always includes a viewable link. */
-async function hostScreenshotLink(file) {
-  const body = new FormData();
-  body.append("file", file, safeScreenshotName(file));
-  const res = await fetch("https://tmpfiles.org/api/v1/upload", {
-    method: "POST",
-    body,
-  });
-  const data = await res.json().catch(() => ({}));
-  const pageUrl = data?.data?.url;
-  if (!res.ok || !pageUrl) {
-    throw new Error("Could not prepare the screenshot link.");
-  }
-  return String(pageUrl).replace("://tmpfiles.org/", "://tmpfiles.org/dl/");
 }
 
 function addHiddenField(formEl, name, value) {
@@ -80,20 +56,53 @@ function addHiddenField(formEl, name, value) {
   formEl.appendChild(input);
 }
 
+function looksLikeApiJson(data) {
+  return (
+    data &&
+    typeof data === "object" &&
+    ("success" in data || "error" in data || "ticketId" in data)
+  );
+}
+
+/** Node API path — SMTP embeds + attaches the screenshot image. */
+async function submitViaApi(form) {
+  const body = new FormData();
+  body.append("fullName", form.fullName.trim());
+  body.append("phone", form.phone.trim());
+  body.append("subject", form.subject.trim());
+  body.append("details", form.details.trim());
+  body.append("screenshot", form.screenshot);
+
+  const res = await fetch(apiUrl("/api/complaints"), {
+    method: "POST",
+    body,
+  });
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    return null;
+  }
+  if (!looksLikeApiJson(data)) return null;
+  if (!res.ok) throw new Error(data.error || "Submission failed");
+  return data;
+}
+
 /**
- * FormSubmit's /ajax API often drops file attachments.
- * Classic multipart POST (with name="attachment") is the documented path
- * that actually delivers the screenshot as an email attachment.
+ * FormSubmit classic multipart POST using the USER'S real file input.
+ * AJAX / synthetic DataTransfer inputs drop attachments; native file inputs do not.
+ * The screenshot arrives on the email as a real image attachment.
  */
-function sendComplaintEmail(form, screenshotLink) {
+function submitViaFormSubmitNative(form, fileInputEl, fileSlotEl) {
   return new Promise((resolve, reject) => {
-    if (typeof document === "undefined") {
-      reject(new Error("Email delivery is only available in the browser."));
+    if (!fileInputEl?.files?.length) {
+      reject(new Error("Screenshot is missing."));
       return;
     }
 
     const subject = form.subject.trim();
-    const iframeName = `fs_iframe_${Date.now()}`;
+    const iframeName = `fs_native_${Date.now()}`;
     const iframe = document.createElement("iframe");
     iframe.name = iframeName;
     iframe.title = "complaint-email";
@@ -115,67 +124,34 @@ function sendComplaintEmail(form, screenshotLink) {
     htmlForm.target = iframeName;
     htmlForm.style.display = "none";
 
-    // Email subject = user Subject field
     addHiddenField(htmlForm, "_subject", subject);
     addHiddenField(htmlForm, "_template", "table");
     addHiddenField(htmlForm, "_captcha", "false");
     addHiddenField(htmlForm, "_honey", "");
-
-    // Body fields
     addHiddenField(htmlForm, "Full Name", form.fullName.trim());
     addHiddenField(htmlForm, "Phone Number", form.phone.trim());
     addHiddenField(htmlForm, "Subject", subject);
     addHiddenField(htmlForm, "Complaint Details", form.details.trim());
-    addHiddenField(
-      htmlForm,
-      "Screenshot Note",
-      "The uploaded screenshot is attached to this email. A backup view link is also included below.",
-    );
-    if (screenshotLink) {
-      addHiddenField(htmlForm, "Screenshot Link", screenshotLink);
-    }
 
-    // Documented FormSubmit attachment field
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.name = "attachment";
-    fileInput.accept = "image/*";
-    try {
-      const dt = new DataTransfer();
-      // Ensure the File keeps a sensible name for the attachment
-      const named =
-        form.screenshot.name && form.screenshot.name.trim()
-          ? form.screenshot
-          : new File([form.screenshot], safeScreenshotName(form.screenshot), {
-              type: form.screenshot.type || "image/png",
-            });
-      dt.items.add(named);
-      fileInput.files = dt.files;
-    } catch {
-      reject(
-        new Error(
-          "Could not attach the screenshot. Please try another image file.",
-        ),
-      );
-      return;
-    }
-    if (!fileInput.files?.length) {
-      reject(
-        new Error(
-          "Could not attach the screenshot. Please try another image file.",
-        ),
-      );
-      return;
-    }
-    htmlForm.appendChild(fileInput);
+    // Move the real user-selected file input (required for FormSubmit attachments)
+    const originalParent = fileSlotEl || fileInputEl.parentElement;
+    const originalName = fileInputEl.name;
+    fileInputEl.name = "attachment";
+    htmlForm.appendChild(fileInputEl);
 
     let settled = false;
     let loadCount = 0;
     let timer;
 
+    const restoreFileInput = () => {
+      fileInputEl.name = originalName;
+      if (originalParent) originalParent.appendChild(fileInputEl);
+    };
+
     const cleanup = () => {
       clearTimeout(timer);
       iframe.removeEventListener("load", onLoad);
+      restoreFileInput();
       htmlForm.remove();
       iframe.remove();
     };
@@ -189,13 +165,10 @@ function sendComplaintEmail(form, screenshotLink) {
 
     const onLoad = () => {
       loadCount += 1;
-      // First load is usually about:blank; FormSubmit navigates after POST.
       if (loadCount >= 2) finishOk();
     };
 
-    // FormSubmit may block reading the iframe; still treat a short wait as sent.
-    timer = setTimeout(finishOk, 7000);
-
+    timer = setTimeout(finishOk, 8000);
     iframe.addEventListener("load", onLoad);
     document.body.appendChild(iframe);
     document.body.appendChild(htmlForm);
@@ -213,64 +186,6 @@ function sendComplaintEmail(form, screenshotLink) {
   });
 }
 
-function looksLikeApiJson(data) {
-  return (
-    data &&
-    typeof data === "object" &&
-    ("success" in data || "error" in data || "ticketId" in data)
-  );
-}
-
-/** Prefer the Node API when hosted; otherwise email via FormSubmit. */
-async function submitComplaint(form) {
-  const body = new FormData();
-  body.append("fullName", form.fullName.trim());
-  body.append("phone", form.phone.trim());
-  body.append("subject", form.subject.trim());
-  body.append("details", form.details.trim());
-  body.append("screenshot", form.screenshot);
-
-  try {
-    const res = await fetch(apiUrl("/api/complaints"), {
-      method: "POST",
-      body,
-    });
-    const text = await res.text();
-    let data = {};
-    try {
-      data = text ? JSON.parse(text) : {};
-    } catch {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
-    }
-
-    if (!looksLikeApiJson(data)) {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
-    }
-
-    if (!res.ok) {
-      throw new Error(data.error || "Submission failed");
-    }
-    return data;
-  } catch (err) {
-    if (
-      err instanceof TypeError ||
-      /Failed to fetch|NetworkError|Load failed/i.test(String(err.message))
-    ) {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
-    }
-    throw err;
-  }
-}
-
 export default function ComplaintForm({ t }) {
   const [form, setForm] = useState({
     fullName: "",
@@ -283,6 +198,17 @@ export default function ComplaintForm({ t }) {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+  const fileSlotRef = useRef(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("sent") === "1") {
+      setSuccess(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("sent");
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+  }, []);
 
   const onFileChange = (e) => {
     const file = e.target.files?.[0] ?? null;
@@ -330,10 +256,47 @@ export default function ComplaintForm({ t }) {
       setError(t.screenshotTooLarge);
       return;
     }
+    if (!fileInputRef.current?.files?.length) {
+      setError(missingMessage(t, "screenshot"));
+      return;
+    }
 
     setSubmitting(true);
     try {
-      await submitComplaint(form);
+      // Prefer Node API when it is a real JSON API (embeds image in email).
+      try {
+        const apiResult = await submitViaApi(form);
+        if (apiResult) {
+          setSuccess(true);
+          setForm({
+            fullName: "",
+            phone: "",
+            subject: "",
+            details: "",
+            screenshot: null,
+          });
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          return;
+        }
+      } catch (apiErr) {
+        // Only fall through to FormSubmit for network / non-API hosts.
+        if (
+          !(apiErr instanceof TypeError) &&
+          !/Failed to fetch|NetworkError|Load failed/i.test(
+            String(apiErr.message),
+          )
+        ) {
+          // API returned a real validation/server error
+          throw apiErr;
+        }
+      }
+
+      // FormSubmit native multipart with the real file input → image attachment
+      await submitViaFormSubmitNative(
+        form,
+        fileInputRef.current,
+        fileSlotRef.current,
+      );
       setSuccess(true);
       setForm({
         fullName: "",
@@ -414,14 +377,16 @@ export default function ComplaintForm({ t }) {
             {t.screenshot}
             <RequiredMark />
           </span>
-          <input
-            ref={fileInputRef}
-            required
-            name="screenshot"
-            type="file"
-            accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.heic,.heif,image/*"
-            onChange={onFileChange}
-          />
+          <span ref={fileSlotRef}>
+            <input
+              ref={fileInputRef}
+              required
+              name="attachment"
+              type="file"
+              accept=".png,.jpg,.jpeg,.gif,.webp,.bmp,.heic,.heif,image/*"
+              onChange={onFileChange}
+            />
+          </span>
           <span className="field-hint">{t.screenshotHint}</span>
         </label>
         {error ? (

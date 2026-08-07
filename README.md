@@ -40,20 +40,17 @@ Default local credentials (override in production):
 
 ### Complaint email
 
-Complaints are sent by **email only** (not WhatsApp) to **`global2stor2@gmail.com`**.
+Complaints are sent by **email only** (not WhatsApp).
 
-- **Static hosting (GitHub Pages, GoDaddy static/HTML, etc.):** the form emails via **FormSubmit** using a classic multipart POST (AJAX drops file attachments). The first submission sends an **Activate Form** link to that inbox — click it once, then later complaints arrive by email with:
-  - **Subject** = the Subject field the user typed
-  - **Body** = Full Name, Phone Number, Subject, Complaint Details, plus a Screenshot Link backup
-  - **Screenshot** = file **attachment** (`attachment` field)
-- **Node API + SMTP (optional, e.g. GoDaddy Node / VPS):** when `/api/complaints` is available, tickets go through the server with the screenshot embedded/attached. Without SMTP, they are logged under `server/data/` in local/dev.
+TEMP test inbox: **`yunusbasha.shaik@gmail.com`** (revert to `global2stor2@gmail.com` after verification).
 
-FormSubmit works on **any domain** (including GoDaddy) after the one-time inbox activation — it does not depend on GitHub Pages.
+- **Static hosting (GitHub Pages / GoDaddy static):** FormSubmit **classic multipart POST** with the user’s real file input (`name="attachment"`) so the screenshot arrives as a **real image attachment** (FormSubmit AJAX drops files).
+- **Node API + SMTP:** screenshot is embedded in the HTML email and attached as a file.
 
 Optional env:
 
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
-- `COMPLAINT_EMAIL` / `VITE_COMPLAINT_EMAIL` (default: `global2stor2@gmail.com`)
+- `COMPLAINT_EMAIL` / `VITE_COMPLAINT_EMAIL`
 
 See `Tech. Document` for full product requirements.
 
