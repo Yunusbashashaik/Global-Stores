@@ -2291,9 +2291,8 @@ body.rtl .catalog-view-all--header:hover {
   background: #1a2332;
 }
 
-.catalog-band .service-icon-mark[data-brand="nordvpn"],
 .catalog-band .service-icon-img {
-  /* cover already set globally for catalog imgs */
+  object-fit: cover;
 }
 
 .hero-logo-more {
