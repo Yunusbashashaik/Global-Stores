@@ -94,11 +94,6 @@ export async function sendComplaintEmail(ticket, screenshotPath) {
         cid: CID,
         contentDisposition: "inline",
       },
-      // Also keep a regular attachment so the image is easy to save.
-      {
-        filename,
-        content: screenshot,
-      },
     ],
   };
 

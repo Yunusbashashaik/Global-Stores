@@ -43,18 +43,14 @@ function RequiredMark() {
   );
 }
 
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Could not read screenshot"));
-    reader.readAsDataURL(file);
-  });
+function sanitizeUserError(message, fallback) {
+  const raw = String(message || fallback || "Submission failed");
+  // Never surface the admin inbox address in user-facing errors.
+  return raw.replace(/[\w.+-]+@[\w.-]+\.\w+/g, "the support inbox");
 }
 
 /** Email the complaint via FormSubmit (works on static GitHub Pages). */
 async function sendComplaintEmail(form) {
-  const dataUrl = await fileToDataUrl(form.screenshot);
   const body = new FormData();
   body.append("fullName", form.fullName.trim());
   body.append("phone", form.phone.trim());
@@ -64,20 +60,8 @@ async function sendComplaintEmail(form) {
     `[GlobalStore Complaint] ${form.subject.trim()}`,
   );
   body.append("details", form.details.trim());
-  // Attach the image (also shown by many clients) and embed it in HTML body.
+  // Attach the screenshot as a real file (FormSubmit rejects huge base64 HTML bodies).
   body.append("screenshot", form.screenshot, form.screenshot.name);
-  body.append(
-    "html",
-    [
-      `<p><strong>Name:</strong> ${escapeHtml(form.fullName.trim())}</p>`,
-      `<p><strong>Phone:</strong> ${escapeHtml(form.phone.trim())}</p>`,
-      `<p><strong>Subject:</strong> ${escapeHtml(form.subject.trim())}</p>`,
-      `<p><strong>Details:</strong></p>`,
-      `<p style="white-space:pre-wrap;">${escapeHtml(form.details.trim())}</p>`,
-      `<p><strong>Screenshot:</strong></p>`,
-      `<img src="${dataUrl}" alt="Complaint screenshot" style="display:block;max-width:100%;height:auto;border:1px solid #e2e8f0;border-radius:8px;" />`,
-    ].join(""),
-  );
   body.append("_template", "table");
   body.append("_captcha", "false");
   body.append("_honey", "");
@@ -106,6 +90,11 @@ async function sendComplaintEmail(form) {
         "Activate email delivery once: open the administrator inbox, find the FormSubmit “Activate Form” email, and click the link. Then submit your complaint again.",
       );
     }
+    if (/server\s*error/i.test(msg)) {
+      throw new Error(
+        "Could not send the complaint right now. Please try again in a moment.",
+      );
+    }
     throw new Error(
       msg || "Email delivery failed. Please try again in a moment.",
     );
@@ -113,12 +102,12 @@ async function sendComplaintEmail(form) {
   return data;
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function looksLikeApiJson(data) {
+  return (
+    data &&
+    typeof data === "object" &&
+    ("success" in data || "error" in data || "ticketId" in data)
+  );
 }
 
 /** Prefer the Node API when hosted; otherwise email directly from the browser. */
@@ -143,6 +132,12 @@ async function submitComplaint(form) {
       // Static host / HTML response — use email service instead.
       return sendComplaintEmail(form);
     }
+
+    // GitHub Pages / proxies sometimes return non-API JSON; fall back safely.
+    if (!looksLikeApiJson(data)) {
+      return sendComplaintEmail(form);
+    }
+
     if (!res.ok) {
       throw new Error(data.error || "Submission failed");
     }
@@ -232,9 +227,7 @@ export default function ComplaintForm({ t }) {
       });
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
-      // Never surface the admin inbox address in user-facing errors.
-      const raw = String(err.message || t.complaintEmailFailed);
-      setError(raw.replace(/[\w.+-]+@[\w.-]+\.\w+/g, "the support inbox"));
+      setError(sanitizeUserError(err.message, t.complaintEmailFailed));
     } finally {
       setSubmitting(false);
     }
