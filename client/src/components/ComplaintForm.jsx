@@ -49,19 +49,36 @@ function sanitizeUserError(message, fallback) {
   return raw.replace(/[\w.+-]+@[\w.-]+\.\w+/g, "the support inbox");
 }
 
-/** Email the complaint via FormSubmit (works on static GitHub Pages). */
+function safeScreenshotName(file) {
+  const raw = String(file?.name || "screenshot.png");
+  const cleaned = raw.replace(/[^\w.\-()+ ]+/g, "_").trim() || "screenshot.png";
+  return cleaned.slice(0, 120);
+}
+
+/**
+ * Email via FormSubmit (static hosts like GitHub Pages / GoDaddy static).
+ * - Email subject = the Subject field the user typed (_subject)
+ * - Body includes Full Name, Phone, Subject, and Complaint Details
+ * - Screenshot is sent as a file attachment
+ */
 async function sendComplaintEmail(form) {
+  const subject = form.subject.trim();
+  const filename = safeScreenshotName(form.screenshot);
   const body = new FormData();
-  body.append("fullName", form.fullName.trim());
-  body.append("phone", form.phone.trim());
-  body.append("subject", form.subject.trim());
-  body.append(
-    "_subject",
-    `[GlobalStore Complaint] ${form.subject.trim()}`,
-  );
-  body.append("details", form.details.trim());
-  // Attach the screenshot as a real file (FormSubmit rejects huge base64 HTML bodies).
-  body.append("screenshot", form.screenshot, form.screenshot.name);
+
+  // Email subject line = user-entered Subject
+  body.append("_subject", subject);
+
+  // These fields appear in the email body
+  body.append("Full Name", form.fullName.trim());
+  body.append("Phone Number", form.phone.trim());
+  body.append("Subject", subject);
+  body.append("Complaint Details", form.details.trim());
+
+  // Screenshot file → email attachment (do not set Content-Type manually)
+  body.append("Screenshot", form.screenshot, filename);
+  body.append("attachment", form.screenshot, filename);
+
   body.append("_template", "table");
   body.append("_captcha", "false");
   body.append("_honey", "");
@@ -74,6 +91,7 @@ async function sendComplaintEmail(form) {
       headers: { Accept: "application/json" },
     },
   );
+
   const text = await res.text();
   let data = {};
   try {
@@ -83,6 +101,7 @@ async function sendComplaintEmail(form) {
       "Could not reach the email service. Please try again in a moment.",
     );
   }
+
   if (!res.ok || data.success === "false" || data.success === false) {
     const msg = String(data.message || data.error || "");
     if (/activat/i.test(msg)) {
@@ -110,7 +129,7 @@ function looksLikeApiJson(data) {
   );
 }
 
-/** Prefer the Node API when hosted; otherwise email directly from the browser. */
+/** Prefer the Node API when hosted; otherwise email via FormSubmit. */
 async function submitComplaint(form) {
   const body = new FormData();
   body.append("fullName", form.fullName.trim());
@@ -129,11 +148,9 @@ async function submitComplaint(form) {
     try {
       data = text ? JSON.parse(text) : {};
     } catch {
-      // Static host / HTML response — use email service instead.
       return sendComplaintEmail(form);
     }
 
-    // GitHub Pages / proxies sometimes return non-API JSON; fall back safely.
     if (!looksLikeApiJson(data)) {
       return sendComplaintEmail(form);
     }
@@ -143,7 +160,6 @@ async function submitComplaint(form) {
     }
     return data;
   } catch (err) {
-    // Network failure talking to API — fall back to email service.
     if (
       err instanceof TypeError ||
       /Failed to fetch|NetworkError|Load failed/i.test(String(err.message))
