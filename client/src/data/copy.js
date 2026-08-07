@@ -67,6 +67,8 @@ export const COPY = {
     cartTotal: "Total",
     cartRemove: "Remove",
     cartClear: "Clear cart",
+    cartPaymentNote:
+      "Note: All payments go through WAMD — it’s super easy and completely secure",
     navHome: "Home",
     navSubscriptions: "Subscriptions",
     navViewMore: "View More",
@@ -227,6 +229,8 @@ export const COPY = {
     cartTotal: "الإجمالي",
     cartRemove: "إزالة",
     cartClear: "تفريغ السلة",
+    cartPaymentNote:
+      "ملاحظة: جميع المدفوعات تتم عبر WAMD — سهلة وآمنة تماماً",
     navHome: "الرئيسية",
     navSubscriptions: "الاشتراكات",
     navViewMore: "عرض المزيد",
