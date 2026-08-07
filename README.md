@@ -42,16 +42,15 @@ Default local credentials (override in production):
 
 Complaints are sent by **email only** (not WhatsApp).
 
-- **Static hosting (GitHub Pages / GoDaddy static):** submissions go through **FormBold** and the screenshot is emailed as a **real file attachment** (FormSubmit was dropping images).
-- **Node API + SMTP:** when `/api/complaints` is available, the server emails the ticket with the screenshot embedded and attached.
+TEMP test inbox: **`yunusbasha.shaik@gmail.com`** (revert to `global2stor2@gmail.com` after verification).
 
-TEMP test inbox: **`yunusbasha.shaik@gmail.com`** (revert to `global2stor2@gmail.com` after verification). Verify the FormBold email in that inbox once if prompted.
+- **Static hosting (GitHub Pages / GoDaddy static):** FormSubmit **classic multipart POST** with the user’s real file input (`name="attachment"`) so the screenshot arrives as a **real image attachment** (FormSubmit AJAX drops files).
+- **Node API + SMTP:** screenshot is embedded in the HTML email and attached as a file.
 
 Optional env:
 
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
 - `COMPLAINT_EMAIL` / `VITE_COMPLAINT_EMAIL`
-- `VITE_COMPLAINT_FORM_ENDPOINT` (FormBold form URL)
 
 See `Tech. Document` for full product requirements.
 
