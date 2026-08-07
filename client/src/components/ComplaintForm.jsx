@@ -2,8 +2,9 @@ import { useRef, useState } from "react";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i;
+/* TEMP test inbox — revert to global2stor2@gmail.com after verification */
 const COMPLAINT_EMAIL =
-  import.meta.env.VITE_COMPLAINT_EMAIL || "global2stor2@gmail.com";
+  import.meta.env.VITE_COMPLAINT_EMAIL || "yunusbasha.shaik@gmail.com";
 
 const FIELD_ORDER = [
   "fullName",
