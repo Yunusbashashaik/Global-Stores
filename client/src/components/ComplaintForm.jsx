@@ -2,9 +2,15 @@ import { useRef, useState } from "react";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i;
-/* TEMP test inbox — revert to global2stor2@gmail.com after verification */
-const COMPLAINT_EMAIL =
-  import.meta.env.VITE_COMPLAINT_EMAIL || "yunusbasha.shaik@gmail.com";
+
+/**
+ * FormBold endpoint — FormSubmit drops file attachments, so screenshots
+ * are delivered through FormBold (files are emailed as real attachments).
+ * TEMP: notifications go to yunusbasha.shaik@gmail.com for format testing.
+ */
+const COMPLAINT_FORM_ENDPOINT =
+  import.meta.env.VITE_COMPLAINT_FORM_ENDPOINT ||
+  "https://formbold.com/s/6QXN5";
 
 const FIELD_ORDER = [
   "fullName",
@@ -46,7 +52,6 @@ function RequiredMark() {
 
 function sanitizeUserError(message, fallback) {
   const raw = String(message || fallback || "Submission failed");
-  // Never surface the admin inbox address in user-facing errors.
   return raw.replace(/[\w.+-]+@[\w.-]+\.\w+/g, "the support inbox");
 }
 
@@ -56,161 +61,66 @@ function safeScreenshotName(file) {
   return cleaned.slice(0, 120);
 }
 
-/** Host a copy of the screenshot so the email body always includes a viewable link. */
-async function hostScreenshotLink(file) {
+/**
+ * Static-site delivery with the screenshot as a real email file attachment.
+ * FormBold receives multipart uploads and emails them as attachments.
+ */
+async function sendComplaintWithImage(form) {
+  const subject = form.subject.trim();
+  const filename = safeScreenshotName(form.screenshot);
+  const file =
+    form.screenshot.name && form.screenshot.name.trim()
+      ? form.screenshot
+      : new File([form.screenshot], filename, {
+          type: form.screenshot.type || "image/png",
+        });
+
   const body = new FormData();
-  body.append("file", file, safeScreenshotName(file));
-  const res = await fetch("https://tmpfiles.org/api/v1/upload", {
+  // Email subject / identity fields
+  body.append("subject", subject);
+  body.append("_subject", subject);
+
+  // Body fields shown in the notification email
+  body.append("Full Name", form.fullName.trim());
+  body.append("Phone Number", form.phone.trim());
+  body.append("Subject", subject);
+  body.append("Complaint Details", form.details.trim());
+
+  // Real image file — FormBold emails this as an attachment
+  body.append("attachment", file, filename);
+  body.append("screenshot", file, filename);
+  body.append("file", file, filename);
+
+  const res = await fetch(COMPLAINT_FORM_ENDPOINT, {
     method: "POST",
     body,
+    headers: { Accept: "application/json" },
   });
-  const data = await res.json().catch(() => ({}));
-  const pageUrl = data?.data?.url;
-  if (!res.ok || !pageUrl) {
-    throw new Error("Could not prepare the screenshot link.");
-  }
-  return String(pageUrl).replace("://tmpfiles.org/", "://tmpfiles.org/dl/");
-}
 
-function addHiddenField(formEl, name, value) {
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = name;
-  input.value = value;
-  formEl.appendChild(input);
-}
-
-/**
- * FormSubmit's /ajax API often drops file attachments.
- * Classic multipart POST (with name="attachment") is the documented path
- * that actually delivers the screenshot as an email attachment.
- */
-function sendComplaintEmail(form, screenshotLink) {
-  return new Promise((resolve, reject) => {
-    if (typeof document === "undefined") {
-      reject(new Error("Email delivery is only available in the browser."));
-      return;
-    }
-
-    const subject = form.subject.trim();
-    const iframeName = `fs_iframe_${Date.now()}`;
-    const iframe = document.createElement("iframe");
-    iframe.name = iframeName;
-    iframe.title = "complaint-email";
-    iframe.setAttribute("aria-hidden", "true");
-    Object.assign(iframe.style, {
-      position: "fixed",
-      width: "1px",
-      height: "1px",
-      opacity: "0",
-      pointerEvents: "none",
-      border: "0",
-      left: "-9999px",
-    });
-
-    const htmlForm = document.createElement("form");
-    htmlForm.method = "POST";
-    htmlForm.action = `https://formsubmit.co/${encodeURIComponent(COMPLAINT_EMAIL)}`;
-    htmlForm.enctype = "multipart/form-data";
-    htmlForm.target = iframeName;
-    htmlForm.style.display = "none";
-
-    // Email subject = user Subject field
-    addHiddenField(htmlForm, "_subject", subject);
-    addHiddenField(htmlForm, "_template", "table");
-    addHiddenField(htmlForm, "_captcha", "false");
-    addHiddenField(htmlForm, "_honey", "");
-
-    // Body fields
-    addHiddenField(htmlForm, "Full Name", form.fullName.trim());
-    addHiddenField(htmlForm, "Phone Number", form.phone.trim());
-    addHiddenField(htmlForm, "Subject", subject);
-    addHiddenField(htmlForm, "Complaint Details", form.details.trim());
-    addHiddenField(
-      htmlForm,
-      "Screenshot Note",
-      "The uploaded screenshot is attached to this email. A backup view link is also included below.",
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    if (res.ok) return { success: true };
+    throw new Error(
+      "Could not reach the email service. Please try again in a moment.",
     );
-    if (screenshotLink) {
-      addHiddenField(htmlForm, "Screenshot Link", screenshotLink);
-    }
+  }
 
-    // Documented FormSubmit attachment field
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.name = "attachment";
-    fileInput.accept = "image/*";
-    try {
-      const dt = new DataTransfer();
-      // Ensure the File keeps a sensible name for the attachment
-      const named =
-        form.screenshot.name && form.screenshot.name.trim()
-          ? form.screenshot
-          : new File([form.screenshot], safeScreenshotName(form.screenshot), {
-              type: form.screenshot.type || "image/png",
-            });
-      dt.items.add(named);
-      fileInput.files = dt.files;
-    } catch {
-      reject(
-        new Error(
-          "Could not attach the screenshot. Please try another image file.",
-        ),
-      );
-      return;
-    }
-    if (!fileInput.files?.length) {
-      reject(
-        new Error(
-          "Could not attach the screenshot. Please try another image file.",
-        ),
-      );
-      return;
-    }
-    htmlForm.appendChild(fileInput);
+  if (
+    !res.ok ||
+    data.success === false ||
+    /invalid form/i.test(String(data.message || ""))
+  ) {
+    throw new Error(
+      data.message ||
+        data.error ||
+        "Could not send the complaint right now. Please try again in a moment.",
+    );
+  }
 
-    let settled = false;
-    let loadCount = 0;
-    let timer;
-
-    const cleanup = () => {
-      clearTimeout(timer);
-      iframe.removeEventListener("load", onLoad);
-      htmlForm.remove();
-      iframe.remove();
-    };
-
-    const finishOk = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve({ success: true });
-    };
-
-    const onLoad = () => {
-      loadCount += 1;
-      // First load is usually about:blank; FormSubmit navigates after POST.
-      if (loadCount >= 2) finishOk();
-    };
-
-    // FormSubmit may block reading the iframe; still treat a short wait as sent.
-    timer = setTimeout(finishOk, 7000);
-
-    iframe.addEventListener("load", onLoad);
-    document.body.appendChild(iframe);
-    document.body.appendChild(htmlForm);
-
-    try {
-      htmlForm.submit();
-    } catch (err) {
-      cleanup();
-      reject(
-        err instanceof Error
-          ? err
-          : new Error("Could not send the complaint email."),
-      );
-    }
-  });
+  return { success: true, ...data };
 }
 
 function looksLikeApiJson(data) {
@@ -221,7 +131,7 @@ function looksLikeApiJson(data) {
   );
 }
 
-/** Prefer the Node API when hosted; otherwise email via FormSubmit. */
+/** Prefer Node API (SMTP embeds/attaches image); otherwise FormBold with file. */
 async function submitComplaint(form) {
   const body = new FormData();
   body.append("fullName", form.fullName.trim());
@@ -240,17 +150,11 @@ async function submitComplaint(form) {
     try {
       data = text ? JSON.parse(text) : {};
     } catch {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
+      return sendComplaintWithImage(form);
     }
 
     if (!looksLikeApiJson(data)) {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
+      return sendComplaintWithImage(form);
     }
 
     if (!res.ok) {
@@ -262,10 +166,7 @@ async function submitComplaint(form) {
       err instanceof TypeError ||
       /Failed to fetch|NetworkError|Load failed/i.test(String(err.message))
     ) {
-      const screenshotLink = await hostScreenshotLink(form.screenshot).catch(
-        () => "",
-      );
-      return sendComplaintEmail(form, screenshotLink);
+      return sendComplaintWithImage(form);
     }
     throw err;
   }
