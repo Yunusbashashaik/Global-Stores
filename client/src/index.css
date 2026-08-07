@@ -2732,6 +2732,58 @@ body.rtl .catalog-view-all--header:hover {
   font-size: 0.95rem;
 }
 
+.cart-payment-note {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  font-weight: 700;
+  color: #0b3d2e;
+  text-align: center;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  background: linear-gradient(
+    110deg,
+    rgba(209, 250, 229, 0.95) 0%,
+    rgba(167, 243, 208, 0.98) 35%,
+    rgba(253, 230, 138, 0.9) 50%,
+    rgba(167, 243, 208, 0.98) 65%,
+    rgba(209, 250, 229, 0.95) 100%
+  );
+  background-size: 220% 100%;
+  animation:
+    cart-note-shimmer 2.4s ease-in-out infinite,
+    cart-note-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes cart-note-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes cart-note-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.28);
+  }
+  50% {
+    transform: scale(1.015);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-payment-note {
+    animation: none;
+    background: #d1fae5;
+  }
+}
+
 .cart-popup-footer .btn-whatsapp {
   width: 100%;
   border-radius: 12px;

@@ -173,6 +173,9 @@ export default function CartPopup({ open, onClose, lang, t }) {
               {Number(totalPrice.toFixed(3))} {currency}
             </strong>
           </div>
+          <p className="cart-payment-note" role="note">
+            {t.cartPaymentNote}
+          </p>
           <button
             type="button"
             className="btn btn-whatsapp"
