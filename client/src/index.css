@@ -2577,14 +2577,38 @@ body.rtl .catalog-view-all--header:hover {
   border: 2px solid rgba(8, 18, 34, 0.9);
 }
 
-.cart-popup {
+.cart-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+}
+
+.cart-backdrop {
   position: absolute;
-  top: calc(100% + 0.55rem);
-  inset-inline-end: 0;
-  width: min(360px, calc(100vw - 1.5rem));
-  max-height: min(70vh, 520px);
-  overflow: auto;
-  z-index: 60;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: rgba(4, 12, 22, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.cart-popup,
+.cart-sheet {
+  pointer-events: auto;
+  position: absolute;
+  top: 4.6rem;
+  inset-inline-end: max(0.85rem, calc((100vw - min(1280px, 94vw)) / 2));
+  width: min(380px, calc(100vw - 1.5rem));
+  max-height: min(72vh, 560px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 81;
   border-radius: 16px;
   background: #ffffff;
   color: #0f172a;
@@ -2599,6 +2623,7 @@ body.rtl .catalog-view-all--header:hover {
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.65rem;
+  flex: 0 0 auto;
 }
 
 .cart-popup-header h3 {
@@ -2617,6 +2642,13 @@ body.rtl .catalog-view-all--header:hover {
   color: #0f172a;
 }
 
+.cart-popup-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .cart-empty {
   margin: 0.5rem 0 0.85rem;
   color: #64748b;
@@ -2633,7 +2665,7 @@ body.rtl .catalog-view-all--header:hover {
 
 .cart-item {
   display: grid;
-  grid-template-columns: 48px 1fr auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   gap: 0.55rem;
   align-items: start;
   padding-bottom: 0.65rem;
@@ -2689,6 +2721,8 @@ body.rtl .catalog-view-all--header:hover {
   display: grid;
   gap: 0.55rem;
   margin-top: 0.75rem;
+  flex: 0 0 auto;
+  padding-top: 0.15rem;
 }
 
 .cart-total {
@@ -2710,24 +2744,69 @@ body.rtl .catalog-view-all--header:hover {
   border-color: #e2e8f0;
 }
 
-body.rtl .cart-popup {
+body.rtl .cart-popup,
+body.rtl .cart-sheet {
   inset-inline-end: auto;
-  inset-inline-start: 0;
+  inset-inline-start: max(0.85rem, calc((100vw - min(1280px, 94vw)) / 2));
+}
+
+@media (max-width: 900px) {
+  .cart-layer {
+    /* Keep cart above sticky header / FAB stacking contexts */
+    z-index: 100;
+  }
+
+  .cart-popup,
+  .cart-sheet {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    inset-inline: 0;
+    width: 100%;
+    max-width: none;
+    /* Leave room above sheet so header + content stay readable */
+    max-height: min(88dvh, calc(100dvh - 2.5rem));
+    height: auto;
+    border-radius: 18px 18px 0 0;
+    padding: 0.85rem 0.9rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -12px 40px rgba(2, 8, 20, 0.35);
+  }
+
+  .cart-popup-header {
+    padding-bottom: 0.15rem;
+  }
+
+  .cart-popup-body {
+    /* Prefer scrolling the item list so footer (total + WhatsApp) stays visible */
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .cart-popup-footer {
+    margin-top: 0.55rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid #eef2f7;
+  }
+
+  body.rtl .cart-popup,
+  body.rtl .cart-sheet {
+    inset-inline: 0;
+    left: 0;
+    right: 0;
+  }
+
+  body.cart-open .fab {
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 @media (max-width: 720px) {
   .glass-modal--compact {
     width: min(94vw, 360px) !important;
     max-height: min(82vh, 560px) !important;
-  }
-
-  .cart-popup {
-    position: fixed;
-    top: auto;
-    bottom: 1rem;
-    inset-inline: 0.75rem;
-    width: auto;
-    max-height: min(68vh, 480px);
   }
 }
 

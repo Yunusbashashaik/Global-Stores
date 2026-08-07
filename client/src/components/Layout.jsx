@@ -53,13 +53,19 @@ export default function Layout({ lang, setLang, t }) {
       if (subsRef.current && !subsRef.current.contains(e.target)) {
         setSubsOpen(false);
       }
-      if (cartRef.current && !cartRef.current.contains(e.target)) {
+      if (
+        cartOpen &&
+        cartRef.current &&
+        !cartRef.current.contains(e.target) &&
+        !e.target.closest?.(".cart-sheet") &&
+        !e.target.closest?.(".cart-backdrop")
+      ) {
         setCartOpen(false);
       }
     };
     document.addEventListener("pointerdown", onDoc);
     return () => document.removeEventListener("pointerdown", onDoc);
-  }, []);
+  }, [cartOpen]);
 
   const featured = useMemo(() => {
     const byId = new Map(services.map((s) => [s.id, s]));
