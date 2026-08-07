@@ -8,9 +8,11 @@ import {
   nextSupportNumber,
 } from "../data/catalog.js";
 import ComplaintForm from "./ComplaintForm.jsx";
+import CartPopup from "./CartPopup.jsx";
 import GlassModal from "./GlassModal.jsx";
 import Logo from "./Logo.jsx";
 import SocialLinks from "./SocialLinks.jsx";
+import { useCart } from "../cart/CartContext.jsx";
 
 export default function Layout({ lang, setLang, t }) {
   const location = useLocation();
@@ -22,6 +24,9 @@ export default function Layout({ lang, setLang, t }) {
   const [subsOpen, setSubsOpen] = useState(false);
   const [services, setServices] = useState(SERVICES);
   const subsRef = useRef(null);
+  const cartRef = useRef(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { totalItems } = useCart();
 
   useEffect(() => {
     let cancelled = false;
@@ -40,12 +45,16 @@ export default function Layout({ lang, setLang, t }) {
   useEffect(() => {
     setMenuOpen(false);
     setSubsOpen(false);
+    setCartOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
     const onDoc = (e) => {
       if (subsRef.current && !subsRef.current.contains(e.target)) {
         setSubsOpen(false);
+      }
+      if (cartRef.current && !cartRef.current.contains(e.target)) {
+        setCartOpen(false);
       }
     };
     document.addEventListener("pointerdown", onDoc);
@@ -244,6 +253,32 @@ export default function Layout({ lang, setLang, t }) {
                 />
               </svg>
             </button>
+
+            <div className="header-cart" ref={cartRef}>
+              <button
+                type="button"
+                className="header-icon-btn header-cart-btn"
+                aria-label={t.cartTitle}
+                aria-expanded={cartOpen}
+                onClick={() => setCartOpen((v) => !v)}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    fill="currentColor"
+                    d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+                {totalItems > 0 ? (
+                  <span className="cart-badge">{totalItems > 99 ? "99+" : totalItems}</span>
+                ) : null}
+              </button>
+              <CartPopup
+                open={cartOpen}
+                onClose={() => setCartOpen(false)}
+                lang={lang}
+                t={t}
+              />
+            </div>
 
             <div className="lang-switch" aria-label="Language">
               <button

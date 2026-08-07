@@ -1,14 +1,11 @@
 import { useState } from "react";
-import {
-  buildOrderMessage,
-  buildWhatsAppUrl,
-  nextSupportNumber,
-} from "../data/catalog.js";
+import { useCart } from "../cart/CartContext.jsx";
 import GlassModal from "./GlassModal.jsx";
 import ServiceIcon from "./ServiceIcon.jsx";
 
 export default function ViewPlansModal({ service, lang, t, onClose }) {
   const [duration, setDuration] = useState("month");
+  const { addItem, getQty, increment, decrement, itemKey } = useCart();
   const price = service.prices[duration];
   const name = lang === "ar" ? service.nameAr : service.nameEn;
   const type =
@@ -18,18 +15,19 @@ export default function ViewPlansModal({ service, lang, t, onClose }) {
   const description =
     lang === "ar" ? service.descriptionAr : service.descriptionEn;
   const currency = lang === "ar" ? "د.ك" : "KD";
-
-  const onOrder = () => {
-    const phone = nextSupportNumber();
-    const message = buildOrderMessage(service, duration, price, lang);
-    window.open(buildWhatsAppUrl(phone, message), "_blank", "noopener,noreferrer");
-  };
+  const qty = getQty(service.id, duration);
+  const key = itemKey(service.id, duration);
 
   return (
-    <GlassModal title={name} onClose={onClose} tone="light">
+    <GlassModal
+      title={name}
+      onClose={onClose}
+      tone="light"
+      className="glass-modal--compact"
+    >
       <div className="view-plans-modal">
         <div className="view-plans-hero">
-          <ServiceIcon service={service} size="lg" />
+          <ServiceIcon service={service} size="md" />
           <p className="service-card-type">{type}</p>
         </div>
 
@@ -76,9 +74,33 @@ export default function ViewPlansModal({ service, lang, t, onClose }) {
           </button>
         </div>
 
-        <button type="button" className="btn btn-whatsapp" onClick={onOrder}>
-          {t.order}
-        </button>
+        {qty > 0 ? (
+          <div className="qty-selector" aria-label={t.quantity}>
+            <button
+              type="button"
+              aria-label={t.qtyDecrease}
+              onClick={() => decrement(key)}
+            >
+              −
+            </button>
+            <span className="qty-value">{qty}</span>
+            <button
+              type="button"
+              aria-label={t.qtyIncrease}
+              onClick={() => increment(key)}
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-primary btn-add-cart"
+            onClick={() => addItem(service, duration, price)}
+          >
+            {t.addToCart}
+          </button>
+        )}
       </div>
     </GlassModal>
   );

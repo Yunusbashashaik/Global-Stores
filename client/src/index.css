@@ -2471,6 +2471,266 @@ body.rtl .catalog-view-all--header:hover {
   border-radius: 12px;
 }
 
+.glass-modal--compact {
+  width: min(380px, 94vw) !important;
+  max-height: min(78vh, 560px) !important;
+  padding: 0.95rem 1rem 1.1rem !important;
+}
+
+.glass-modal--compact .glass-modal-header {
+  margin-bottom: 0.55rem;
+}
+
+.glass-modal--compact .glass-modal-header h2 {
+  font-size: 1.1rem;
+}
+
+.view-plans-modal {
+  gap: 0.7rem;
+}
+
+.view-plans-desc {
+  font-size: 0.86rem;
+  line-height: 1.45;
+  padding: 0.65rem 0.75rem;
+  max-height: 7.5rem;
+  overflow: auto;
+}
+
+.view-plans-hero .service-icon {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 0.15rem;
+}
+
+.btn-add-cart {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.qty-selector {
+  display: inline-grid;
+  grid-template-columns: 44px minmax(48px, 1fr) 44px;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #dbe3f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.qty-selector button {
+  height: 44px;
+  border: 0;
+  background: #eef2ff;
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.qty-selector button:hover {
+  background: #e0e7ff;
+}
+
+.qty-value,
+.qty-selector span {
+  text-align: center;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.qty-selector--compact {
+  width: auto;
+  grid-template-columns: 32px 36px 32px;
+  margin-top: 0.35rem;
+}
+
+.qty-selector--compact button {
+  height: 32px;
+  font-size: 1rem;
+}
+
+.header-cart {
+  position: relative;
+}
+
+.header-cart-btn {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -4px;
+  inset-inline-end: -4px;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.28rem;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  border: 2px solid rgba(8, 18, 34, 0.9);
+}
+
+.cart-popup {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  inset-inline-end: 0;
+  width: min(360px, calc(100vw - 1.5rem));
+  max-height: min(70vh, 520px);
+  overflow: auto;
+  z-index: 60;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 48px rgba(2, 8, 20, 0.35);
+  padding: 0.85rem;
+}
+
+.cart-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.cart-popup-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cart-popup-close {
+  border: 0;
+  background: #f1f5f9;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #0f172a;
+}
+
+.cart-empty {
+  margin: 0.5rem 0 0.85rem;
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
+.cart-item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 0.55rem;
+  align-items: start;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.cart-item-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cart-item-icon .service-icon {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.cart-item-meta {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.cart-item-meta strong {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.cart-item-meta > span {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.cart-item-side {
+  display: grid;
+  justify-items: end;
+  gap: 0.25rem;
+  font-size: 0.86rem;
+}
+
+.cart-item-remove {
+  border: 0;
+  background: transparent;
+  color: #ef4444;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cart-popup-footer {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.cart-popup-footer .btn-whatsapp {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.cart-clear {
+  width: 100%;
+  border-radius: 12px;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+body.rtl .cart-popup {
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+}
+
+@media (max-width: 720px) {
+  .glass-modal--compact {
+    width: min(94vw, 360px) !important;
+    max-height: min(82vh, 560px) !important;
+  }
+
+  .cart-popup {
+    position: fixed;
+    top: auto;
+    bottom: 1rem;
+    inset-inline: 0.75rem;
+    width: auto;
+    max-height: min(68vh, 480px);
+  }
+}
+
 
 @media (max-width: 1200px) {
   .services-grid {
