@@ -1,12 +1,8 @@
 import {
   DEFAULT_SERVICES,
-  STANDARD_DESCRIPTION_AR,
-  STANDARD_DESCRIPTION_EN,
 } from "@shared/defaultServices.js";
 
 export const SUPPORT_NUMBERS = ["923228791573", "923014968769"];
-
-export { STANDARD_DESCRIPTION_EN, STANDARD_DESCRIPTION_AR };
 
 let orderLineIndex = 0;
 
