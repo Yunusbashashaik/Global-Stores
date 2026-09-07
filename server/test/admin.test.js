@@ -170,4 +170,62 @@ describe("services + admin API", () => {
     assert.ok(ids.includes("expressvpn"));
     assert.ok(res.body.services.length >= DEFAULT_SERVICES.length);
   });
+
+  it("deletes a service from the public catalog", async () => {
+    const login = await request(app)
+      .post("/api/admin/login")
+      .send({ username: "admin", password: "globalstores" });
+    const token = login.body.token;
+
+    const created = await request(app)
+      .post("/api/admin/services")
+      .set("Authorization", `Bearer ${token}`)
+      .field("nameEn", "Temp Delete Me")
+      .field("descriptionEn", "EN")
+      .field("descriptionAr", "AR")
+      .field("priceMonth", "1")
+      .field("priceYear", "8");
+    assert.equal(created.status, 201);
+    const id = created.body.service.id;
+
+    const del = await request(app)
+      .delete(`/api/admin/services/${id}`)
+      .set("Authorization", `Bearer ${token}`);
+    assert.equal(del.status, 200);
+
+    const listed = await request(app).get("/api/services");
+    assert.equal(
+      listed.body.services.some((s) => s.id === id),
+      false,
+    );
+  });
+
+  it("returns and updates owner copy in public settings", async () => {
+    const res = await request(app).get("/api/settings");
+    assert.ok(res.body.settings.ownersEn);
+
+    const login = await request(app)
+      .post("/api/admin/login")
+      .send({ username: "admin", password: "globalstores" });
+    const token = login.body.token;
+    const put = await request(app)
+      .put("/api/admin/settings")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ ownersEn: "Owned by Test Owners" });
+    assert.equal(put.status, 200);
+    assert.equal(put.body.settings.ownersEn, "Owned by Test Owners");
+
+    const again = await request(app).get("/api/settings");
+    assert.equal(again.body.settings.ownersEn, "Owned by Test Owners");
+  });
+
+  it("rejects unauthenticated translate and delete", async () => {
+    const translate = await request(app)
+      .post("/api/admin/translate")
+      .send({ text: "Hello" });
+    assert.equal(translate.status, 401);
+
+    const del = await request(app).delete("/api/admin/services/netflix-private");
+    assert.equal(del.status, 401);
+  });
 });

@@ -3,6 +3,7 @@ import {
   createSessionToken,
 } from "../middleware/auth.js";
 import {
+  deleteService,
   getServiceById,
   insertService,
   listServices,
@@ -149,6 +150,68 @@ export function updateAdminService(req, res) {
     console.error("Service update failed:", err);
     res.status(400).json({ error: err.message || "Update failed" });
   }
+}
+
+export function deleteAdminService(req, res) {
+  try {
+    const removed = deleteService(req.params.id);
+    if (!removed) {
+      res.status(404).json({ error: "Service not found" });
+      return;
+    }
+    res.json({ ok: true, id: req.params.id });
+  } catch (err) {
+    console.error("Service delete failed:", err);
+    res.status(400).json({ error: err.message || "Delete failed" });
+  }
+}
+
+export async function translateAdmin(req, res) {
+  try {
+    const text = String(req.body?.text || "").trim();
+    if (!text) {
+      res.status(400).json({ error: "Text is required" });
+      return;
+    }
+    const translated = await translateEnglishToArabic(text);
+    res.json({ text: translated });
+  } catch (err) {
+    console.error("Translate failed:", err);
+    res.status(502).json({ error: err.message || "Translation failed" });
+  }
+}
+
+async function translateEnglishToArabic(text) {
+  const chunks = splitTranslateChunks(text);
+  const parts = [];
+  for (const chunk of chunks) {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|ar`;
+    const response = await fetch(url);
+    const data = await response.json().catch(() => ({}));
+    const translated = data?.responseData?.translatedText;
+    if (!translated) {
+      throw new Error("Translation service is unavailable");
+    }
+    parts.push(translated);
+  }
+  return parts.join("\n");
+}
+
+function splitTranslateChunks(text) {
+  if (text.length <= 450) return [text];
+  const lines = text.split("\n");
+  const chunks = [];
+  let current = "";
+  for (const line of lines) {
+    if ((current + "\n" + line).length > 450 && current) {
+      chunks.push(current);
+      current = line;
+    } else {
+      current = current ? `${current}\n${line}` : line;
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks;
 }
 
 export function getAdminSettings(_req, res) {

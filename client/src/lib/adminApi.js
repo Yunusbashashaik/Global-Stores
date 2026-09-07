@@ -227,6 +227,20 @@ export async function adminSaveSettings(token, patch) {
   return data.settings;
 }
 
+export async function adminDeleteService(token, id) {
+  await requestJson(`/api/admin/services/${id}`, { method: "DELETE", token });
+  window.dispatchEvent(new Event("gs:services-updated"));
+}
+
+export async function adminTranslate(token, text) {
+  const data = await requestJson("/api/admin/translate", {
+    method: "POST",
+    token,
+    body: { text },
+  });
+  return data.text;
+}
+
 export async function fetchPublicServices() {
   if (await hasBackendApi()) {
     try {

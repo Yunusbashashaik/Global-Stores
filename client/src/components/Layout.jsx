@@ -14,6 +14,7 @@ import ComplaintForm from "./ComplaintForm.jsx";
 import CartPopup from "./CartPopup.jsx";
 import GlassModal from "./GlassModal.jsx";
 import Logo from "./Logo.jsx";
+import OwnerBlock from "./OwnerBlock.jsx";
 import SocialLinks from "./SocialLinks.jsx";
 import { useCart } from "../cart/CartContext.jsx";
 
@@ -46,6 +47,8 @@ export default function Layout({ lang, setLang, t }) {
   );
   const complaintEmail = settings.complaintEmail || "global2stor2@gmail.com";
   const aboutText = lang === "ar" ? settings.aboutAr : settings.aboutEn;
+  const ownersText =
+    (lang === "ar" ? settings.ownersAr : settings.ownersEn) || t.footerOwners;
 
   useEffect(() => {
     setSupportNumbers(whatsappNumbers);
@@ -369,7 +372,7 @@ export default function Layout({ lang, setLang, t }) {
               <Logo className="logo-footer" />
             </strong>
             <p className="footer-meta-line">
-              <span>{t.footerOwners}</span>
+              <span>{ownersText}</span>
               {whatsappNumbers.map((num) => (
                 <span key={num}>
                   <span className="footer-meta-sep" aria-hidden="true">
@@ -417,7 +420,7 @@ export default function Layout({ lang, setLang, t }) {
       {modal === "about" ? (
         <GlassModal title={t.aboutTitle} onClose={closeModal}>
           <p className="modal-prose">{aboutText || t.brandIntro}</p>
-          <p className="modal-owners">{t.footerOwners}</p>
+          <OwnerBlock label={t.adminOwnerBlock} text={ownersText} />
           <SocialLinks t={t} />
         </GlassModal>
       ) : null}
@@ -425,7 +428,7 @@ export default function Layout({ lang, setLang, t }) {
       {modal === "contact" ? (
         <GlassModal title={t.contactTitle} onClose={closeModal}>
           <div className="contact-details">
-            <p className="modal-owners">{t.footerOwners}</p>
+            <OwnerBlock label={t.adminOwnerBlock} text={ownersText} />
             <ul>
               {whatsappNumbers.map((num) => (
                 <li key={num}>
