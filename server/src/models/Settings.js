@@ -39,6 +39,8 @@ export function getAllSettings() {
     ),
     aboutEn: getSetting("aboutEn", DEFAULT_SETTINGS.aboutEn),
     aboutAr: getSetting("aboutAr", DEFAULT_SETTINGS.aboutAr),
+    ownersEn: getSetting("ownersEn", DEFAULT_SETTINGS.ownersEn),
+    ownersAr: getSetting("ownersAr", DEFAULT_SETTINGS.ownersAr),
     socialLinks: getSetting("socialLinks", DEFAULT_SETTINGS.socialLinks),
   };
 }
@@ -67,6 +69,12 @@ export function updateSettings(patch = {}) {
   }
   if (typeof patch.aboutAr === "string") {
     setSetting("aboutAr", patch.aboutAr);
+  }
+  if (typeof patch.ownersEn === "string") {
+    setSetting("ownersEn", patch.ownersEn);
+  }
+  if (typeof patch.ownersAr === "string") {
+    setSetting("ownersAr", patch.ownersAr);
   }
 
   if (patch.socialLinks && typeof patch.socialLinks === "object") {

@@ -1,11 +1,13 @@
 import { Router } from "express";
 import {
   createAdminService,
+  deleteAdminService,
   getAdminServices,
   getAdminSettings,
   login,
   me,
   putAdminSettings,
+  translateAdmin,
   updateAdminService,
 } from "../controllers/adminController.js";
 import { requireAdmin } from "../middleware/auth.js";
@@ -31,5 +33,7 @@ adminRouter.put(
   handleUpload(uploadServiceImage),
   updateAdminService,
 );
+adminRouter.delete("/services/:id", requireAdmin, deleteAdminService);
+adminRouter.post("/translate", requireAdmin, translateAdmin);
 adminRouter.get("/settings", requireAdmin, getAdminSettings);
 adminRouter.put("/settings", requireAdmin, putAdminSettings);

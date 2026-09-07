@@ -7,6 +7,7 @@ export default function GlassModal({
   wide = false,
   tone = "dark",
   className = "",
+  elevated = false,
 }) {
   const closeRef = useRef(null);
 
@@ -26,7 +27,12 @@ export default function GlassModal({
 
   return (
     <div
-      className="glass-modal-backdrop"
+      className={[
+        "glass-modal-backdrop",
+        elevated ? "glass-modal-backdrop--elevated" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       role="presentation"
       onClick={onClose}
     >

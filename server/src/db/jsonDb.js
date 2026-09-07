@@ -146,6 +146,14 @@ export class JsonDatabase {
       return { changes: 1 };
     }
 
+    if (sql.startsWith("delete from services")) {
+      const id = namedOrPositional(params, "id", 0);
+      const before = this.data.services.length;
+      this.data.services = this.data.services.filter((s) => s.id !== id);
+      this.save();
+      return { changes: before - this.data.services.length };
+    }
+
     if (sql.startsWith("select value from settings")) {
       const key = namedOrPositional(params, "key", 0);
       const value = this.data.settings[key];

@@ -161,6 +161,13 @@ export function updateService(id, patch) {
   return getServiceById(id);
 }
 
+export function deleteService(id) {
+  const existing = getServiceById(id);
+  if (!existing) return false;
+  getDb().prepare("DELETE FROM services WHERE id = ?").run(id);
+  return true;
+}
+
 export function seedServicesIfEmpty(defaults) {
   if (countServices() > 0) return false;
   const insert = getDb().transaction((services) => {

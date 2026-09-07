@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import GlassModal from "./GlassModal.jsx";
 import {
   adminCreateService,
+  adminDeleteService,
   adminFetchServices,
   adminFetchSettings,
   adminLogin,
   adminSaveService,
   adminSaveSettings,
+  adminTranslate,
   adminValidateSession,
 } from "../lib/adminApi.js";
 
 const TOKEN_KEY = "globalstores_admin_token";
+const TOAST_MS = 3200;
 
 function getToken() {
   return localStorage.getItem(TOKEN_KEY) || "";
@@ -36,35 +39,112 @@ const EDIT_SECTIONS = [
   { id: "about", labelKey: "adminEditAbout" },
 ];
 
+const SOCIAL_LABELS = {
+  whatsapp: "socialWhatsApp",
+  instagram: "socialInstagram",
+  tiktok: "socialTikTok",
+  youtube: "socialYouTube",
+  facebook: "socialFacebook",
+};
+
+function toSettingsDraft(settings) {
+  return {
+    complaintEmail: settings.complaintEmail || "",
+    whatsappNumbers: [...(settings.whatsappNumbers || [])],
+    aboutEn: settings.aboutEn || "",
+    aboutAr: settings.aboutAr || "",
+    ownersEn: settings.ownersEn || "",
+    ownersAr: settings.ownersAr || "",
+    socialLinks: {
+      whatsapp: settings.socialLinks?.whatsapp || "",
+      instagram: settings.socialLinks?.instagram || "",
+      tiktok: settings.socialLinks?.tiktok || "",
+      youtube: settings.socialLinks?.youtube || "",
+      facebook: settings.socialLinks?.facebook || "",
+    },
+  };
+}
+
+function formatWhatsAppInput(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  return digits ? `+${digits}` : "+";
+}
+
+function toDraft(service) {
+  return {
+    nameEn: service.nameEn || "",
+    nameAr: service.nameAr || "",
+    descriptionEn: service.descriptionEn || "",
+    descriptionAr: service.descriptionAr || "",
+    prices: {
+      month: service.prices?.month ?? "",
+      year: service.prices?.year ?? "",
+    },
+  };
+}
+
 export default function AdminPanel({ open, onClose, t }) {
   const [token, setTokenState] = useState(() => getToken());
   const [view, setView] = useState("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   const [services, setServices] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [draft, setDraft] = useState(emptyServiceDraft);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
-
-  const [editMenuOpen, setEditMenuOpen] = useState(false);
-
   const [settingsDraft, setSettingsDraft] = useState(null);
+
   const [confirmContact, setConfirmContact] = useState(false);
+  const [confirmEmail, setConfirmEmail] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const cacheRef = useRef({ services: null, settings: null });
+  const toastTimer = useRef(null);
+
+  const showToast = useCallback((text) => {
+    setToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(""), TOAST_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const prefetch = useCallback(
+    async (sessionToken) => {
+      const [list, settings] = await Promise.all([
+        cacheRef.current.services
+          ? Promise.resolve(cacheRef.current.services)
+          : adminFetchServices(sessionToken),
+        cacheRef.current.settings
+          ? Promise.resolve(cacheRef.current.settings)
+          : adminFetchSettings(sessionToken),
+      ]);
+      cacheRef.current.services = list;
+      cacheRef.current.settings = settings;
+      setServices(list);
+      setSettingsDraft(toSettingsDraft(settings));
+      return { list, settings };
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!open) return;
     setError("");
-    setMessage("");
-    setEditMenuOpen(false);
-    setImageFile(null);
-    setImagePreview("");
     setConfirmContact(false);
+    setConfirmEmail(false);
+    setConfirmDelete(false);
 
     const existing = getToken();
     if (!existing) {
@@ -76,7 +156,7 @@ export default function AdminPanel({ open, onClose, t }) {
     let cancelled = false;
     setChecking(true);
     adminValidateSession(existing)
-      .then((ok) => {
+      .then(async (ok) => {
         if (cancelled) return;
         if (!ok) {
           setToken("");
@@ -86,6 +166,7 @@ export default function AdminPanel({ open, onClose, t }) {
         }
         setTokenState(existing);
         setView("dashboard");
+        prefetch(existing).catch(() => {});
       })
       .finally(() => {
         if (!cancelled) setChecking(false);
@@ -94,7 +175,7 @@ export default function AdminPanel({ open, onClose, t }) {
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, prefetch]);
 
   useEffect(() => {
     return () => {
@@ -102,41 +183,17 @@ export default function AdminPanel({ open, onClose, t }) {
     };
   }, [imagePreview]);
 
-  const loadServices = async (sessionToken) => {
-    const list = await adminFetchServices(sessionToken);
-    setServices(list);
-    return list;
-  };
-
-  const loadSettings = async (sessionToken) => {
-    const settings = await adminFetchSettings(sessionToken);
-    setSettingsDraft({
-      complaintEmail: settings.complaintEmail || "",
-      whatsappNumbers: [...(settings.whatsappNumbers || [])],
-      aboutEn: settings.aboutEn || "",
-      aboutAr: settings.aboutAr || "",
-      socialLinks: {
-        whatsapp: settings.socialLinks?.whatsapp || "",
-        instagram: settings.socialLinks?.instagram || "",
-        tiktok: settings.socialLinks?.tiktok || "",
-        youtube: settings.socialLinks?.youtube || "",
-        facebook: settings.socialLinks?.facebook || "",
-      },
-    });
-    return settings;
-  };
-
   const onLogin = async (e) => {
     e.preventDefault();
     setBusy(true);
     setError("");
-    setMessage("");
     try {
       const sessionToken = await adminLogin(username, password);
       setToken(sessionToken);
       setTokenState(sessionToken);
       setPassword("");
       setView("dashboard");
+      prefetch(sessionToken).catch(() => {});
     } catch (err) {
       setError(err.message);
     } finally {
@@ -148,12 +205,22 @@ export default function AdminPanel({ open, onClose, t }) {
     setToken("");
     setTokenState("");
     setView("login");
+    cacheRef.current = { services: null, settings: null };
     setServices([]);
     setSelectedId("");
     setDraft(emptyServiceDraft);
     setSettingsDraft(null);
-    setMessage("");
+    setToast("");
     setError("");
+  };
+
+  const goDashboard = () => {
+    setView("dashboard");
+    setError("");
+    setSelectedId("");
+    setDraft(emptyServiceDraft);
+    setImageFile(null);
+    setImagePreview("");
   };
 
   const openAdd = () => {
@@ -162,31 +229,29 @@ export default function AdminPanel({ open, onClose, t }) {
     setImageFile(null);
     setImagePreview("");
     setError("");
-    setMessage("");
   };
 
   const openEditMenu = () => {
-    setEditMenuOpen((v) => !v);
+    setView("edit-menu");
+    setError("");
+    prefetch(token).catch((err) => setError(err.message));
   };
 
   const selectEditSection = async (sectionId) => {
-    setEditMenuOpen(false);
     setError("");
-    setMessage("");
     setBusy(true);
     try {
       if (sectionId === "services") {
-        const list = await loadServices(token);
-        const first = list[0];
-        setSelectedId(first?.id || "");
-        setDraft(first ? toDraft(first) : emptyServiceDraft);
+        await prefetch(token);
+        setSelectedId("");
+        setDraft(emptyServiceDraft);
         setImageFile(null);
-        setImagePreview(first?.imageUrl || "");
+        setImagePreview("");
         setView("edit-services");
-      } else {
-        await loadSettings(token);
-        setView(`edit-${sectionId}`);
+        return;
       }
+      await prefetch(token);
+      setView(`edit-${sectionId}`);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -202,7 +267,6 @@ export default function AdminPanel({ open, onClose, t }) {
       setImagePreview(service.imageUrl || "");
     }
     setImageFile(null);
-    setMessage("");
     setError("");
   };
 
@@ -223,13 +287,26 @@ export default function AdminPanel({ open, onClose, t }) {
     setImagePreview(URL.createObjectURL(file));
   };
 
+  const onTranslate = async () => {
+    if (!draft.descriptionEn.trim()) return;
+    setTranslating(true);
+    setError("");
+    try {
+      const arabic = await adminTranslate(token, draft.descriptionEn);
+      setDraft((d) => ({ ...d, descriptionAr: arabic }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const onSaveNew = async (e) => {
     e.preventDefault();
     setBusy(true);
     setError("");
-    setMessage("");
     try {
-      await adminCreateService(
+      const created = await adminCreateService(
         token,
         {
           nameEn: draft.nameEn,
@@ -243,11 +320,14 @@ export default function AdminPanel({ open, onClose, t }) {
         },
         imageFile,
       );
-      setMessage(t.adminCreated);
+      cacheRef.current.services = null;
+      await prefetch(token);
+      showToast(t.adminCreated);
       setDraft(emptyServiceDraft);
       setImageFile(null);
       setImagePreview("");
-      setView("dashboard");
+      goDashboard();
+      void created;
     } catch (err) {
       setError(err.message);
     } finally {
@@ -260,7 +340,6 @@ export default function AdminPanel({ open, onClose, t }) {
     if (!selectedId) return;
     setBusy(true);
     setError("");
-    setMessage("");
     try {
       const updated = await adminSaveService(
         token,
@@ -277,11 +356,13 @@ export default function AdminPanel({ open, onClose, t }) {
         },
         imageFile,
       );
-      setServices((prev) => prev.map((s) => (s.id === selectedId ? updated : s)));
+      const next = services.map((s) => (s.id === selectedId ? updated : s));
+      setServices(next);
+      cacheRef.current.services = next;
       setDraft(toDraft(updated));
       setImageFile(null);
       setImagePreview(updated.imageUrl || "");
-      setMessage(t.adminSaved);
+      showToast(t.adminSaved);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -294,21 +375,21 @@ export default function AdminPanel({ open, onClose, t }) {
     setDraft(emptyServiceDraft);
     setImageFile(null);
     setImagePreview("");
-    setMessage("");
     setError("");
-    setView("dashboard");
   };
 
-  const onSaveEmail = async (e) => {
-    e.preventDefault();
+  const confirmDeleteService = async () => {
+    if (!selectedId) return;
     setBusy(true);
     setError("");
-    setMessage("");
     try {
-      await adminSaveSettings(token, {
-        complaintEmail: settingsDraft.complaintEmail,
-      });
-      setMessage(t.adminSettingsSaved);
+      await adminDeleteService(token, selectedId);
+      const next = services.filter((s) => s.id !== selectedId);
+      setServices(next);
+      cacheRef.current.services = next;
+      setConfirmDelete(false);
+      cancelServiceEdit();
+      showToast(t.adminDeleted);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -316,22 +397,36 @@ export default function AdminPanel({ open, onClose, t }) {
     }
   };
 
-  const onSaveContact = async (e) => {
-    e.preventDefault();
-    setConfirmContact(true);
+  const persistEmail = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const settings = await adminSaveSettings(token, {
+        complaintEmail: settingsDraft.complaintEmail,
+      });
+      cacheRef.current.settings = settings;
+      setSettingsDraft(toSettingsDraft(settings));
+      setConfirmEmail(false);
+      showToast(t.adminSettingsSaved);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const confirmSaveContact = async () => {
     setBusy(true);
     setError("");
-    setMessage("");
     try {
       const numbers = (settingsDraft.whatsappNumbers || [])
         .map((n) => String(n).replace(/\D/g, ""))
         .filter(Boolean);
-      await adminSaveSettings(token, { whatsappNumbers: numbers });
+      const settings = await adminSaveSettings(token, { whatsappNumbers: numbers });
+      cacheRef.current.settings = settings;
+      setSettingsDraft(toSettingsDraft(settings));
       setConfirmContact(false);
-      setMessage(t.adminSettingsSaved);
+      showToast(t.adminSettingsSaved);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -343,14 +438,17 @@ export default function AdminPanel({ open, onClose, t }) {
     e.preventDefault();
     setBusy(true);
     setError("");
-    setMessage("");
     try {
-      await adminSaveSettings(token, {
+      const settings = await adminSaveSettings(token, {
         aboutEn: settingsDraft.aboutEn,
         aboutAr: settingsDraft.aboutAr,
+        ownersEn: settingsDraft.ownersEn,
+        ownersAr: settingsDraft.ownersAr,
         socialLinks: settingsDraft.socialLinks,
       });
-      setMessage(t.adminSettingsSaved);
+      cacheRef.current.settings = settings;
+      setSettingsDraft(toSettingsDraft(settings));
+      showToast(t.adminSettingsSaved);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -360,13 +458,14 @@ export default function AdminPanel({ open, onClose, t }) {
 
   if (!open) return null;
 
-  const title =
-    view === "login"
-      ? t.adminLoginTitle
-      : view === "dashboard"
-        ? t.adminDashboardTitle
-        : view === "add"
-          ? t.adminAddServices
+  const selectedService = services.find((s) => s.id === selectedId);
+  const screenTitle =
+    view === "dashboard"
+      ? t.adminDashboardTitle
+      : view === "add"
+        ? t.adminAddServices
+        : view === "edit-menu"
+          ? t.adminEditServicesBtn
           : view === "edit-services"
             ? t.adminEditServices
             : view === "edit-email"
@@ -377,56 +476,115 @@ export default function AdminPanel({ open, onClose, t }) {
                   ? t.adminEditAbout
                   : t.adminNavLabel;
 
+  const backTarget =
+    view === "add" || view === "edit-menu"
+      ? "dashboard"
+      : view.startsWith("edit-")
+        ? "edit-menu"
+        : null;
+
   return (
     <>
-      <GlassModal title={title} onClose={onClose} wide className="admin-modal">
-        {checking ? (
-          <p className="catalog-note">{t.adminLoading}</p>
-        ) : view === "login" ? (
-          <form className="admin-login-form" onSubmit={onLogin}>
-            <p className="admin-lead">{t.adminLoginLead}</p>
-            <label>
-              {t.adminUsername}
-              <input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-                required
-              />
-            </label>
-            <label>
-              {t.adminPassword}
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-            </label>
-            {error ? <p className="error-text">{error}</p> : null}
-            <button type="submit" className="btn btn-primary" disabled={busy}>
-              {busy ? t.adminWorking : t.adminSignIn}
-            </button>
-          </form>
-        ) : view === "dashboard" ? (
-          <div className="admin-dashboard">
-            <p className="admin-lead">{t.adminDashboardLead}</p>
-            <div className="admin-dashboard-actions">
-              <button type="button" className="btn btn-primary" onClick={openAdd}>
-                {t.adminAddServices}
+      {view === "login" || checking ? (
+        <GlassModal
+          title={t.adminLoginTitle}
+          onClose={onClose}
+          className="admin-login-modal"
+        >
+          {checking ? (
+            <p className="catalog-note">{t.adminLoading}</p>
+          ) : (
+            <form className="admin-login-form" onSubmit={onLogin}>
+              <div className="admin-login-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+                  />
+                </svg>
+              </div>
+              <p className="admin-lead">{t.adminLoginLead}</p>
+              <label>
+                {t.adminUsername}
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  required
+                />
+              </label>
+              <label>
+                {t.adminPassword}
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </label>
+              {error ? <p className="error-text">{error}</p> : null}
+              <button type="submit" className="btn btn-primary" disabled={busy}>
+                {busy ? t.adminWorking : t.adminSignIn}
+              </button>
+            </form>
+          )}
+        </GlassModal>
+      ) : (
+        <div className="admin-fs" role="dialog" aria-modal="true" aria-labelledby="admin-fs-title">
+          <header className="admin-fs-header">
+            {backTarget ? (
+              <button
+                type="button"
+                className="admin-back-btn"
+                onClick={() =>
+                  backTarget === "dashboard" ? goDashboard() : setView(backTarget)
+                }
+              >
+                ← {t.adminBack}
+              </button>
+            ) : (
+              <span className="admin-fs-spacer" />
+            )}
+            <h1 id="admin-fs-title">{screenTitle}</h1>
+            <div className="admin-fs-header-actions">
+              <button type="button" className="btn btn-ghost" onClick={logout}>
+                {t.adminLogout}
               </button>
               <button
                 type="button"
-                className="btn btn-ghost"
-                aria-expanded={editMenuOpen}
-                onClick={openEditMenu}
+                className="glass-modal-close"
+                onClick={onClose}
+                aria-label={t.close}
               >
-                {t.adminEditServicesBtn}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M18.3 5.71 12 12.01l-6.3-6.3-1.4 1.41 6.29 6.3-6.3 6.29 1.42 1.42 6.29-6.3 6.3 6.3 1.41-1.42-6.3-6.29 6.3-6.3z"
+                  />
+                </svg>
               </button>
             </div>
-            {editMenuOpen ? (
-              <div className="admin-edit-sections" role="menu">
+          </header>
+
+          <div className="admin-fs-body">
+            {view === "dashboard" ? (
+              <div className="admin-dashboard">
+                <p className="admin-lead">{t.adminDashboardLead}</p>
+                <div className="admin-dashboard-actions">
+                  <button type="button" className="btn btn-primary admin-dash-card" onClick={openAdd}>
+                    {t.adminAddServices}
+                  </button>
+                  <button type="button" className="btn btn-ghost admin-dash-card" onClick={openEditMenu}>
+                    {t.adminEditServicesBtn}
+                  </button>
+                </div>
+                {error ? <p className="error-text">{error}</p> : null}
+              </div>
+            ) : null}
+
+            {view === "edit-menu" ? (
+              <div className="admin-edit-sections admin-edit-sections--wide" role="menu">
                 {EDIT_SECTIONS.map((section) => (
                   <button
                     key={section.id}
@@ -441,222 +599,293 @@ export default function AdminPanel({ open, onClose, t }) {
                 ))}
               </div>
             ) : null}
-            {error ? <p className="error-text">{error}</p> : null}
-            {message ? <p className="success-text">{message}</p> : null}
-            <button type="button" className="btn btn-ghost admin-logout-btn" onClick={logout}>
-              {t.adminLogout}
-            </button>
-          </div>
-        ) : view === "add" ? (
-          <ServiceForm
-            t={t}
-            draft={draft}
-            setDraft={setDraft}
-            imagePreview={imagePreview}
-            onPickImage={onPickImage}
-            onSubmit={onSaveNew}
-            onCancel={() => setView("dashboard")}
-            busy={busy}
-            error={error}
-            message={message}
-            requireImage
-          />
-        ) : view === "edit-services" ? (
-          <div className="admin-layout">
-            <aside className="admin-sidebar" aria-label="Services">
-              {services.map((service) => (
-                <button
-                  key={service.id}
-                  type="button"
-                  className={`admin-service-btn${selectedId === service.id ? " active" : ""}`}
-                  onClick={() => onSelectService(service.id)}
-                >
-                  <span>
-                    {service.icon} {service.nameEn}
-                  </span>
-                  <small>
-                    {service.outOfStock
-                      ? t.outOfStock
-                      : `${service.prices.month} / ${service.prices.year} KD`}
-                  </small>
-                </button>
-              ))}
-            </aside>
-            <ServiceForm
-              t={t}
-              draft={draft}
-              setDraft={setDraft}
-              imagePreview={imagePreview}
-              onPickImage={onPickImage}
-              onSubmit={onSaveEditService}
-              onCancel={cancelServiceEdit}
-              busy={busy}
-              error={error}
-              message={message}
-              disabled={!selectedId}
-            />
-          </div>
-        ) : view === "edit-email" && settingsDraft ? (
-          <form className="admin-editor" onSubmit={onSaveEmail}>
-            <label>
-              {t.adminComplaintEmail}
-              <input
-                type="email"
-                value={settingsDraft.complaintEmail}
-                onChange={(e) =>
-                  setSettingsDraft((d) => ({ ...d, complaintEmail: e.target.value }))
-                }
-                required
+
+            {view === "add" ? (
+              <ServiceForm
+                t={t}
+                draft={draft}
+                setDraft={setDraft}
+                imagePreview={imagePreview}
+                onPickImage={onPickImage}
+                onTranslate={onTranslate}
+                translating={translating}
+                onSubmit={onSaveNew}
+                onCancel={goDashboard}
+                busy={busy}
+                error={error}
+                requireImage
               />
-            </label>
-            {error ? <p className="error-text">{error}</p> : null}
-            {message ? <p className="success-text">{message}</p> : null}
-            <div className="admin-form-actions">
-              <button type="submit" className="btn btn-primary" disabled={busy}>
-                {busy ? t.adminWorking : t.adminSave}
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setView("dashboard")}
-              >
-                {t.adminCancel}
-              </button>
-            </div>
-          </form>
-        ) : view === "edit-contact" && settingsDraft ? (
-          <form className="admin-editor" onSubmit={onSaveContact}>
-            <p className="admin-lead">{t.adminContactLead}</p>
-            {(settingsDraft.whatsappNumbers || []).map((num, index) => (
-              <label key={`wa-${index}`}>
-                {t.adminWhatsAppNumber} {index + 1}
-                <input
-                  value={num}
-                  onChange={(e) =>
-                    setSettingsDraft((d) => {
-                      const next = [...d.whatsappNumbers];
-                      next[index] = e.target.value;
-                      return { ...d, whatsappNumbers: next };
-                    })
-                  }
-                  required
+            ) : null}
+
+            {view === "edit-services" ? (
+              <div className="admin-layout">
+                <aside className="admin-sidebar" aria-label="Services">
+                  {services.map((service) => (
+                    <button
+                      key={service.id}
+                      type="button"
+                      className={`admin-service-btn${selectedId === service.id ? " active" : ""}`}
+                      onClick={() => onSelectService(service.id)}
+                    >
+                      <span>
+                        {service.icon} {service.nameEn}
+                      </span>
+                      <small>
+                        {service.outOfStock
+                          ? t.outOfStock
+                          : `${service.prices.month} / ${service.prices.year} KD`}
+                      </small>
+                    </button>
+                  ))}
+                </aside>
+                <ServiceForm
+                  t={t}
+                  draft={draft}
+                  setDraft={setDraft}
+                  imagePreview={imagePreview}
+                  onPickImage={onPickImage}
+                  onTranslate={onTranslate}
+                  translating={translating}
+                  onSubmit={onSaveEditService}
+                  onCancel={cancelServiceEdit}
+                  onDelete={() => setConfirmDelete(true)}
+                  busy={busy}
+                  error={error}
+                  disabled={!selectedId}
+                  showDelete
                 />
-              </label>
-            ))}
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() =>
-                setSettingsDraft((d) => ({
-                  ...d,
-                  whatsappNumbers: [...d.whatsappNumbers, ""],
-                }))
-              }
-            >
-              {t.adminAddWhatsApp}
-            </button>
-            {error ? <p className="error-text">{error}</p> : null}
-            {message ? <p className="success-text">{message}</p> : null}
-            <div className="admin-form-actions">
-              <button type="submit" className="btn btn-primary" disabled={busy}>
-                {busy ? t.adminWorking : t.adminSave}
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setView("dashboard")}
+              </div>
+            ) : null}
+
+            {view === "edit-email" && settingsDraft ? (
+              <form
+                className="admin-editor"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setConfirmEmail(true);
+                }}
               >
-                {t.adminCancel}
-              </button>
-            </div>
-          </form>
-        ) : view === "edit-about" && settingsDraft ? (
-          <form className="admin-editor" onSubmit={onSaveAbout}>
-            <label>
-              {t.adminAboutEn}
-              <textarea
-                value={settingsDraft.aboutEn}
-                onChange={(e) =>
-                  setSettingsDraft((d) => ({ ...d, aboutEn: e.target.value }))
-                }
-                required
-              />
-            </label>
-            <label>
-              {t.adminAboutAr}
-              <textarea
-                value={settingsDraft.aboutAr}
-                onChange={(e) =>
-                  setSettingsDraft((d) => ({ ...d, aboutAr: e.target.value }))
-                }
-                required
-                dir="rtl"
-              />
-            </label>
-            {["whatsapp", "instagram", "tiktok", "youtube", "facebook"].map(
-              (key) => {
-                const labelMap = {
-                  whatsapp: "socialWhatsApp",
-                  instagram: "socialInstagram",
-                  tiktok: "socialTikTok",
-                  youtube: "socialYouTube",
-                  facebook: "socialFacebook",
-                };
-                return (
-                <label key={key}>
-                  {t[labelMap[key]] || key}
+                <label>
+                  {t.adminComplaintEmail}
                   <input
-                    type="url"
-                    value={settingsDraft.socialLinks[key] || ""}
+                    type="email"
+                    value={settingsDraft.complaintEmail}
                     onChange={(e) =>
-                      setSettingsDraft((d) => ({
-                        ...d,
-                        socialLinks: { ...d.socialLinks, [key]: e.target.value },
-                      }))
+                      setSettingsDraft((d) => ({ ...d, complaintEmail: e.target.value }))
                     }
+                    required
                   />
                 </label>
-                );
-              },
-            )}
-            {error ? <p className="error-text">{error}</p> : null}
-            {message ? <p className="success-text">{message}</p> : null}
-            <div className="admin-form-actions">
-              <button type="submit" className="btn btn-primary" disabled={busy}>
-                {busy ? t.adminWorking : t.adminSave}
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setView("dashboard")}
+                {error ? <p className="error-text">{error}</p> : null}
+                <div className="admin-form-actions">
+                  <button type="submit" className="btn btn-primary" disabled={busy}>
+                    {busy ? t.adminWorking : t.adminSave}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setView("edit-menu")}
+                  >
+                    {t.adminCancel}
+                  </button>
+                </div>
+              </form>
+            ) : null}
+
+            {view === "edit-contact" && settingsDraft ? (
+              <form
+                className="admin-editor"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setConfirmContact(true);
+                }}
               >
-                {t.adminCancel}
-              </button>
+                <p className="admin-lead">{t.adminContactLead}</p>
+                {(settingsDraft.whatsappNumbers || []).map((num, index) => (
+                  <label key={`wa-${index}`}>
+                    {t.adminWhatsAppNumber} {index + 1}
+                    <input
+                      inputMode="tel"
+                      value={formatWhatsAppInput(num)}
+                      onChange={(e) =>
+                        setSettingsDraft((d) => {
+                          const next = [...d.whatsappNumbers];
+                          next[index] = e.target.value.replace(/\D/g, "");
+                          return { ...d, whatsappNumbers: next };
+                        })
+                      }
+                      required
+                    />
+                  </label>
+                ))}
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() =>
+                    setSettingsDraft((d) => ({
+                      ...d,
+                      whatsappNumbers: [...d.whatsappNumbers, ""],
+                    }))
+                  }
+                >
+                  {t.adminAddWhatsApp}
+                </button>
+                {error ? <p className="error-text">{error}</p> : null}
+                <div className="admin-form-actions">
+                  <button type="submit" className="btn btn-primary" disabled={busy}>
+                    {busy ? t.adminWorking : t.adminSave}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setView("edit-menu")}
+                  >
+                    {t.adminCancel}
+                  </button>
+                </div>
+              </form>
+            ) : null}
+
+            {view === "edit-about" && settingsDraft ? (
+              <form className="admin-editor" onSubmit={onSaveAbout}>
+                <section className="admin-owner-block">
+                  <h3>{t.adminOwnerBlock}</h3>
+                  <label>
+                    {t.adminOwnersEn}
+                    <textarea
+                      value={settingsDraft.ownersEn}
+                      onChange={(e) =>
+                        setSettingsDraft((d) => ({ ...d, ownersEn: e.target.value }))
+                      }
+                      required
+                    />
+                  </label>
+                  <label>
+                    {t.adminOwnersAr}
+                    <textarea
+                      value={settingsDraft.ownersAr}
+                      onChange={(e) =>
+                        setSettingsDraft((d) => ({ ...d, ownersAr: e.target.value }))
+                      }
+                      required
+                      dir="rtl"
+                    />
+                  </label>
+                </section>
+                <label>
+                  {t.adminAboutEn}
+                  <textarea
+                    value={settingsDraft.aboutEn}
+                    onChange={(e) =>
+                      setSettingsDraft((d) => ({ ...d, aboutEn: e.target.value }))
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  {t.adminAboutAr}
+                  <textarea
+                    value={settingsDraft.aboutAr}
+                    onChange={(e) =>
+                      setSettingsDraft((d) => ({ ...d, aboutAr: e.target.value }))
+                    }
+                    required
+                    dir="rtl"
+                  />
+                </label>
+                {["whatsapp", "instagram", "tiktok", "youtube", "facebook"].map((key) => (
+                  <label key={key}>
+                    {t[SOCIAL_LABELS[key]] || key}
+                    <input
+                      type="url"
+                      value={settingsDraft.socialLinks[key] || ""}
+                      onChange={(e) =>
+                        setSettingsDraft((d) => ({
+                          ...d,
+                          socialLinks: { ...d.socialLinks, [key]: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+                {error ? <p className="error-text">{error}</p> : null}
+                <div className="admin-form-actions">
+                  <button type="submit" className="btn btn-primary" disabled={busy}>
+                    {busy ? t.adminWorking : t.adminSave}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setView("edit-menu")}
+                  >
+                    {t.adminCancel}
+                  </button>
+                </div>
+              </form>
+            ) : null}
+          </div>
+
+          {toast ? (
+            <div className="admin-toast" role="status">
+              {toast}
             </div>
-          </form>
-        ) : null}
-      </GlassModal>
+          ) : null}
+        </div>
+      )}
 
       {confirmContact ? (
         <GlassModal
+          elevated
           title={t.adminConfirmContactTitle}
           onClose={() => setConfirmContact(false)}
         >
           <p className="modal-prose">{t.adminConfirmContactBody}</p>
           <div className="admin-form-actions">
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={busy}
-              onClick={confirmSaveContact}
-            >
+            <button type="button" className="btn btn-primary" disabled={busy} onClick={confirmSaveContact}>
               {busy ? t.adminWorking : t.adminConfirm}
             </button>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => setConfirmContact(false)}
-            >
+            <button type="button" className="btn btn-ghost" onClick={() => setConfirmContact(false)}>
+              {t.adminCancel}
+            </button>
+          </div>
+        </GlassModal>
+      ) : null}
+
+      {confirmEmail ? (
+        <GlassModal
+          elevated
+          title={t.adminConfirmEmailTitle}
+          onClose={() => setConfirmEmail(false)}
+        >
+          <p className="modal-prose">{t.adminConfirmEmailBody}</p>
+          <div className="admin-form-actions">
+            <button type="button" className="btn btn-primary" disabled={busy} onClick={persistEmail}>
+              {busy ? t.adminWorking : t.adminConfirm}
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={() => setConfirmEmail(false)}>
+              {t.adminCancel}
+            </button>
+          </div>
+        </GlassModal>
+      ) : null}
+
+      {confirmDelete ? (
+        <GlassModal
+          elevated
+          title={t.adminConfirmDeleteTitle}
+          onClose={() => setConfirmDelete(false)}
+        >
+          <p className="modal-prose">
+            {(t.adminConfirmDeleteBody || "").replace(
+              "{name}",
+              selectedService?.nameEn || "",
+            )}
+          </p>
+          <div className="admin-form-actions">
+            <button type="button" className="btn btn-danger" disabled={busy} onClick={confirmDeleteService}>
+              {busy ? t.adminWorking : t.adminConfirm}
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={() => setConfirmDelete(false)}>
               {t.adminCancel}
             </button>
           </div>
@@ -672,16 +901,19 @@ function ServiceForm({
   setDraft,
   imagePreview,
   onPickImage,
+  onTranslate,
+  translating,
   onSubmit,
   onCancel,
+  onDelete,
   busy,
   error,
-  message,
-  requireImage = false,
   disabled = false,
+  showDelete = false,
+  requireImage = false,
 }) {
   return (
-    <form className="admin-editor" onSubmit={onSubmit}>
+    <form className="admin-editor admin-editor--wide" onSubmit={onSubmit}>
       <label>
         {t.adminImageUpload}
         <input
@@ -707,16 +939,37 @@ function ServiceForm({
         />
       </label>
       <label>
-        {t.adminDescEn}
-        <textarea
-          value={draft.descriptionEn}
-          onChange={(e) =>
-            setDraft((d) => ({ ...d, descriptionEn: e.target.value }))
-          }
-          required
+        {t.adminNameAr}
+        <input
+          value={draft.nameAr}
+          onChange={(e) => setDraft((d) => ({ ...d, nameAr: e.target.value }))}
+          dir="rtl"
           disabled={disabled}
         />
       </label>
+      <div className="admin-field-head">
+        <span>{t.adminDescEn}</span>
+        <button
+          type="button"
+          className="btn btn-ghost admin-translate-btn"
+          onClick={onTranslate}
+          disabled={disabled || translating || !draft.descriptionEn.trim()}
+        >
+          {translating ? t.adminTranslating : t.adminTranslate}
+        </button>
+      </div>
+      <label className="admin-sr-only" htmlFor="admin-desc-en">
+        {t.adminDescEn}
+      </label>
+      <textarea
+        id="admin-desc-en"
+        value={draft.descriptionEn}
+        onChange={(e) =>
+          setDraft((d) => ({ ...d, descriptionEn: e.target.value }))
+        }
+        required
+        disabled={disabled}
+      />
       <label>
         {t.adminDescAr}
         <textarea
@@ -767,7 +1020,6 @@ function ServiceForm({
       </div>
       <p className="admin-hint">{t.adminOutOfStockHint}</p>
       {error ? <p className="error-text">{error}</p> : null}
-      {message ? <p className="success-text">{message}</p> : null}
       <div className="admin-form-actions">
         <button type="submit" className="btn btn-primary" disabled={busy || disabled}>
           {busy ? t.adminWorking : t.adminSave}
@@ -775,20 +1027,17 @@ function ServiceForm({
         <button type="button" className="btn btn-ghost" onClick={onCancel}>
           {t.adminCancel}
         </button>
+        {showDelete ? (
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={onDelete}
+            disabled={busy || disabled}
+          >
+            {t.adminDelete}
+          </button>
+        ) : null}
       </div>
     </form>
   );
-}
-
-function toDraft(service) {
-  return {
-    nameEn: service.nameEn || "",
-    nameAr: service.nameAr || "",
-    descriptionEn: service.descriptionEn || "",
-    descriptionAr: service.descriptionAr || "",
-    prices: {
-      month: service.prices?.month ?? "",
-      year: service.prices?.year ?? "",
-    },
-  };
 }
