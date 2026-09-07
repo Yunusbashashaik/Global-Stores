@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { after, before, describe, it } from "node:test";
+import fs from "fs";
+import os from "os";
+import path from "path";
 import express from "express";
 import request from "supertest";
+import { closeDatabase, initDatabase } from "../src/db/connection.js";
+import { seedDatabase } from "../src/db/seed.js";
 import { complaintRouter } from "../src/routes/complaints.js";
 
 const PNG = Buffer.from(
@@ -9,9 +14,22 @@ const PNG = Buffer.from(
   "hex",
 );
 
+const testDir = fs.mkdtempSync(path.join(os.tmpdir(), "gs-complaints-"));
+
 describe("complaints API", () => {
-  const app = express();
-  app.use("/api/complaints", complaintRouter);
+  let app;
+
+  before(() => {
+    initDatabase(path.join(testDir, "test.db"));
+    seedDatabase();
+    app = express();
+    app.use("/api/complaints", complaintRouter);
+  });
+
+  after(() => {
+    closeDatabase();
+    fs.rmSync(testDir, { recursive: true, force: true });
+  });
 
   it("rejects missing screenshot", async () => {
     const res = await request(app)

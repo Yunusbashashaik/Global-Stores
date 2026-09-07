@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useSettings } from "../context/SettingsContext.jsx";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|bmp|heic|heif)$/i;
-const COMPLAINT_EMAIL =
-  import.meta.env.VITE_COMPLAINT_EMAIL || "global2stor2@gmail.com";
 
 const FIELD_ORDER = [
   "fullName",
@@ -93,7 +92,7 @@ async function submitViaApi(form) {
  * AJAX / synthetic DataTransfer inputs drop attachments; native file inputs do not.
  * The screenshot arrives on the email as a real image attachment.
  */
-function submitViaFormSubmitNative(form, fileInputEl, fileSlotEl) {
+function submitViaFormSubmitNative(form, fileInputEl, fileSlotEl, complaintEmail) {
   return new Promise((resolve, reject) => {
     if (!fileInputEl?.files?.length) {
       reject(new Error("Screenshot is missing."));
@@ -118,7 +117,7 @@ function submitViaFormSubmitNative(form, fileInputEl, fileSlotEl) {
 
     const htmlForm = document.createElement("form");
     htmlForm.method = "POST";
-    htmlForm.action = `https://formsubmit.co/${encodeURIComponent(COMPLAINT_EMAIL)}`;
+    htmlForm.action = `https://formsubmit.co/${encodeURIComponent(complaintEmail)}`;
     htmlForm.enctype = "multipart/form-data";
     htmlForm.target = iframeName;
     htmlForm.style.display = "none";
@@ -186,6 +185,11 @@ function submitViaFormSubmitNative(form, fileInputEl, fileSlotEl) {
 }
 
 export default function ComplaintForm({ t }) {
+  const { settings } = useSettings();
+  const complaintEmail =
+    settings.complaintEmail ||
+    import.meta.env.VITE_COMPLAINT_EMAIL ||
+    "global2stor2@gmail.com";
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -295,6 +299,7 @@ export default function ComplaintForm({ t }) {
         form,
         fileInputRef.current,
         fileSlotRef.current,
+        complaintEmail,
       );
       setSuccess(true);
       setForm({

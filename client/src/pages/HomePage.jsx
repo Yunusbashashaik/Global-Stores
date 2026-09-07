@@ -43,20 +43,25 @@ export default function HomePage({ lang, t }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchServices()
-      .then((list) => {
-        if (!cancelled) {
-          setServices(list);
-          setLoadError("");
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setLoadError(t.servicesLoadFallback);
-        }
-      });
+    const load = () => {
+      fetchServices()
+        .then((list) => {
+          if (!cancelled) {
+            setServices(list);
+            setLoadError("");
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setLoadError(t.servicesLoadFallback);
+          }
+        });
+    };
+    load();
+    window.addEventListener("gs:services-updated", load);
     return () => {
       cancelled = true;
+      window.removeEventListener("gs:services-updated", load);
     };
   }, [t.servicesLoadFallback]);
 

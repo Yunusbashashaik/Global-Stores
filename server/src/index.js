@@ -1,26 +1,32 @@
 import cors from "cors";
 import express from "express";
-import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { initDatabase, UPLOADS_DIR } from "./db/connection.js";
+import { seedDatabase } from "./db/seed.js";
 import { adminRouter } from "./routes/admin.js";
 import { complaintRouter } from "./routes/complaints.js";
 import { servicesRouter } from "./routes/services.js";
-import { readServices } from "./servicesStore.js";
+import { settingsRouter } from "./routes/settings.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 3001;
-const DATA_DIR = path.join(__dirname, "..", "data");
+
+initDatabase();
+seedDatabase();
 
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "global-store-api" });
+  res.json({ ok: true, service: "global-store-api", db: "sqlite" });
 });
 
+app.use("/api/uploads", express.static(UPLOADS_DIR));
 app.use("/api/services", servicesRouter);
+app.use("/api/settings", settingsRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/complaints", complaintRouter);
 
@@ -33,11 +39,10 @@ app.get("*", (req, res, next) => {
   });
 });
 
-await fs.mkdir(DATA_DIR, { recursive: true });
-await readServices();
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`GlobalStore API listening on http://localhost:${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`GlobalStore API listening on http://localhost:${PORT}`);
-});
-
-export { app, DATA_DIR };
+export { app };

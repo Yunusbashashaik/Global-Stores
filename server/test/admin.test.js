@@ -1,47 +1,50 @@
 import assert from "node:assert/strict";
-import { describe, it, before, after } from "node:test";
-import fs from "fs/promises";
+import { after, before, describe, it } from "node:test";
+import fs from "fs";
+import os from "os";
 import path from "path";
-import { fileURLToPath } from "url";
-import request from "supertest";
 import express from "express";
+import request from "supertest";
+import { closeDatabase, initDatabase } from "../src/db/connection.js";
+import { seedDatabase } from "../src/db/seed.js";
+import { DEFAULT_SERVICES } from "../src/config/defaultServices.js";
 import { adminRouter } from "../src/routes/admin.js";
 import { servicesRouter } from "../src/routes/services.js";
-import { SERVICES_PATH, writeServices } from "../src/servicesStore.js";
-import { DEFAULT_SERVICES } from "../src/defaultServices.js";
+import { settingsRouter } from "../src/routes/settings.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const backupPath = path.join(__dirname, "services.backup.json");
+const testDir = fs.mkdtempSync(path.join(os.tmpdir(), "gs-admin-"));
 
 describe("services + admin API", () => {
-  const app = express();
-  app.use(express.json());
-  app.use("/api/services", servicesRouter);
-  app.use("/api/admin", adminRouter);
+  let app;
 
-  before(async () => {
-    try {
-      await fs.copyFile(SERVICES_PATH, backupPath);
-    } catch {
-      /* no existing file */
-    }
-    await writeServices(structuredClone(DEFAULT_SERVICES));
+  before(() => {
+    initDatabase(path.join(testDir, "test.db"));
+    seedDatabase();
+    app = express();
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use("/api/services", servicesRouter);
+    app.use("/api/settings", settingsRouter);
+    app.use("/api/admin", adminRouter);
   });
 
-  after(async () => {
-    try {
-      await fs.copyFile(backupPath, SERVICES_PATH);
-      await fs.unlink(backupPath);
-    } catch {
-      await writeServices(structuredClone(DEFAULT_SERVICES));
-    }
+  after(() => {
+    closeDatabase();
+    fs.rmSync(testDir, { recursive: true, force: true });
   });
 
-  it("lists services publicly", async () => {
+  it("lists services publicly from the database", async () => {
     const res = await request(app).get("/api/services");
     assert.equal(res.status, 200);
     assert.ok(Array.isArray(res.body.services));
     assert.ok(res.body.services.length >= 1);
+  });
+
+  it("lists public settings from the database", async () => {
+    const res = await request(app).get("/api/settings");
+    assert.equal(res.status, 200);
+    assert.ok(res.body.settings.complaintEmail);
+    assert.ok(Array.isArray(res.body.settings.whatsappNumbers));
   });
 
   it("rejects bad login", async () => {
@@ -76,6 +79,79 @@ describe("services + admin API", () => {
     const item = listed.body.services.find((s) => s.id === "netflix-private");
     assert.equal(item.prices.month, 3);
     assert.equal(item.descriptionAr, "وصف محدث");
+  });
+
+  it("creates a new service that appears on the public list", async () => {
+    const login = await request(app)
+      .post("/api/admin/login")
+      .send({ username: "admin", password: "globalstores" });
+    const token = login.body.token;
+
+    const create = await request(app)
+      .post("/api/admin/services")
+      .set("Authorization", `Bearer ${token}`)
+      .field("nameEn", "Test Stream")
+      .field("nameAr", "اختبار")
+      .field("descriptionEn", "EN desc")
+      .field("descriptionAr", "AR desc")
+      .field("priceMonth", "2.5")
+      .field("priceYear", "18");
+
+    assert.equal(create.status, 201);
+    assert.equal(create.body.service.nameEn, "Test Stream");
+    assert.equal(create.body.service.prices.month, 2.5);
+
+    const listed = await request(app).get("/api/services");
+    const item = listed.body.services.find((s) => s.nameEn === "Test Stream");
+    assert.ok(item);
+  });
+
+  it("marks zero-price services as out of stock", async () => {
+    const login = await request(app)
+      .post("/api/admin/login")
+      .send({ username: "admin", password: "globalstores" });
+    const token = login.body.token;
+
+    const update = await request(app)
+      .put("/api/admin/services/netflix-private")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ prices: { month: 0, year: 0 } });
+
+    assert.equal(update.status, 200);
+    assert.equal(update.body.service.outOfStock, true);
+    assert.equal(update.body.service.prices.month, 0);
+  });
+
+  it("updates complaint email and WhatsApp numbers in settings", async () => {
+    const login = await request(app)
+      .post("/api/admin/login")
+      .send({ username: "admin", password: "globalstores" });
+    const token = login.body.token;
+
+    const update = await request(app)
+      .put("/api/admin/settings")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        complaintEmail: "ops@example.com",
+        whatsappNumbers: ["96550001111", "96550002222"],
+        aboutEn: "New about",
+        socialLinks: { instagram: "https://instagram.com/example" },
+      });
+
+    assert.equal(update.status, 200);
+    assert.equal(update.body.settings.complaintEmail, "ops@example.com");
+    assert.deepEqual(update.body.settings.whatsappNumbers, [
+      "96550001111",
+      "96550002222",
+    ]);
+    assert.equal(update.body.settings.aboutEn, "New about");
+    assert.equal(
+      update.body.settings.socialLinks.instagram,
+      "https://instagram.com/example",
+    );
+
+    const publicSettings = await request(app).get("/api/settings");
+    assert.equal(publicSettings.body.settings.complaintEmail, "ops@example.com");
   });
 
   it("requires auth for updates", async () => {

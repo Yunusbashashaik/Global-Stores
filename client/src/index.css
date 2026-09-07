@@ -366,6 +366,124 @@ button,
   gap: 0.75rem;
 }
 
+.admin-dashboard {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.admin-dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.admin-edit-menu {
+  position: relative;
+}
+
+.admin-edit-dropdown {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 220px;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(165deg, rgba(12, 24, 42, 0.96), rgba(8, 16, 28, 0.94));
+  border: 1px solid var(--border);
+  box-shadow: var(--glass-shadow);
+  z-index: 5;
+}
+
+.admin-edit-dropdown button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: start;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.admin-edit-dropdown button:hover {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.admin-logout-btn {
+  margin-top: 0.5rem;
+}
+
+.admin-image-preview {
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.admin-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.glass-modal.admin-modal .admin-layout {
+  max-height: min(70vh, 640px);
+  overflow: auto;
+}
+
+.service-card {
+  position: relative;
+}
+
+.service-card--oos {
+  opacity: 0.88;
+}
+
+.service-oos-badge {
+  position: absolute;
+  top: 0.75rem;
+  inset-inline-end: 0.75rem;
+  z-index: 2;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: rgba(185, 28, 28, 0.92);
+}
+
+.service-oos-note {
+  margin: 0.35rem 0 0;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.btn-add-cart:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 @media (min-width: 860px) {
   .admin-layout {
     grid-template-columns: minmax(220px, 280px) 1fr;

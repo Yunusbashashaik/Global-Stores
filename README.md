@@ -19,7 +19,7 @@ npm run dev
 ```
 
 - **Client:** http://localhost:5173 (Vite dev server; proxies `/api` to the backend)
-- **API:** http://localhost:3001 (`GET /api/health`, `GET /api/services`, `POST /api/complaints`, `POST /api/admin/login`)
+- **API:** http://localhost:3001 (`GET /api/health`, `GET /api/services`, `GET /api/settings`, `POST /api/complaints`, `POST /api/admin/login`)
 
 ```bash
 npm run lint
@@ -28,27 +28,34 @@ npm run build
 npm start   # serves built client + API on port 3001
 ```
 
-### Admin panel
+### Dynamic database (SQLite)
 
-Open **http://localhost:5173/admin** (or `/admin` in production) to sign in and update service prices and bilingual descriptions. Changes are stored in `server/data/services.json` and shown on the homepage via `GET /api/services`.
-
-Default local credentials (override in production):
-
-- `ADMIN_USERNAME` (default: `admin`)
-- `ADMIN_PASSWORD` (default: `globalstores`)
-- `ADMIN_SESSION_SECRET` (optional; signs admin session tokens)
-
-### Complaint email
-
-Complaints are sent by **email only** (not WhatsApp) to **`global2stor2@gmail.com`**.
-
-- **Static hosting (GitHub Pages / GoDaddy static):** FormSubmit **classic multipart POST** with the user’s real file input (`name="attachment"`) so the screenshot arrives as a **real image attachment** (FormSubmit AJAX drops files).
-- **Node API + SMTP:** screenshot is embedded in the HTML email and attached as a file.
+Admin edits and public catalog/settings are stored in **`server/data/globalstore.db`** (not GitHub-tracked static files). Every visitor hitting the Node API sees the same live data.
 
 Optional env:
 
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
-- `COMPLAINT_EMAIL` / `VITE_COMPLAINT_EMAIL`
+- `DATABASE_PATH` — custom SQLite file path
+- `ADMIN_USERNAME` (default: `admin`)
+- `ADMIN_PASSWORD` (default: `globalstores`)
+- `ADMIN_SESSION_SECRET` — signs admin session tokens
+
+### Admin panel
+
+Click the **Admin** icon in the header. A modal prompts for credentials, then opens the Admin Dashboard:
+
+- **Add Services** — JPEG image, name, EN/AR descriptions, 1-month and 1-year prices
+- **Edit Services** — dropdown for Services, Complaint Email ID, Contact Details (WhatsApp), and About Us / social links
+
+Out-of-stock services use price `0`, show an **Out of Stock** note, and disable Add to Cart.
+
+### Complaint email
+
+Complaints are sent by **email only** (not WhatsApp). The destination address is stored in the database (default `global2stor2@gmail.com`) and can be changed from the admin panel.
+
+- **Static hosting (GitHub Pages):** FormSubmit classic multipart POST fallback
+- **Node API + SMTP:** screenshot embedded + attached
+
+Optional env: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `COMPLAINT_EMAIL` / `VITE_COMPLAINT_EMAIL`
 
 See `Tech. Document` for full product requirements.
 
@@ -69,4 +76,4 @@ Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflow
 
 If the workflow has not run yet, go to **Actions** → **Deploy to GitHub Pages** → **Run workflow**.
 
-The homepage uses built-in catalog data if the API is unavailable. **Admin**, **live price edits**, and **complaint email** need the Node server (`npm start` on a free host such as Render’s free tier).
+The homepage uses built-in catalog data if the API is unavailable. **Admin**, **live price/settings edits**, and **complaint email via SMTP** need the Node server (`npm start` on a host such as Render or GoDaddy Node). Point that host at a persistent disk so `server/data/globalstore.db` survives restarts.

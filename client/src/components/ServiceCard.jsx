@@ -1,4 +1,5 @@
 import ServiceIcon from "./ServiceIcon.jsx";
+import { isOutOfStock } from "../data/catalog.js";
 
 /** Compact card matching Picture 2 — description is hidden until View Plans. */
 export default function ServiceCard({ service, lang, t, onViewPlans }) {
@@ -8,13 +9,20 @@ export default function ServiceCard({ service, lang, t, onViewPlans }) {
       ? service.typeAr || "مشترك / خاص"
       : service.typeEn || "Shared / Private";
   const currency = lang === "ar" ? "د.ك" : "KD";
-  const startingPrice = Math.min(
-    service.prices.month ?? Infinity,
-    service.prices.year ?? Infinity,
-  );
+  const oos = isOutOfStock(service);
+  const startingPrice = oos
+    ? 0
+    : Math.min(
+        service.prices.month ?? Infinity,
+        service.prices.year ?? Infinity,
+      );
 
   return (
-    <article className="card service-card" id={service.id}>
+    <article
+      className={`card service-card${oos ? " service-card--oos" : ""}`}
+      id={service.id}
+    >
+      {oos ? <span className="service-oos-badge">{t.outOfStock}</span> : null}
       <ServiceIcon service={service} />
       <h3 className="service-card-name">{name}</h3>
       <p className="service-card-type">{type}</p>

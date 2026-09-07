@@ -2,9 +2,6 @@ import fs from "fs/promises";
 import path from "path";
 import nodemailer from "nodemailer";
 
-const TARGET_EMAIL =
-  process.env.COMPLAINT_EMAIL || "global2stor2@gmail.com";
-
 const CID = "complaint-screenshot";
 
 function createTransport() {
@@ -75,7 +72,9 @@ export function buildComplaintEmailContent(ticket) {
   return { text, html };
 }
 
-export async function sendComplaintEmail(ticket, screenshotPath) {
+export async function sendComplaintEmail(ticket, screenshotPath, toEmail) {
+  const target =
+    toEmail || process.env.COMPLAINT_EMAIL || "global2stor2@gmail.com";
   const transport = createTransport();
   const screenshot = await fs.readFile(screenshotPath);
   const filename = path.basename(screenshotPath);
@@ -83,8 +82,7 @@ export async function sendComplaintEmail(ticket, screenshotPath) {
 
   const mail = {
     from: process.env.SMTP_FROM || "noreply@globalstore.com",
-    to: TARGET_EMAIL,
-    // Email subject = the Subject field from the complaint form
+    to: target,
     subject: ticket.subject,
     text,
     html,
@@ -105,11 +103,11 @@ export async function sendComplaintEmail(ticket, screenshotPath) {
 
   if (transport) {
     await transport.sendMail(mail);
-    return { mode: "smtp" };
+    return { mode: "smtp", to: target };
   }
 
   console.log(
-    `[dev] Complaint ${ticket.id} logged (no SMTP). Would email ${TARGET_EMAIL}.`,
+    `[dev] Complaint ${ticket.id} logged (no SMTP). Would email ${target}.`,
   );
-  return { mode: "dev-log" };
+  return { mode: "dev-log", to: target };
 }

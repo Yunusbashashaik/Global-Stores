@@ -21,16 +21,20 @@ Vite proxies `/api` to port **3001** during development. For production-style se
 - **Test:** `npm run test` (server API tests only)
 - **Build:** `npm run build`
 
+### Dynamic database
+
+Catalog, site settings (complaint email, WhatsApp numbers, About Us, social links), and complaints persist in **SQLite** at `server/data/globalstore.db` (override with `DATABASE_PATH`). Uploaded service images live under `server/data/uploads/services/` and are served from `/api/uploads/...`. Public pages load live data via `GET /api/services` and `GET /api/settings`.
+
 ### Complaint email
 
-Local dev works without SMTP: submissions are appended to `server/data/complaints.jsonl` and screenshots land in `server/data/uploads/`. Set `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` (and optional `COMPLAINT_EMAIL`) for real delivery.
+Local dev works without SMTP: submissions are stored in SQLite (and appended to `server/data/complaints.jsonl`) and screenshots land in `server/data/uploads/`. Set `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` (and optional `COMPLAINT_EMAIL`) for real delivery. The active inbox address is also editable in Admin → Edit Services → Complaint Email ID.
 
 ### Admin panel
 
-Administrators sign in at `/admin` to update service prices and bilingual descriptions. Catalog data is persisted in `server/data/services.json` (seeded from defaults on first run). Configure `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and optionally `ADMIN_SESSION_SECRET`.
+Click the header Admin icon to open a **modal** (no separate `/admin` page). After login, the dashboard offers **Add Services** and **Edit Services** (Services, Complaint Email, Contact Details, About Us). Configure `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and optionally `ADMIN_SESSION_SECRET`. Session token is stored in `localStorage` key `globalstores_admin_token`.
 
 ### E2E notes
 
-- WhatsApp buttons open `wa.me` in a new tab (external; no local WhatsApp service).
+- WhatsApp buttons open `wa.me` in a new tab (external; no local WhatsApp service). Numbers come from the database settings.
 - Arabic mode toggles `body.rtl` and persists language in `localStorage` key `globalstores_lang`.
-- Admin session token is stored in `localStorage` key `globalstores_admin_token`.
+- Services with price `0` / `outOfStock` show an Out of Stock badge and disable Add to Cart.

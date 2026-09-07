@@ -34,8 +34,10 @@ function safeEqualString(a, b) {
   const left = Buffer.from(String(a ?? ""), "utf8");
   const right = Buffer.from(String(b ?? ""), "utf8");
   if (left.length !== right.length) {
-    // Still run a compare to reduce obvious timing leaks on length alone.
-    crypto.timingSafeEqual(left.length ? left : Buffer.alloc(1), left.length ? left : Buffer.alloc(1));
+    crypto.timingSafeEqual(
+      left.length ? left : Buffer.alloc(1),
+      left.length ? left : Buffer.alloc(1),
+    );
     return false;
   }
   return crypto.timingSafeEqual(left, right);
@@ -68,7 +70,11 @@ export function verifySessionToken(token) {
   }
   try {
     const payload = JSON.parse(fromB64url(payloadB64));
-    return payload.role === "admin" && typeof payload.exp === "number" && payload.exp > Date.now();
+    return (
+      payload.role === "admin" &&
+      typeof payload.exp === "number" &&
+      payload.exp > Date.now()
+    );
   } catch {
     return false;
   }
