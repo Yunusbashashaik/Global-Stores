@@ -46,7 +46,33 @@ Click the **Admin** icon in the header. A modal prompts for credentials, then op
 - **Add Services** — JPEG image, name, EN/AR descriptions, 1-month and 1-year prices
 - **Edit Services** — dropdown for Services, Complaint Email ID, Contact Details (WhatsApp), and About Us / social links
 
+Default credentials: `admin` / `globalstores` (override with `ADMIN_USERNAME` / `ADMIN_PASSWORD`).
+
 Out-of-stock services use price `0`, show an **Out of Stock** note, and disable Add to Cart.
+
+### Deploy on GoDaddy (Node.js)
+
+Admin login needs the **Node API**. Uploading only HTML/JS (static hosting / FTP to `public_html`) will show **Load failed** or **405**.
+
+1. Use **GoDaddy Node.js / Application Hosting** (not plain Web Hosting alone).
+2. Application root = this repo.
+3. Startup file: `app.js` (or run command `npm start`).
+4. On the host, install and build:
+   ```bash
+   npm install
+   npm run build
+   npm start
+   ```
+5. Confirm `https://YOUR-DOMAIN/api/health` returns `{"ok":true,...}`.
+6. Open the same domain in the browser and try Admin login.
+
+If the website and API are on **different URLs**, edit `client/public/runtime-config.js` (copied to `dist/runtime-config.js` after build) and set:
+
+```js
+window.__GLOBALSTORE_CONFIG__ = { apiUrl: "https://your-node-api-url" };
+```
+
+Keep `server/data/` on a persistent disk so SQLite and uploads survive restarts.
 
 ### Complaint email
 

@@ -1,8 +1,20 @@
 import { SERVICES } from "../data/catalog.js";
 
+function trimSlash(value) {
+  return String(value || "").replace(/\/$/, "");
+}
+
+/** Resolve API origin: runtime config → Vite env → same origin. */
+export function getApiBase() {
+  if (typeof window !== "undefined") {
+    const runtime = window.__GLOBALSTORE_CONFIG__?.apiUrl;
+    if (runtime) return trimSlash(runtime);
+  }
+  return trimSlash(import.meta.env.VITE_API_URL || "");
+}
+
 export function apiUrl(path) {
-  const base = import.meta.env.VITE_API_URL || "";
-  return `${base}${path}`;
+  return `${getApiBase()}${path}`;
 }
 
 let backendAvailable;
@@ -22,17 +34,39 @@ export function resetBackendAvailability() {
   backendAvailable = undefined;
 }
 
+function networkError(err) {
+  const message = String(err?.message || err || "");
+  if (
+    err instanceof TypeError ||
+    /failed to fetch|load failed|networkerror|network request failed/i.test(
+      message,
+    )
+  ) {
+    return new Error(
+      "Cannot reach the API server. On GoDaddy, deploy the Node app and run `npm run build && npm start` (not static files alone). If the API is on another URL, set apiUrl in runtime-config.js.",
+    );
+  }
+  return err instanceof Error ? err : new Error(message || "Request failed");
+}
+
 async function requestJson(path, { method = "GET", body, token, formData } = {}) {
   const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined && !formData) {
     headers["Content-Type"] = "application/json";
   }
-  const res = await fetch(apiUrl(path), {
-    method,
-    headers,
-    body: formData || (body !== undefined ? JSON.stringify(body) : undefined),
-  });
+
+  let res;
+  try {
+    res = await fetch(apiUrl(path), {
+      method,
+      headers,
+      body: formData || (body !== undefined ? JSON.stringify(body) : undefined),
+    });
+  } catch (err) {
+    throw networkError(err);
+  }
+
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error(data.error || `Request failed (${res.status})`);
@@ -43,6 +77,12 @@ async function requestJson(path, { method = "GET", body, token, formData } = {})
 }
 
 export async function adminLogin(username, password) {
+  resetBackendAvailability();
+  if (!(await hasBackendApi())) {
+    throw new Error(
+      "API server is offline. Admin login needs the Node backend on GoDaddy (npm start), not static HTML hosting.",
+    );
+  }
   const data = await requestJson("/api/admin/login", {
     method: "POST",
     body: { username, password },
