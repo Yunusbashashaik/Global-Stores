@@ -416,32 +416,31 @@ export default function AdminPanel({ open, onClose, t }) {
               <button type="button" className="btn btn-primary" onClick={openAdd}>
                 {t.adminAddServices}
               </button>
-              <div className="admin-edit-menu">
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  aria-expanded={editMenuOpen}
-                  onClick={openEditMenu}
-                >
-                  {t.adminEditServicesBtn}
-                </button>
-                {editMenuOpen ? (
-                  <div className="admin-edit-dropdown" role="menu">
-                    {EDIT_SECTIONS.map((section) => (
-                      <button
-                        key={section.id}
-                        type="button"
-                        role="menuitem"
-                        onClick={() => selectEditSection(section.id)}
-                        disabled={busy}
-                      >
-                        {t[section.labelKey]}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                aria-expanded={editMenuOpen}
+                onClick={openEditMenu}
+              >
+                {t.adminEditServicesBtn}
+              </button>
             </div>
+            {editMenuOpen ? (
+              <div className="admin-edit-sections" role="menu">
+                {EDIT_SECTIONS.map((section) => (
+                  <button
+                    key={section.id}
+                    type="button"
+                    role="menuitem"
+                    className="admin-edit-section-btn"
+                    onClick={() => selectEditSection(section.id)}
+                    disabled={busy}
+                  >
+                    {t[section.labelKey]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             {error ? <p className="error-text">{error}</p> : null}
             {message ? <p className="success-text">{message}</p> : null}
             <button type="button" className="btn btn-ghost admin-logout-btn" onClick={logout}>
