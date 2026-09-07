@@ -10,7 +10,9 @@ import {
   adminSaveSettings,
   adminTranslate,
   adminValidateSession,
+  notifyServicesUpdated,
 } from "../lib/adminApi.js";
+import { compressJpeg } from "../lib/compressJpeg.js";
 
 const TOKEN_KEY = "globalstores_admin_token";
 const TOAST_MS = 3200;
@@ -95,7 +97,7 @@ export default function AdminPanel({ open, onClose, t }) {
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(false);
-  const [translating, setTranslating] = useState(false);
+  const [translating, setTranslating] = useState("");
 
   const [services, setServices] = useState([]);
   const [selectedId, setSelectedId] = useState("");
@@ -273,7 +275,7 @@ export default function AdminPanel({ open, onClose, t }) {
     setError("");
   };
 
-  const onPickImage = (file) => {
+  const onPickImage = async (file) => {
     if (!file) return;
     const name = file.name.toLowerCase();
     const ok =
@@ -288,19 +290,32 @@ export default function AdminPanel({ open, onClose, t }) {
     setError("");
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    try {
+      const compact = await compressJpeg(file);
+      setImageFile(compact);
+      setImagePreview(URL.createObjectURL(compact));
+    } catch {
+      /* keep original file and preview */
+    }
   };
 
-  const onTranslate = async () => {
-    if (!draft.descriptionEn.trim()) return;
-    setTranslating(true);
+  const onTranslate = async (field) => {
+    const source =
+      field === "name" ? draft.nameEn.trim() : draft.descriptionEn.trim();
+    if (!source) return;
+    setTranslating(field);
     setError("");
     try {
-      const arabic = await adminTranslate(token, draft.descriptionEn);
-      setDraft((d) => ({ ...d, descriptionAr: arabic }));
+      const arabic = await adminTranslate(token, source);
+      setDraft((d) =>
+        field === "name"
+          ? { ...d, nameAr: arabic }
+          : { ...d, descriptionAr: arabic },
+      );
     } catch (err) {
       setError(err.message);
     } finally {
-      setTranslating(false);
+      setTranslating("");
     }
   };
 
@@ -323,14 +338,15 @@ export default function AdminPanel({ open, onClose, t }) {
         },
         imageFile,
       );
-      cacheRef.current.services = null;
-      await prefetch(token);
+      const next = [...services, created];
+      setServices(next);
+      cacheRef.current.services = next;
+      notifyServicesUpdated(next);
       showToast(t.adminCreated);
       setDraft(emptyServiceDraft);
       setImageFile(null);
       setImagePreview("");
       goDashboard();
-      void created;
     } catch (err) {
       setError(err.message);
     } finally {
@@ -362,6 +378,7 @@ export default function AdminPanel({ open, onClose, t }) {
       const next = services.map((s) => (s.id === selectedId ? updated : s));
       setServices(next);
       cacheRef.current.services = next;
+      notifyServicesUpdated(next);
       setDraft(toDraft(updated));
       setImageFile(null);
       setImagePreview(updated.imageUrl || "");
@@ -390,6 +407,7 @@ export default function AdminPanel({ open, onClose, t }) {
       const next = services.filter((s) => s.id !== selectedId);
       setServices(next);
       cacheRef.current.services = next;
+      notifyServicesUpdated(next);
       setConfirmDelete(false);
       cancelServiceEdit();
       showToast(t.adminDeleted);
@@ -937,15 +955,27 @@ function ServiceForm({
           <img src={imagePreview} alt="" />
         </div>
       ) : null}
-      <label>
+      <div className="admin-field-head">
+        <span>{t.adminNameEn}</span>
+        <button
+          type="button"
+          className="btn btn-ghost admin-translate-btn"
+          onClick={() => onTranslate("name")}
+          disabled={disabled || Boolean(translating) || !draft.nameEn.trim()}
+        >
+          {translating === "name" ? t.adminTranslating : t.adminTranslate}
+        </button>
+      </div>
+      <label className="admin-sr-only" htmlFor="admin-name-en">
         {t.adminNameEn}
-        <input
-          value={draft.nameEn}
-          onChange={(e) => setDraft((d) => ({ ...d, nameEn: e.target.value }))}
-          required
-          disabled={disabled}
-        />
       </label>
+      <input
+        id="admin-name-en"
+        value={draft.nameEn}
+        onChange={(e) => setDraft((d) => ({ ...d, nameEn: e.target.value }))}
+        required
+        disabled={disabled}
+      />
       <label>
         {t.adminNameAr}
         <input
@@ -960,10 +990,10 @@ function ServiceForm({
         <button
           type="button"
           className="btn btn-ghost admin-translate-btn"
-          onClick={onTranslate}
-          disabled={disabled || translating || !draft.descriptionEn.trim()}
+          onClick={() => onTranslate("desc")}
+          disabled={disabled || Boolean(translating) || !draft.descriptionEn.trim()}
         >
-          {translating ? t.adminTranslating : t.adminTranslate}
+          {translating === "desc" ? t.adminTranslating : t.adminTranslate}
         </button>
       </div>
       <label className="admin-sr-only" htmlFor="admin-desc-en">

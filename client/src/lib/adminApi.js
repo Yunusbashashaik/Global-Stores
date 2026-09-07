@@ -169,7 +169,6 @@ export async function adminCreateService(token, payload, imageFile) {
     token,
     formData,
   });
-  window.dispatchEvent(new Event("gs:services-updated"));
   return data.service;
 }
 
@@ -199,7 +198,6 @@ export async function adminSaveService(token, id, payload, imageFile) {
       token,
       formData,
     });
-    window.dispatchEvent(new Event("gs:services-updated"));
     return data.service;
   }
 
@@ -208,7 +206,6 @@ export async function adminSaveService(token, id, payload, imageFile) {
     token,
     body: payload,
   });
-  window.dispatchEvent(new Event("gs:services-updated"));
   return data.service;
 }
 
@@ -229,7 +226,14 @@ export async function adminSaveSettings(token, patch) {
 
 export async function adminDeleteService(token, id) {
   await requestJson(`/api/admin/services/${id}`, { method: "DELETE", token });
-  window.dispatchEvent(new Event("gs:services-updated"));
+}
+
+export function notifyServicesUpdated(services) {
+  window.dispatchEvent(
+    new CustomEvent("gs:services-updated", {
+      detail: Array.isArray(services) ? { services } : undefined,
+    }),
+  );
 }
 
 export async function adminTranslate(token, text) {

@@ -22,7 +22,17 @@ export default function ServiceCard({ service, lang, t, onViewPlans }) {
       className={`card service-card${oos ? " service-card--oos" : ""}`}
       id={service.id}
     >
-      {oos ? <span className="service-oos-badge">{t.outOfStock}</span> : null}
+      {oos ? (
+        <span className="service-oos-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              fill="currentColor"
+              d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 5v6.59l4.2 4.2-1.41 1.41L11 14.41V7z"
+            />
+          </svg>
+          {t.outOfStock}
+        </span>
+      ) : null}
       <ServiceIcon service={service} />
       <h3 className="service-card-name">{name}</h3>
       <p className="service-card-type">{type}</p>

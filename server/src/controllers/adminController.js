@@ -4,7 +4,6 @@ import {
 } from "../middleware/auth.js";
 import {
   deleteService,
-  getServiceById,
   insertService,
   listServices,
   updateService,
@@ -22,10 +21,11 @@ function slugify(name) {
 }
 
 function uniqueServiceId(name) {
+  const taken = new Set(listServices().map((service) => service.id));
   let id = slugify(name);
-  if (!getServiceById(id)) return id;
+  if (!taken.has(id)) return id;
   let i = 2;
-  while (getServiceById(`${id}-${i}`)) i += 1;
+  while (taken.has(`${id}-${i}`)) i += 1;
   return `${id}-${i}`;
 }
 
