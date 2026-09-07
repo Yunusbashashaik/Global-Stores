@@ -1,13 +1,26 @@
 import {
   DEFAULT_SERVICES,
 } from "@shared/defaultServices.js";
+import { DEFAULT_SETTINGS } from "./defaultSettings.js";
 
-export const SUPPORT_NUMBERS = ["923228791573", "923014968769"];
-
+let supportNumbers = [...DEFAULT_SETTINGS.whatsappNumbers];
 let orderLineIndex = 0;
 
+export function setSupportNumbers(numbers) {
+  if (Array.isArray(numbers) && numbers.length) {
+    supportNumbers = numbers.map((n) => String(n).replace(/\D/g, "")).filter(Boolean);
+    if (!supportNumbers.length) {
+      supportNumbers = [...DEFAULT_SETTINGS.whatsappNumbers];
+    }
+  }
+}
+
+export function getSupportNumbers() {
+  return supportNumbers;
+}
+
 export function nextSupportNumber() {
-  const num = SUPPORT_NUMBERS[orderLineIndex % SUPPORT_NUMBERS.length];
+  const num = supportNumbers[orderLineIndex % supportNumbers.length];
   orderLineIndex += 1;
   return num;
 }
@@ -52,4 +65,12 @@ export const FEATURED_SERVICE_IDS = [
 export async function fetchServices() {
   const { fetchPublicServices } = await import("../lib/adminApi.js");
   return fetchPublicServices();
+}
+
+export function isOutOfStock(service) {
+  if (!service) return false;
+  if (service.outOfStock) return true;
+  const month = Number(service.prices?.month);
+  const year = Number(service.prices?.year);
+  return month === 0 || year === 0;
 }

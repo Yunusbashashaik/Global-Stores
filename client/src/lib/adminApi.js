@@ -1,11 +1,5 @@
 import { SERVICES } from "../data/catalog.js";
 
-const CATALOG_KEY = "globalstores_catalog_overrides";
-const STATIC_TOKEN = "static-admin-session";
-
-const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "globalstores";
-
 export function apiUrl(path) {
   const base = import.meta.env.VITE_API_URL || "";
   return `${base}${path}`;
@@ -24,35 +18,20 @@ export async function hasBackendApi() {
   return backendAvailable;
 }
 
-function readLocalCatalog() {
-  try {
-    const raw = localStorage.getItem(CATALOG_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
+export function resetBackendAvailability() {
+  backendAvailable = undefined;
 }
 
-export function getLocalCatalog() {
-  const saved = readLocalCatalog();
-  if (saved?.length) return saved;
-  return JSON.parse(JSON.stringify(SERVICES));
-}
-
-function writeLocalCatalog(services) {
-  localStorage.setItem(CATALOG_KEY, JSON.stringify(services));
-}
-
-async function requestJson(path, { method = "GET", body, token } = {}) {
+async function requestJson(path, { method = "GET", body, token, formData } = {}) {
   const headers = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
   if (token) headers.Authorization = `Bearer ${token}`;
+  if (body !== undefined && !formData) {
+    headers["Content-Type"] = "application/json";
+  }
   const res = await fetch(apiUrl(path), {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: formData || (body !== undefined ? JSON.stringify(body) : undefined),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -64,65 +43,102 @@ async function requestJson(path, { method = "GET", body, token } = {}) {
 }
 
 export async function adminLogin(username, password) {
-  if (await hasBackendApi()) {
-    const data = await requestJson("/api/admin/login", {
-      method: "POST",
-      body: { username, password },
-    });
-    return data.token;
-  }
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    return STATIC_TOKEN;
-  }
-  throw new Error("Invalid username or password");
+  const data = await requestJson("/api/admin/login", {
+    method: "POST",
+    body: { username, password },
+  });
+  return data.token;
 }
 
 export async function adminValidateSession(token) {
   if (!token) return false;
-  if (await hasBackendApi()) {
-    try {
-      await requestJson("/api/admin/me", { token });
-      return true;
-    } catch {
-      return false;
-    }
+  try {
+    await requestJson("/api/admin/me", { token });
+    return true;
+  } catch {
+    return false;
   }
-  return token === STATIC_TOKEN;
 }
 
 export async function adminFetchServices(token) {
-  if (await hasBackendApi()) {
-    const data = await requestJson("/api/admin/services", { token });
-    return data.services;
-  }
-  if (token !== STATIC_TOKEN) throw new Error("Unauthorized");
-  return getLocalCatalog();
+  const data = await requestJson("/api/admin/services", { token });
+  return data.services;
 }
 
-export async function adminSaveService(token, id, payload) {
-  if (await hasBackendApi()) {
+export async function adminCreateService(token, payload, imageFile) {
+  const formData = new FormData();
+  formData.append("nameEn", payload.nameEn || "");
+  formData.append("nameAr", payload.nameAr || payload.nameEn || "");
+  formData.append("descriptionEn", payload.descriptionEn || "");
+  formData.append("descriptionAr", payload.descriptionAr || "");
+  formData.append("priceMonth", String(payload.prices?.month ?? ""));
+  formData.append("priceYear", String(payload.prices?.year ?? ""));
+  if (payload.outOfStock !== undefined) {
+    formData.append("outOfStock", String(Boolean(payload.outOfStock)));
+  }
+  if (imageFile) formData.append("image", imageFile);
+
+  const data = await requestJson("/api/admin/services", {
+    method: "POST",
+    token,
+    formData,
+  });
+  window.dispatchEvent(new Event("gs:services-updated"));
+  return data.service;
+}
+
+export async function adminSaveService(token, id, payload, imageFile) {
+  if (imageFile) {
+    const formData = new FormData();
+    if (payload.nameEn !== undefined) formData.append("nameEn", payload.nameEn);
+    if (payload.nameAr !== undefined) formData.append("nameAr", payload.nameAr);
+    if (payload.descriptionEn !== undefined) {
+      formData.append("descriptionEn", payload.descriptionEn);
+    }
+    if (payload.descriptionAr !== undefined) {
+      formData.append("descriptionAr", payload.descriptionAr);
+    }
+    if (payload.prices?.month !== undefined) {
+      formData.append("priceMonth", String(payload.prices.month));
+    }
+    if (payload.prices?.year !== undefined) {
+      formData.append("priceYear", String(payload.prices.year));
+    }
+    if (payload.outOfStock !== undefined) {
+      formData.append("outOfStock", String(Boolean(payload.outOfStock)));
+    }
+    formData.append("image", imageFile);
     const data = await requestJson(`/api/admin/services/${id}`, {
       method: "PUT",
       token,
-      body: payload,
+      formData,
     });
+    window.dispatchEvent(new Event("gs:services-updated"));
     return data.service;
   }
-  if (token !== STATIC_TOKEN) throw new Error("Unauthorized");
-  const list = getLocalCatalog();
-  const next = list.map((service) => {
-    if (service.id !== id) return service;
-    return {
-      ...service,
-      nameEn: payload.nameEn,
-      nameAr: payload.nameAr,
-      descriptionEn: payload.descriptionEn,
-      descriptionAr: payload.descriptionAr,
-      prices: { ...payload.prices },
-    };
+
+  const data = await requestJson(`/api/admin/services/${id}`, {
+    method: "PUT",
+    token,
+    body: payload,
   });
-  writeLocalCatalog(next);
-  return next.find((s) => s.id === id);
+  window.dispatchEvent(new Event("gs:services-updated"));
+  return data.service;
+}
+
+export async function adminFetchSettings(token) {
+  const data = await requestJson("/api/admin/settings", { token });
+  return data.settings;
+}
+
+export async function adminSaveSettings(token, patch) {
+  const data = await requestJson("/api/admin/settings", {
+    method: "PUT",
+    token,
+    body: patch,
+  });
+  window.dispatchEvent(new Event("gs:settings-updated"));
+  return data.settings;
 }
 
 export async function fetchPublicServices() {
@@ -134,5 +150,17 @@ export async function fetchPublicServices() {
       /* fall through */
     }
   }
-  return getLocalCatalog();
+  return JSON.parse(JSON.stringify(SERVICES));
+}
+
+export async function fetchPublicSettings() {
+  if (await hasBackendApi()) {
+    try {
+      const data = await requestJson("/api/settings");
+      return data.settings;
+    } catch {
+      /* fall through */
+    }
+  }
+  return null;
 }

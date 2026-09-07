@@ -1,10 +1,16 @@
 import { serviceImageUrl } from "../data/serviceImages.js";
+import { apiUrl } from "../lib/adminApi.js";
 
-/** Brand artwork from uploaded GitHub images, with SVG fallback. */
+/** Brand artwork from DB upload or static public assets, with SVG fallback. */
 export default function ServiceIcon({ service, size = "md" }) {
   const accent = service.accent || "#0055ff";
   const id = service.id || "";
-  const imageUrl = serviceImageUrl(id);
+  const uploaded = service.imageUrl
+    ? service.imageUrl.startsWith("http")
+      ? service.imageUrl
+      : apiUrl(service.imageUrl)
+    : null;
+  const imageUrl = uploaded || serviceImageUrl(id);
   const name = service.nameEn || id;
 
   return (

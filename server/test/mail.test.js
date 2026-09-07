@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { buildComplaintEmailContent } from "../src/mail.js";
+import { buildComplaintEmailContent } from "../src/services/mail.js";
 
 describe("complaint email content", () => {
   it("embeds an inline screenshot image in the HTML body", () => {
