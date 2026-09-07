@@ -110,4 +110,4 @@ Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflow
 
 If the workflow has not run yet, go to **Actions** → **Deploy to GitHub Pages** → **Run workflow**.
 
-The homepage uses built-in catalog data if the API is unavailable. **Admin**, **live price/settings edits**, and **complaint email via SMTP** need the Node server (`npm start` on a host such as Render or GoDaddy Node). Point that host at a persistent disk so `server/data/globalstore.db` survives restarts.
+The homepage uses built-in catalog data if the API is unavailable. **Admin login does not work on GitHub Pages** (static hosting; `/api` returns 405). Test admin locally with `npm run dev` at http://localhost:5173, then deploy Node on GoDaddy. **Live price/settings edits** and **complaint email via SMTP** also need the Node server. Point that host at a persistent disk so `server/data/globalstore.db` survives restarts.

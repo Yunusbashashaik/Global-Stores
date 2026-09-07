@@ -74,8 +74,18 @@ export function resetBackendAvailability() {
   resolvedBase = undefined;
 }
 
+function isGitHubPages() {
+  if (typeof window === "undefined") return false;
+  return /\.github\.io$/i.test(window.location.hostname);
+}
+
 function networkError(err) {
   const message = String(err?.message || err || "");
+  if (isGitHubPages()) {
+    return new Error(
+      "GitHub Pages is static HTML only — admin login cannot work there. Test login on your computer with npm run dev (http://localhost:5173), then deploy the Node app on GoDaddy.",
+    );
+  }
   if (err?.status === 405) {
     return new Error(
       "The web host blocked /api (HTTP 405). The Node app is not the public site. In GoDaddy cPanel use Application Manager, startup file app.js, then npm install && npm run build.",
