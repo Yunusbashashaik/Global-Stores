@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w client",
-    "start": "npm run start -w server",
+    "start": "node app.js",
     "lint": "npm run lint -w client && npm run lint -w server",
     "test": "npm run test -w server"
   },

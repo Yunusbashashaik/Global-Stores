@@ -11,17 +11,24 @@ import { settingsRouter } from "./routes/settings.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 3001;
+const HOST = process.env.HOST || "0.0.0.0";
 
 initDatabase();
 seedDatabase();
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(cors({ origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "global-store-api", db: "sqlite" });
+  res.json({
+    ok: true,
+    service: "global-store-api",
+    db: "sqlite",
+    time: new Date().toISOString(),
+  });
 });
 
 app.use("/api/uploads", express.static(UPLOADS_DIR));
@@ -40,8 +47,8 @@ app.get("*", (req, res, next) => {
 });
 
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
-    console.log(`GlobalStore API listening on http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`GlobalStore API listening on http://${HOST}:${PORT}`);
   });
 }
 
