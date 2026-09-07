@@ -54,11 +54,15 @@ export default function Layout({ lang, setLang, t }) {
     setSupportNumbers(whatsappNumbers);
   }, [whatsappNumbers]);
 
-  const refreshServices = useCallback(() => {
+  const refreshServices = useCallback((list) => {
+    if (Array.isArray(list)) {
+      setServices(list);
+      return;
+    }
     fetchServices()
-      .then((list) => {
-        if (Array.isArray(list) && list.length) {
-          setServices(list);
+      .then((next) => {
+        if (Array.isArray(next) && next.length) {
+          setServices(next);
         }
       })
       .catch(() => {});
@@ -66,7 +70,7 @@ export default function Layout({ lang, setLang, t }) {
 
   useEffect(() => {
     refreshServices();
-    const onUpdate = () => refreshServices();
+    const onUpdate = (event) => refreshServices(event.detail?.services);
     window.addEventListener("gs:services-updated", onUpdate);
     return () => window.removeEventListener("gs:services-updated", onUpdate);
   }, [refreshServices]);
