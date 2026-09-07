@@ -52,21 +52,29 @@ Out-of-stock services use price `0`, show an **Out of Stock** note, and disable 
 
 ### Deploy on GoDaddy (Node.js)
 
-Admin login needs the **Node API**. Uploading only HTML/JS (static hosting / FTP to `public_html`) will show **Load failed** or **405**.
+Admin login needs a **running Node app**. If `https://YOUR-DOMAIN/api/health` does not return `{"ok":true}`, login cannot work.
 
-1. Use **GoDaddy Node.js / Application Hosting** (not plain Web Hosting alone).
-2. Application root = this repo.
-3. Startup file: `app.js` (or run command `npm start`).
-4. On the host, install and build:
+**cPanel Application Manager (Passenger)**
+
+1. Setup → Application Manager → Register Application  
+2. Application root = this repo folder  
+3. Application URL = your domain (or subdomain) **root**, not a `/public_html` static copy  
+4. Application startup file: `app.js`  
+5. Node.js version: 20+  
+6. In the app directory:
    ```bash
    npm install
    npm run build
-   npm start
    ```
-5. Confirm `https://YOUR-DOMAIN/api/health` returns `{"ok":true,...}`.
-6. Open the same domain in the browser and try Admin login.
+7. Restart the application  
+8. Visit `https://YOUR-DOMAIN/api/health` — you must see JSON `ok: true`  
+9. Then sign in with `admin` / `globalstores`
 
-If the website and API are on **different URLs**, edit `client/public/runtime-config.js` (copied to `dist/runtime-config.js` after build) and set:
+Do **not** FTP only `client/dist` into `public_html`. That is static hosting and `/api/health` will 404.
+
+If Apache serves static files and Node is on port 3001, copy `docs/godaddy.htaccess` to `public_html/.htaccess` (requires `mod_proxy`).
+
+If the website and API use different URLs, edit `client/public/runtime-config.js` after build:
 
 ```js
 window.__GLOBALSTORE_CONFIG__ = { apiUrl: "https://your-node-api-url" };

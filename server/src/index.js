@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { initDatabase, UPLOADS_DIR } from "./db/connection.js";
+import { getDbEngine, initDatabase, UPLOADS_DIR } from "./db/connection.js";
 import { seedDatabase } from "./db/seed.js";
 import { adminRouter } from "./routes/admin.js";
 import { complaintRouter } from "./routes/complaints.js";
@@ -26,7 +26,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     service: "global-store-api",
-    db: "sqlite",
+    db: getDbEngine(),
     time: new Date().toISOString(),
   });
 });
@@ -46,10 +46,37 @@ app.get("*", (req, res, next) => {
   });
 });
 
-if (process.env.NODE_ENV !== "test") {
+export function startServer() {
+  if (process.env.NODE_ENV === "test") return;
+  if (app.listening || startServer.started) return;
+  startServer.started = true;
+
+  const passengerGlobal = typeof globalThis.PhusionPassenger !== "undefined";
+  const passengerEnv = Boolean(
+    process.env.PASSENGER_APP_ENV || process.env.PASSENGER_SPAWN_WORK_DIR,
+  );
+
+  if (passengerGlobal) {
+    globalThis.PhusionPassenger.configure({ autoInstall: false });
+    app.listen("passenger");
+    console.log("GlobalStore API listening via Phusion Passenger");
+    return;
+  }
+
   app.listen(PORT, HOST, () => {
-    console.log(`GlobalStore API listening on http://${HOST}:${PORT}`);
+    console.log(
+      `GlobalStore API listening on http://${HOST}:${PORT}${passengerEnv ? " (Passenger env)" : ""}`,
+    );
   });
 }
 
+const isDirectRun =
+  Boolean(process.argv[1]) &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  startServer();
+}
+
 export { app };
+export default app;

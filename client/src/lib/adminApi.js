@@ -4,8 +4,31 @@ function trimSlash(value) {
   return String(value || "").replace(/\/$/, "");
 }
 
-/** Resolve API origin: runtime config → Vite env → same origin. */
+function unique(list) {
+  return [...new Set(list.filter((item) => item !== undefined && item !== null))];
+}
+
+function candidateBases() {
+  const bases = [];
+  if (typeof window !== "undefined") {
+    const runtime = window.__GLOBALSTORE_CONFIG__?.apiUrl;
+    if (runtime) bases.push(trimSlash(runtime));
+    bases.push(trimSlash(window.location.origin));
+    const folder = trimSlash(window.location.pathname.replace(/\/[^/]*$/, ""));
+    if (folder && folder !== "/") {
+      bases.push(trimSlash(`${window.location.origin}${folder}`));
+    }
+  }
+  bases.push(trimSlash(import.meta.env.VITE_API_URL || ""));
+  bases.push("");
+  return unique(bases);
+}
+
+let resolvedBase;
+let backendAvailable;
+
 export function getApiBase() {
+  if (resolvedBase !== undefined) return resolvedBase;
   if (typeof window !== "undefined") {
     const runtime = window.__GLOBALSTORE_CONFIG__?.apiUrl;
     if (runtime) return trimSlash(runtime);
@@ -17,25 +40,47 @@ export function apiUrl(path) {
   return `${getApiBase()}${path}`;
 }
 
-let backendAvailable;
+async function isLiveHealth(base) {
+  const res = await fetch(`${trimSlash(base)}/api/health`, { method: "GET" });
+  const data = await res.json().catch(() => null);
+  return Boolean(res.ok && data && data.ok === true);
+}
+
+export async function discoverApiBase() {
+  if (resolvedBase !== undefined && backendAvailable) return resolvedBase;
+  for (const base of candidateBases()) {
+    try {
+      if (await isLiveHealth(base)) {
+        resolvedBase = base;
+        backendAvailable = true;
+        return base;
+      }
+    } catch {
+      /* try next */
+    }
+  }
+  backendAvailable = false;
+  return getApiBase();
+}
 
 export async function hasBackendApi() {
   if (backendAvailable !== undefined) return backendAvailable;
-  try {
-    const res = await fetch(apiUrl("/api/health"), { method: "GET" });
-    backendAvailable = res.ok;
-  } catch {
-    backendAvailable = false;
-  }
-  return backendAvailable;
+  await discoverApiBase();
+  return Boolean(backendAvailable);
 }
 
 export function resetBackendAvailability() {
   backendAvailable = undefined;
+  resolvedBase = undefined;
 }
 
 function networkError(err) {
   const message = String(err?.message || err || "");
+  if (err?.status === 405) {
+    return new Error(
+      "The web host blocked /api (HTTP 405). The Node app is not the public site. In GoDaddy cPanel use Application Manager, startup file app.js, then npm install && npm run build.",
+    );
+  }
   if (
     err instanceof TypeError ||
     /failed to fetch|load failed|networkerror|network request failed/i.test(
@@ -43,7 +88,7 @@ function networkError(err) {
     )
   ) {
     return new Error(
-      "Cannot reach the API server. On GoDaddy, deploy the Node app and run `npm run build && npm start` (not static files alone). If the API is on another URL, set apiUrl in runtime-config.js.",
+      "Cannot reach /api/health on this domain. Open https://YOUR-DOMAIN/api/health — it must show {\"ok\":true}. If it 404s, Node is not serving the website yet.",
     );
   }
   return err instanceof Error ? err : new Error(message || "Request failed");
@@ -71,23 +116,24 @@ async function requestJson(path, { method = "GET", body, token, formData } = {})
   if (!res.ok) {
     const err = new Error(data.error || `Request failed (${res.status})`);
     err.status = res.status;
-    throw err;
+    throw networkError(err);
   }
   return data;
 }
 
 export async function adminLogin(username, password) {
   resetBackendAvailability();
-  if (!(await hasBackendApi())) {
-    throw new Error(
-      "API server is offline. Admin login needs the Node backend on GoDaddy (npm start), not static HTML hosting.",
-    );
+  await discoverApiBase();
+  try {
+    const data = await requestJson("/api/admin/login", {
+      method: "POST",
+      body: { username, password },
+    });
+    backendAvailable = true;
+    return data.token;
+  } catch (err) {
+    throw networkError(err);
   }
-  const data = await requestJson("/api/admin/login", {
-    method: "POST",
-    body: { username, password },
-  });
-  return data.token;
 }
 
 export async function adminValidateSession(token) {

@@ -1,45 +1,16 @@
-import Database from "better-sqlite3";
+import { createRequire } from "module";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { JsonDatabase } from "./jsonDb.js";
 
+const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = path.join(__dirname, "..", "..", "data");
 export const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 export const SERVICE_UPLOADS_DIR = path.join(UPLOADS_DIR, "services");
 
-let db;
-let activeDbPath;
-
-export function getDbPath() {
-  return (
-    process.env.DATABASE_PATH || path.join(DATA_DIR, "globalstore.db")
-  );
-}
-
-export function getDb() {
-  if (!db) {
-    throw new Error("Database not initialized. Call initDatabase() first.");
-  }
-  return db;
-}
-
-export function initDatabase(dbPath = getDbPath()) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.mkdirSync(SERVICE_UPLOADS_DIR, { recursive: true });
-  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-
-  if (db) {
-    db.close();
-    db = undefined;
-  }
-
-  activeDbPath = dbPath;
-  db = new Database(dbPath);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-
-  db.exec(`
+const SCHEMA_SQL = `
     CREATE TABLE IF NOT EXISTS services (
       id TEXT PRIMARY KEY,
       icon TEXT NOT NULL DEFAULT '',
@@ -75,17 +46,87 @@ export function initDatabase(dbPath = getDbPath()) {
       original_filename TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
-  `);
+`;
 
+let db;
+let activeDbPath;
+let dbEngine = "none";
+
+export function getDbPath() {
+  return process.env.DATABASE_PATH || path.join(DATA_DIR, "globalstore.db");
+}
+
+export function getDbEngine() {
+  return dbEngine;
+}
+
+export function getDb() {
+  if (!db) {
+    throw new Error("Database not initialized. Call initDatabase() first.");
+  }
+  return db;
+}
+
+function openSqlite(dbPath) {
+  const Database = require("better-sqlite3");
+  const sqlite = new Database(dbPath);
+  sqlite.pragma("journal_mode = WAL");
+  sqlite.pragma("foreign_keys = ON");
+  sqlite.exec(SCHEMA_SQL);
+  return sqlite;
+}
+
+export function initDatabase(dbPath = getDbPath(), options = {}) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.mkdirSync(SERVICE_UPLOADS_DIR, { recursive: true });
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+
+  if (db) {
+    try {
+      db.close();
+    } catch {
+      /* ignore */
+    }
+    db = undefined;
+  }
+
+  const engine = options.engine || process.env.DATABASE_ENGINE;
+  const forceJson = engine === "json";
+  if (!forceJson) {
+    try {
+      db = openSqlite(dbPath);
+      dbEngine = "sqlite";
+      activeDbPath = dbPath;
+      return db;
+    } catch (err) {
+      console.error(
+        "SQLite native module failed; using JSON file store instead.",
+        err?.message || err,
+      );
+    }
+  }
+
+  const jsonPath =
+    options.jsonPath ||
+    process.env.JSON_DATABASE_PATH ||
+    path.join(DATA_DIR, "globalstore.json");
+  db = new JsonDatabase(jsonPath);
+  dbEngine = "json";
+  activeDbPath = jsonPath;
   return db;
 }
 
 export function closeDatabase() {
   if (db) {
-    db.close();
+    try {
+      db.close();
+    } catch {
+      /* ignore */
+    }
     db = undefined;
   }
   activeDbPath = undefined;
+  dbEngine = "none";
 }
 
 export { activeDbPath };
