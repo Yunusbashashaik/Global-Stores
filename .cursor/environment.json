@@ -1,0 +1,15 @@
+{
+  "name": "GlobalStore.com",
+  "install": "npm ci",
+  "terminals": [
+    {
+      "name": "dev",
+      "command": "npm run dev",
+      "description": "Runs the Express API (http://localhost:3001) and Vite frontend (http://localhost:5173) together via concurrently. Vite proxies /api to port 3001."
+    }
+  ],
+  "ports": [
+    { "name": "client", "port": 5173 },
+    { "name": "api", "port": 3001 }
+  ]
+}
