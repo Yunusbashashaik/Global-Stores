@@ -50,7 +50,10 @@ const SOCIAL_LABELS = {
 function toSettingsDraft(settings) {
   return {
     complaintEmail: settings.complaintEmail || "",
-    whatsappNumbers: [...(settings.whatsappNumbers || [])],
+    whatsappNumbers:
+      Array.isArray(settings.whatsappNumbers) && settings.whatsappNumbers.length
+        ? [...settings.whatsappNumbers]
+        : [""],
     aboutEn: settings.aboutEn || "",
     aboutAr: settings.aboutAr || "",
     ownersEn: settings.ownersEn || "",
@@ -193,7 +196,7 @@ export default function AdminPanel({ open, onClose, t }) {
       setTokenState(sessionToken);
       setPassword("");
       setView("dashboard");
-      prefetch(sessionToken).catch(() => {});
+      await prefetch(sessionToken);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -652,9 +655,14 @@ export default function AdminPanel({ open, onClose, t }) {
                   busy={busy}
                   error={error}
                   disabled={!selectedId}
-                  showDelete
+                  showDelete={Boolean(selectedId)}
                 />
               </div>
+            ) : null}
+
+            {["edit-email", "edit-contact", "edit-about"].includes(view) &&
+            !settingsDraft ? (
+              <p className="catalog-note">{t.adminLoading}</p>
             ) : null}
 
             {view === "edit-email" && settingsDraft ? (
