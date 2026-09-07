@@ -618,29 +618,98 @@ button,
 
 .service-card {
   position: relative;
+  overflow: visible;
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+
+.card.service-card > .service-oos-badge {
+  position: absolute;
+  z-index: 4;
 }
 
 .service-card--oos {
-  opacity: 0.88;
+  opacity: 1;
+}
+
+.service-card--oos:hover {
+  transform: translateY(-4px);
 }
 
 .service-oos-badge {
   position: absolute;
-  top: 0.75rem;
-  inset-inline-end: 0.75rem;
+  top: 0.7rem;
+  inset-inline-start: 0.7rem;
   z-index: 2;
-  padding: 0.3rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.38rem 0.72rem;
   border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: #fff;
-  background: rgba(185, 28, 28, 0.92);
+  background: linear-gradient(135deg, #fb7185 0%, #e11d48 48%, #9f1239 100%);
+  box-shadow: 0 10px 22px rgba(225, 29, 72, 0.38);
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    filter 0.28s ease;
+}
+
+.service-oos-badge svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+.service-oos-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.45) 48%,
+    transparent 72%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.service-card:hover .service-oos-badge,
+.service-oos-badge:hover {
+  transform: translateY(-2px) scale(1.06);
+  filter: saturate(1.12) brightness(1.06);
+  box-shadow: 0 14px 28px rgba(225, 29, 72, 0.5);
+}
+
+.service-card:hover .service-oos-badge::after,
+.service-oos-badge:hover::after {
+  animation: oos-sheen 0.7s ease;
+}
+
+@keyframes oos-sheen {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}
+
+.service-oos-badge--inline {
+  position: static;
+  width: fit-content;
+  margin: 0.35rem auto 0;
 }
 
 .service-oos-note {
   margin: 0.35rem 0 0;
-  color: #b91c1c;
+  color: #e11d48;
   font-weight: 700;
 }
 

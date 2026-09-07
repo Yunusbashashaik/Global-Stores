@@ -31,7 +31,9 @@ export default function ViewPlansModal({ service, lang, t, onClose }) {
         <div className="view-plans-hero">
           <ServiceIcon service={service} size="md" />
           <p className="service-card-type">{type}</p>
-          {oos ? <p className="service-oos-note">{t.outOfStock}</p> : null}
+          {oos ? (
+            <p className="service-oos-badge service-oos-badge--inline">{t.outOfStock}</p>
+          ) : null}
         </div>
 
         <pre className="view-plans-desc">{description}</pre>

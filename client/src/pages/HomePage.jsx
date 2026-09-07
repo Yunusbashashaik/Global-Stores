@@ -43,7 +43,15 @@ export default function HomePage({ lang, t }) {
 
   useEffect(() => {
     let cancelled = false;
-    const load = () => {
+    const load = (event) => {
+      const fromEvent = event?.detail?.services;
+      if (Array.isArray(fromEvent)) {
+        if (!cancelled) {
+          setServices(fromEvent);
+          setLoadError("");
+        }
+        return;
+      }
       fetchServices()
         .then((list) => {
           if (!cancelled) {
