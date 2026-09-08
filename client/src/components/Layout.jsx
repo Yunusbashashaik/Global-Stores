@@ -136,6 +136,11 @@ export default function Layout({ lang, setLang, t }) {
     navigate("/");
   }, [isHome, navigate]);
 
+  const reloadHome = useCallback((event) => {
+    event.preventDefault();
+    window.location.assign("/");
+  }, []);
+
   const openServices = useCallback(() => {
     setSubsOpen(false);
     setMenuOpen(false);
@@ -181,7 +186,7 @@ export default function Layout({ lang, setLang, t }) {
     <div className="app-shell">
       <header className="site-header">
         <div className="container header-inner">
-          <Link to="/" className="logo" aria-label="Global Store" onClick={() => setModal(null)}>
+          <Link to="/" className="logo" aria-label="Global Store" onClick={reloadHome}>
             <Logo showTagline />
           </Link>
 
