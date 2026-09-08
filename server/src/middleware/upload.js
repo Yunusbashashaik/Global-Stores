@@ -3,8 +3,8 @@ import multer from "multer";
 import path from "path";
 import { SERVICE_UPLOADS_DIR, UPLOADS_DIR } from "../db/connection.js";
 
-export const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
-export const MAX_SERVICE_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+const MAX_SERVICE_IMAGE_BYTES = 5 * 1024 * 1024;
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });

@@ -79,4 +79,3 @@ if (isDirectRun) {
 }
 
 export { app };
-export default app;

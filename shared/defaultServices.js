@@ -29,7 +29,7 @@ function svc({
   };
 }
 
-/** Seed catalog used when server/data/services.json does not exist yet. */
+/** Seed catalog used when the database has no services yet. */
 export const DEFAULT_SERVICES = [
 
   svc({

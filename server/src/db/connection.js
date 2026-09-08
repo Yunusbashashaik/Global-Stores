@@ -6,7 +6,7 @@ import { JsonDatabase } from "./jsonDb.js";
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const DATA_DIR = path.join(__dirname, "..", "..", "data");
+const DATA_DIR = path.join(__dirname, "..", "..", "data");
 export const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 export const SERVICE_UPLOADS_DIR = path.join(UPLOADS_DIR, "services");
 
@@ -49,10 +49,9 @@ const SCHEMA_SQL = `
 `;
 
 let db;
-let activeDbPath;
 let dbEngine = "none";
 
-export function getDbPath() {
+function getDbPath() {
   return process.env.DATABASE_PATH || path.join(DATA_DIR, "globalstore.db");
 }
 
@@ -96,7 +95,6 @@ export function initDatabase(dbPath = getDbPath(), options = {}) {
     try {
       db = openSqlite(dbPath);
       dbEngine = "sqlite";
-      activeDbPath = dbPath;
       return db;
     } catch (err) {
       console.error(
@@ -112,7 +110,6 @@ export function initDatabase(dbPath = getDbPath(), options = {}) {
     path.join(DATA_DIR, "globalstore.json");
   db = new JsonDatabase(jsonPath);
   dbEngine = "json";
-  activeDbPath = jsonPath;
   return db;
 }
 
@@ -125,8 +122,5 @@ export function closeDatabase() {
     }
     db = undefined;
   }
-  activeDbPath = undefined;
   dbEngine = "none";
 }
-
-export { activeDbPath };

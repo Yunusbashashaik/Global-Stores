@@ -25,7 +25,7 @@ export function getSetting(key, fallback) {
   }
 }
 
-export function setSetting(key, value) {
+function setSetting(key, value) {
   setRaw(key, value);
   return getSetting(key);
 }
