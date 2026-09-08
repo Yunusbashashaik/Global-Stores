@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "globalstores";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Wz%861?01";
 const SESSION_SECRET =
   process.env.ADMIN_SESSION_SECRET || "globalstores-dev-session-secret";
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
