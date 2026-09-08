@@ -130,9 +130,6 @@ export const COPY = {
     fabLabel: "WhatsApp Support",
     servicesLoadFallback:
       "Showing cached catalog — live prices will refresh when the API is available.",
-    carouselNext: "Show next services",
-    carouselPrev: "Show previous services",
-    carouselPage: "Services page",
     adminNavLabel: "Administrator",
     adminLoginTitle: "Admin Sign In",
     adminLoginLead: "Sign in to manage services and site settings.",
@@ -325,9 +322,6 @@ export const COPY = {
     fabLabel: "دعم واتساب",
     servicesLoadFallback:
       "عرض الكتالوج المحفوظ — ستتحدث الأسعار عند توفر الخادم.",
-    carouselNext: "عرض الخدمات التالية",
-    carouselPrev: "عرض الخدمات السابقة",
-    carouselPage: "صفحة الخدمات",
     adminNavLabel: "لوحة المسؤول",
     adminLoginTitle: "تسجيل دخول المسؤول",
     adminLoginLead: "سجّل الدخول لإدارة الخدمات وإعدادات الموقع.",
