@@ -1,7 +1,6 @@
 import ServiceIcon from "./ServiceIcon.jsx";
 import { isOutOfStock } from "../data/catalog.js";
 
-/** Compact card matching Picture 2 — description is hidden until View Plans. */
 export default function ServiceCard({ service, lang, t, onViewPlans }) {
   const name = lang === "ar" ? service.nameAr : service.nameEn;
   const type =

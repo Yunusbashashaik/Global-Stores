@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useSettings } from "../context/SettingsContext.jsx";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
@@ -202,16 +202,6 @@ export default function ComplaintForm({ t }) {
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const fileSlotRef = useRef(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("sent") === "1") {
-      setSuccess(true);
-      const url = new URL(window.location.href);
-      url.searchParams.delete("sent");
-      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
-    }
-  }, []);
 
   const onFileChange = (e) => {
     const file = e.target.files?.[0] ?? null;

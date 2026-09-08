@@ -6,7 +6,6 @@ import ViewPlansModal from "../components/ViewPlansModal.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
 import { wallpaperUrl } from "../data/serviceImages.js";
 
-/** Full 4×4 OTT grid matching Point 2 reference. */
 const HERO_LOGO_IDS = [
   "netflix-private",
   "netflix-prime",

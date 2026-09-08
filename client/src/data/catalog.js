@@ -15,10 +15,6 @@ export function setSupportNumbers(numbers) {
   }
 }
 
-export function getSupportNumbers() {
-  return supportNumbers;
-}
-
 export function nextSupportNumber() {
   const num = supportNumbers[orderLineIndex % supportNumbers.length];
   orderLineIndex += 1;
@@ -27,29 +23,6 @@ export function nextSupportNumber() {
 
 export function buildWhatsAppUrl(phone, message) {
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-}
-
-export function buildOrderMessage(service, durationKey, priceKd, lang) {
-  const durationEn = durationKey === "month" ? "1 Month" : "1 Year";
-  const durationAr = durationKey === "month" ? "شهر واحد" : "سنة واحدة";
-  if (lang === "ar") {
-    return `مرحباً فريق دعم GlobalStore.com، أود شراء الاشتراك التالي:
-
-الدولة: الكويت
-الخدمة: ${service.nameAr}
-المدة: ${durationAr}
-السعر: ${priceKd} د.ك
-
-يرجى تزويدي بتفاصيل الدفع وإتمام طلبي.`;
-  }
-  return `Hello GlobalStore.com Support Team, I would like to purchase the following subscription:
-
-Country: Kuwait
-Service: ${service.nameEn}
-Duration: ${durationEn}
-Price: ${priceKd} KD
-
-Please provide payment details and complete my order.`;
 }
 
 /** Fallback catalog if the API is unavailable. */

@@ -27,7 +27,7 @@ function candidateBases() {
 let resolvedBase;
 let backendAvailable;
 
-export function getApiBase() {
+function getApiBase() {
   if (resolvedBase !== undefined) return resolvedBase;
   if (typeof window !== "undefined") {
     const runtime = window.__GLOBALSTORE_CONFIG__?.apiUrl;
@@ -46,7 +46,7 @@ async function isLiveHealth(base) {
   return Boolean(res.ok && data && data.ok === true);
 }
 
-export async function discoverApiBase() {
+async function discoverApiBase() {
   if (resolvedBase !== undefined && backendAvailable) return resolvedBase;
   for (const base of candidateBases()) {
     try {
@@ -63,13 +63,13 @@ export async function discoverApiBase() {
   return getApiBase();
 }
 
-export async function hasBackendApi() {
+async function hasBackendApi() {
   if (backendAvailable !== undefined) return backendAvailable;
   await discoverApiBase();
   return Boolean(backendAvailable);
 }
 
-export function resetBackendAvailability() {
+function resetBackendAvailability() {
   backendAvailable = undefined;
   resolvedBase = undefined;
 }

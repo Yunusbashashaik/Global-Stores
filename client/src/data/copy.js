@@ -1,6 +1,5 @@
 export const COPY = {
   en: {
-    heroKicker: "Premium Subscriptions, Global Access",
     heroBadge: "PREMIUM OTT & DIGITAL SUBSCRIPTIONS",
     heroHeadline: "Your All-in-One Entertainment Destination.",
     heroHeadlineParts: {
@@ -11,20 +10,12 @@ export const COPY = {
     tagline:
       "Top Premium Subscriptions at Unbeatable Prices. 100% Secure • Instant Delivery • 24/7 Support.",
     heroCta: "Explore Subscriptions",
-    heroMore: "More",
     heroTrust: [
       { icon: "shield", title: "100% Secure", body: "Safe & Reliable" },
       { icon: "bolt", title: "Instant Activation", body: "Quick & Easy" },
       { icon: "headset", title: "24/7 Support", body: "Always Here" },
     ],
     trustBarLabel: "Why Global Store",
-    trustBar: [
-      "Lowest Prices",
-      "Official Accounts",
-      "All in One Place",
-      "Fast & Reliable",
-      "Money Back",
-    ],
     trustBarDetailed: [
       { icon: "tag", title: "Lowest Prices", body: "Cheaper than Market" },
       { icon: "seal", title: "Official Accounts", body: "100% Genuine" },
@@ -51,7 +42,6 @@ export const COPY = {
     catalogTitle: "Popular Subscriptions",
     viewAll: "View All",
     showLess: "Show Less",
-    servicesShown: "services",
     allServicesTitle: "All Subscriptions",
     month: "1 Month",
     year: "1 Year",
@@ -74,7 +64,6 @@ export const COPY = {
     navViewMore: "View More",
     navHowItWorks: "How It Works",
     navContact: "Contact",
-    navServices: "Services",
     navComplaint: "Complaints",
     navAdmin: "Admin Login",
     navMenu: "Menu",
@@ -100,7 +89,6 @@ export const COPY = {
     contactTitle: "Contact Us",
     contactPhone: "WhatsApp",
     contactEmail: "Email",
-    complaintButton: "Complaints",
     complaintLead:
       "Tell us what went wrong. Attach a screenshot so we can help you faster.",
     backToHome: "Back to services",
@@ -114,7 +102,6 @@ export const COPY = {
       "Images only (PNG, JPG, WEBP, GIF, HEIC…). Max 5 MB. Any file name is fine.",
     screenshotNotImage: "Please choose an image file (PNG, JPG, WEBP, GIF, HEIC…).",
     screenshotTooLarge: "Screenshot must be 5 MB or smaller.",
-    screenshotRequired: "Screenshot is missing.",
     fieldMissing: "{field} is missing.",
     complaintSending: "Sending email…",
     complaintEmailFailed:
@@ -125,8 +112,6 @@ export const COPY = {
       "Thank you. Your complaint was submitted successfully. Our team will review it shortly.",
     close: "Close",
     footerOwners: "Owned & Managed by M Fareed Tariq & M Zuhaib Tariq",
-    footerTerms: "Terms & Support",
-    region: "Kuwait (KWD)",
     fabLabel: "WhatsApp Support",
     servicesLoadFallback:
       "Showing cached catalog — live prices will refresh when the API is available.",
@@ -193,7 +178,6 @@ export const COPY = {
     socialFacebook: "Facebook",
   },
   ar: {
-    heroKicker: "اشتراكات مميزة، وصول عالمي",
     heroBadge: "اشتراكات OTT والرقمية المميزة",
     heroHeadline: "وجهتك الشاملة لكل الترفيه.",
     heroHeadlineParts: {
@@ -204,20 +188,12 @@ export const COPY = {
     tagline:
       "أفضل الاشتراكات المميزة بأسعار لا تُقاوم. آمن 100٪ • توصيل فوري • دعم على مدار الساعة.",
     heroCta: "استكشف الاشتراكات",
-    heroMore: "المزيد",
     heroTrust: [
       { icon: "shield", title: "آمن 100٪", body: "موثوق وآمن" },
       { icon: "bolt", title: "تفعيل فوري", body: "سريع وسهل" },
       { icon: "headset", title: "دعم 24/7", body: "دائماً معك" },
     ],
     trustBarLabel: "لماذا Global Store",
-    trustBar: [
-      "أقل الأسعار",
-      "حسابات رسمية",
-      "الكل في مكان واحد",
-      "سريع وموثوق",
-      "استرداد الأموال",
-    ],
     trustBarDetailed: [
       { icon: "tag", title: "أقل الأسعار", body: "أرخص من السوق" },
       { icon: "seal", title: "حسابات رسمية", body: "أصلية 100٪" },
@@ -244,7 +220,6 @@ export const COPY = {
     catalogTitle: "الاشتراكات الشائعة",
     viewAll: "عرض الكل",
     showLess: "عرض أقل",
-    servicesShown: "خدمات",
     allServicesTitle: "جميع الاشتراكات",
     month: "شهر واحد",
     year: "سنة واحدة",
@@ -267,7 +242,6 @@ export const COPY = {
     navViewMore: "عرض المزيد",
     navHowItWorks: "كيف يعمل",
     navContact: "تواصل معنا",
-    navServices: "الخدمات",
     navComplaint: "الشكاوى",
     navAdmin: "دخول المسؤول",
     navMenu: "القائمة",
@@ -293,7 +267,6 @@ export const COPY = {
     contactTitle: "تواصل معنا",
     contactPhone: "واتساب",
     contactEmail: "البريد",
-    complaintButton: "الشكاوى",
     complaintLead:
       "أخبرنا بالمشكلة. أرفق لقطة شاشة لنتمكن من مساعدتك بشكل أسرع.",
     backToHome: "العودة إلى الخدمات",
@@ -307,7 +280,6 @@ export const COPY = {
       "صور فقط (PNG، JPG، WEBP، GIF، HEIC…). الحد الأقصى 5 ميغابايت. أي اسم ملف مقبول.",
     screenshotNotImage: "يرجى اختيار ملف صورة (PNG، JPG، WEBP، GIF، HEIC…).",
     screenshotTooLarge: "يجب ألا يتجاوز حجم لقطة الشاشة 5 ميغابايت.",
-    screenshotRequired: "لقطة الشاشة مفقودة.",
     fieldMissing: "{field} مفقود.",
     complaintSending: "جارٍ إرسال البريد…",
     complaintEmailFailed: "تعذر إرسال بريد الشكوى. يرجى المحاولة مرة أخرى.",
@@ -317,8 +289,6 @@ export const COPY = {
       "شكراً لك. تم إرسال شكواك بنجاح. سيقوم فريقنا بمراجعتها قريباً.",
     close: "إغلاق",
     footerOwners: "مملوك ويدار بواسطة م. فريد طارق وم. زهيب طارق",
-    footerTerms: "الشروط والدعم",
-    region: "الكويت (د.ك)",
     fabLabel: "دعم واتساب",
     servicesLoadFallback:
       "عرض الكتالوج المحفوظ — ستتحدث الأسعار عند توفر الخادم.",
