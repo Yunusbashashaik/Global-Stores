@@ -36,7 +36,7 @@ Optional env:
 
 - `DATABASE_PATH` — custom SQLite file path
 - `ADMIN_USERNAME` (default: `admin`)
-- `ADMIN_PASSWORD` (default: `globalstores`)
+- `ADMIN_PASSWORD` (default: `Wz%861?01`)
 - `ADMIN_SESSION_SECRET` — signs admin session tokens
 
 ### Admin panel
@@ -46,7 +46,7 @@ Click the **Admin** icon in the header. A modal prompts for credentials, then op
 - **Add Services** — JPEG image, name, EN/AR descriptions, 1-month and 1-year prices
 - **Edit Services** — dropdown for Services, Complaint Email ID, Contact Details (WhatsApp), and About Us / social links
 
-Default credentials: `admin` / `globalstores` (override with `ADMIN_USERNAME` / `ADMIN_PASSWORD`).
+Default credentials: `admin` / `Wz%861?01` (override with `ADMIN_USERNAME` / `ADMIN_PASSWORD`).
 
 Out-of-stock services use price `0`, show an **Out of Stock** note, and disable Add to Cart.
 
