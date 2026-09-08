@@ -884,7 +884,7 @@ body.rtl .nav-dropdown-panel {
 .header-icon-btn {
   width: 42px;
   height: 42px;
-  border-radius: 14px;
+  border-radius: 50%;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.08);
   color: var(--text);
@@ -908,6 +908,12 @@ body.rtl .nav-dropdown-panel {
   color: var(--accent-hover);
 }
 
+.header-icon-btn:focus-visible,
+.lang-switch button:focus-visible {
+  outline: 2px solid var(--accent-hover);
+  outline-offset: 3px;
+}
+
 .header-whatsapp {
   color: #25d366;
   border-color: rgba(37, 211, 102, 0.4);
@@ -925,11 +931,6 @@ body.rtl .nav-dropdown-panel {
 .lang-switch {
   display: flex;
   gap: 0.35rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.2rem;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
   flex-shrink: 0;
 }
 
@@ -996,18 +997,26 @@ body.rtl .nav-dropdown-panel {
 }
 
 .lang-switch button {
-  border: none;
-  background: transparent;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
   color: var(--muted);
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
   cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  backdrop-filter: blur(12px);
 }
 
 .lang-switch button.active {
   background: linear-gradient(135deg, var(--accent), var(--accent-deep));
   color: #04202a;
-  font-weight: 600;
+  border-color: transparent;
 }
 
 
