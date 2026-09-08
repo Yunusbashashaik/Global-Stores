@@ -32,9 +32,11 @@ export default function Layout({ lang, setLang, t }) {
   const [adminOpen, setAdminOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [subsOpen, setSubsOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [services, setServices] = useState(SERVICES);
   const subsRef = useRef(null);
   const cartRef = useRef(null);
+  const langRef = useRef(null);
   const [cartOpen, setCartOpen] = useState(false);
   const { totalItems } = useCart();
 
@@ -78,6 +80,7 @@ export default function Layout({ lang, setLang, t }) {
   useEffect(() => {
     setMenuOpen(false);
     setSubsOpen(false);
+    setLangOpen(false);
     setCartOpen(false);
   }, [location.pathname]);
 
@@ -85,6 +88,9 @@ export default function Layout({ lang, setLang, t }) {
     const onDoc = (e) => {
       if (subsRef.current && !subsRef.current.contains(e.target)) {
         setSubsOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLangOpen(false);
       }
       if (
         cartOpen &&
@@ -317,23 +323,48 @@ export default function Layout({ lang, setLang, t }) {
               />
             </div>
 
-            <div className="lang-switch" aria-label="Language">
+            <div className="lang-switch" ref={langRef}>
               <button
                 type="button"
-                className={lang === "en" ? "active" : ""}
-                onClick={() => setLang("en")}
+                className="lang-menu-toggle"
+                aria-label="Language"
+                aria-haspopup="menu"
+                aria-expanded={langOpen}
+                onClick={() => setLangOpen((open) => !open)}
               >
-                EN
+                {lang.toUpperCase()}
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path fill="currentColor" d="m7 10 5 5 5-5z" />
+                </svg>
               </button>
-              <button
-                type="button"
-                className={lang === "ar" ? "active" : ""}
-                onClick={() => setLang("ar")}
-                aria-label="العربية"
-                title="العربية"
-              >
-                AR
-              </button>
+              {langOpen ? (
+                <div className="lang-menu" role="menu" aria-label="Language">
+                  <button
+                    type="button"
+                    className={`lang-option${lang === "en" ? " active" : ""}`}
+                    role="menuitemradio"
+                    aria-checked={lang === "en"}
+                    onClick={() => {
+                      setLang("en");
+                      setLangOpen(false);
+                    }}
+                  >
+                    EN
+                  </button>
+                  <button
+                    type="button"
+                    className={`lang-option${lang === "ar" ? " active" : ""}`}
+                    role="menuitemradio"
+                    aria-checked={lang === "ar"}
+                    onClick={() => {
+                      setLang("ar");
+                      setLangOpen(false);
+                    }}
+                  >
+                    العربية
+                  </button>
+                </div>
+              ) : null}
             </div>
 
             <button
