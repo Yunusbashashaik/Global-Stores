@@ -29,8 +29,8 @@ export function SettingsProvider({ children }) {
   }, [refreshSettings]);
 
   const value = useMemo(
-    () => ({ settings, refreshSettings }),
-    [settings, refreshSettings],
+    () => ({ settings }),
+    [settings],
   );
 
   return (

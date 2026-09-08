@@ -68,11 +68,11 @@ Admin login needs a **running Node app**. If `https://YOUR-DOMAIN/api/health` do
    ```
 7. Restart the application  
 8. Visit `https://YOUR-DOMAIN/api/health` — you must see JSON `ok: true`  
-9. Then sign in with `admin` / `globalstores`
+9. Then sign in with `admin` / `Wz%861?01`
 
 Do **not** FTP only `client/dist` into `public_html`. That is static hosting and `/api/health` will 404.
 
-If Apache serves static files and Node is on port 3001, copy `docs/godaddy.htaccess` to `public_html/.htaccess` (requires `mod_proxy`).
+If Apache serves static files and Node is on port 3001, copy `deploy/godaddy.htaccess` to `public_html/.htaccess` (requires `mod_proxy`).
 
 If the website and API use different URLs, edit `client/public/runtime-config.js` after build:
 
@@ -97,13 +97,13 @@ See `Tech. Document` for full product requirements.
 
 You **do not need a paid GitHub plan** for a **public** repository. GitHub Pages is included on free accounts. This repo is public.
 
-Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), which builds the site and pushes to the **`gh-pages`** branch (site files at both `/` and `/docs`).
+Pushes to **`main`** run [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml), which builds the site and pushes it to the root of the **`gh-pages`** branch.
 
 ### One-time setup (iPhone, iPad, or computer)
 
 1. Open **https://github.com/Yunusbashashaik/Global-Stores/settings/pages**
 2. Under **Build and deployment** → **Source**, choose **Deploy from a branch**
-3. **Branch:** `gh-pages` · **Folder:** `/ (root)` or `/docs` · **Save**
+3. **Branch:** `gh-pages` · **Folder:** `/ (root)` · **Save**
 4. Wait 1–2 minutes, then open on your iPad:
 
    **https://yunusbashashaik.github.io/Global-Stores/**

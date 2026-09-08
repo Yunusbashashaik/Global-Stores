@@ -47,12 +47,12 @@ export function listServices() {
   return rows.map(rowToService);
 }
 
-export function getServiceById(id) {
+function getServiceById(id) {
   const row = getDb().prepare("SELECT * FROM services WHERE id = ?").get(id);
   return rowToService(row);
 }
 
-export function countServices() {
+function countServices() {
   return getDb().prepare("SELECT COUNT(*) AS n FROM services").get().n;
 }
 

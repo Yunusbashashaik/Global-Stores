@@ -60,7 +60,7 @@ export function createSessionToken() {
   return `${payloadB64}.${sign(payloadB64)}`;
 }
 
-export function verifySessionToken(token) {
+function verifySessionToken(token) {
   if (!token || typeof token !== "string" || !token.includes(".")) {
     return false;
   }
@@ -89,5 +89,3 @@ export function requireAdmin(req, res, next) {
   }
   next();
 }
-
-export { ADMIN_USERNAME };

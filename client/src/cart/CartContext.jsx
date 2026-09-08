@@ -56,13 +56,6 @@ export function CartProvider({ children }) {
     });
   }, []);
 
-  const setQty = useCallback((key, qty) => {
-    setItems((prev) => {
-      if (qty <= 0) return prev.filter((i) => i.key !== key);
-      return prev.map((i) => (i.key === key ? { ...i, qty } : i));
-    });
-  }, []);
-
   const increment = useCallback((key) => {
     setItems((prev) =>
       prev.map((i) => (i.key === key ? { ...i, qty: i.qty + 1 } : i)),
@@ -105,7 +98,6 @@ export function CartProvider({ children }) {
     () => ({
       items,
       addItem,
-      setQty,
       increment,
       decrement,
       removeItem,
@@ -118,7 +110,6 @@ export function CartProvider({ children }) {
     [
       items,
       addItem,
-      setQty,
       increment,
       decrement,
       removeItem,
