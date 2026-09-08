@@ -73,8 +73,6 @@ button,
 .footer-links a,
 .footer-link-btn,
 .logo,
-.carousel-arrow,
-.carousel-dot,
 .price-toggle button,
 .admin-service-btn,
 .lang-switch button,
@@ -1562,107 +1560,10 @@ body.rtl .nav-dropdown-panel {
 
 
 
-@media (max-width: 860px) {
-}
-
-.services-carousel {
-  position: relative;
-}
-
-.carousel-viewport {
-  overflow: hidden;
-  width: 100%;
-  border-radius: calc(var(--radius) + 6px);
-}
-
-.carousel-track {
-  display: flex;
-  width: 100%;
-  transition: transform 0.6s var(--ease);
-  will-change: transform;
-}
-
-.carousel-page {
-  flex: 0 0 100%;
-  min-width: 100%;
-  padding: 0.2rem;
-}
-
-.grid,
-.carousel-grid {
+.grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
-}
-
-.carousel-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.45rem;
-}
-
-.carousel-arrow {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--accent-hover);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(16px);
-  box-shadow: var(--glass-shadow);
-}
-
-.carousel-arrow svg {
-  width: 26px;
-  height: 26px;
-  display: block;
-}
-
-.carousel-arrow:hover {
-  transform: var(--hover-lift) scale(1.05);
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  box-shadow: 0 14px 30px var(--accent-glow);
-}
-
-.carousel-arrow-next {
-  box-shadow: 0 12px 28px rgba(56, 189, 248, 0.22);
-}
-
-.carousel-dots {
-  display: flex;
-  gap: 0.45rem;
-  align-items: center;
-}
-
-.carousel-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  border: none;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.28);
-  cursor: pointer;
-}
-
-.carousel-dot:hover {
-  background: rgba(56, 189, 248, 0.7);
-  transform: scale(1.15);
-}
-
-.carousel-dot.active {
-  width: 24px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
-}
-
-body.rtl .carousel-arrow svg {
-  transform: scaleX(-1);
 }
 
 .card {
@@ -2386,8 +2287,7 @@ body.rtl .carousel-arrow svg {
 }
 
 @media (max-width: 980px) {
-  .grid,
-  .carousel-grid {
+  .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2466,8 +2366,7 @@ body.rtl .carousel-arrow svg {
     display: none;
   }
 
-  .grid,
-  .carousel-grid {
+  .grid {
     grid-template-columns: 1fr;
   }
 
@@ -2494,10 +2393,6 @@ body.rtl .carousel-arrow svg {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-
-  .carousel-track {
-    transition: none;
   }
 }
 
