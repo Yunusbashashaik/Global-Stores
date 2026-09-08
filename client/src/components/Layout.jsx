@@ -329,8 +329,10 @@ export default function Layout({ lang, setLang, t }) {
                 type="button"
                 className={lang === "ar" ? "active" : ""}
                 onClick={() => setLang("ar")}
+                aria-label="العربية"
+                title="العربية"
               >
-                العربية
+                AR
               </button>
             </div>
 
