@@ -1,16 +1,21 @@
 import { SERVICES } from "../data/catalog.js";
 
-const CATALOG_CACHE_KEY = "globalstores_services_v1";
+const CATALOG_CACHE_KEY = "globalstores_services_v2";
 const API_BASE_KEY = "globalstores_api_base_v1";
 
-function sanitizeService(service) {
+function forCache(service) {
   if (!service || typeof service !== "object") return service;
-  const imageUrl = String(service.imageUrl || "");
-  if (!imageUrl.startsWith("blob:")) return service;
-  return {
-    ...service,
-    imageUrl: `/api/services/${service.id}/image`,
-  };
+  const next = { ...service };
+  delete next.imageData;
+  const imageUrl = String(next.imageUrl || "");
+  if (imageUrl.startsWith("data:") || imageUrl.startsWith("blob:")) {
+    next.imageUrl = next.id ? `/api/services/${next.id}/image` : null;
+  }
+  return next;
+}
+
+function sanitizeService(service) {
+  return forCache(service);
 }
 
 function readCachedServices() {
@@ -28,7 +33,7 @@ function writeCachedServices(services) {
   if (typeof window === "undefined") return;
   if (!Array.isArray(services) || !services.length) return;
   try {
-    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(services.map(sanitizeService)));
+    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(services.map(forCache)));
   } catch {
     /* ignore quota */
   }

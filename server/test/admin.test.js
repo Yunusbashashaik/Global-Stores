@@ -256,6 +256,7 @@ describe("services + admin API", () => {
     const listed = await request(app).get("/api/services");
     const item = listed.body.services.find((s) => s.id === "netflix-private");
     assert.equal(item.imageUrl, "/api/services/netflix-private/image");
+    assert.ok(item.imageData && item.imageData.length > 20);
 
     const file = await request(app).get("/api/services/netflix-private/image");
     assert.equal(file.status, 200);

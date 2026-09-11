@@ -13,20 +13,34 @@ function readPersistedApiBase() {
 
 function withCacheBust(url, updatedAt) {
   if (!url) return "";
+  if (url.startsWith("data:")) return url;
   if (url.includes("v=")) return url;
   const bust = encodeURIComponent(String(updatedAt || "1").replace(/\s/g, "T"));
   const sep = url.includes("?") ? "&" : "?";
   return `${url}${sep}v=${bust}`;
 }
 
-function hasCustomUpload(service) {
-  return Boolean(String(service?.imageUrl || "").trim());
+function inlineSrc(service) {
+  const data = String(service?.imageData || "").trim();
+  if (data.startsWith("data:")) return data;
+  if (data) return `data:image/jpeg;base64,${data}`;
+  const url = String(service?.imageUrl || "").trim();
+  if (url.startsWith("data:")) return url;
+  return "";
 }
 
-/** Same-origin JPEG routes only — never blob URLs and never a guessed API host. */
+function hasCustomUpload(service) {
+  return Boolean(inlineSrc(service) || String(service?.imageUrl || "").trim());
+}
+
+/** Inline JPEG first, then same-origin files, then bundled brand art — never initials first. */
 export function serviceImageCandidates(service) {
   const id = service?.id || "";
   const updatedAt = service?.updatedAt || "";
+  const bundled = serviceImageUrl(id);
+  const list = [];
+  const inline = inlineSrc(service);
+  if (inline) list.push(inline);
   if (hasCustomUpload(service) && id) {
     const relative = [
       `/api/services/${id}/image`,
@@ -37,15 +51,20 @@ export function serviceImageCandidates(service) {
     const withHost = persisted
       ? relative.map((path) => `${persisted}${path}`)
       : [];
-    return [...new Set([...relative, ...withHost].map((url) => withCacheBust(url, updatedAt)))];
+    list.push(
+      ...[...relative, ...withHost].map((url) => withCacheBust(url, updatedAt)),
+    );
   }
-  const bundled = serviceImageUrl(id);
-  return bundled ? [bundled] : [];
+  if (bundled) list.push(bundled);
+  return [...new Set(list.filter(Boolean))];
 }
 
 export function serviceImagePreviewSrc(preview, service) {
   if (!preview) return "";
-  if (preview.startsWith("blob:")) return preview;
+  if (preview.startsWith("blob:") || preview.startsWith("data:")) return preview;
+  if (service?.imageData) {
+    return inlineSrc(service);
+  }
   return (
     serviceImageCandidates({ ...service, imageUrl: preview })[0] || preview
   );

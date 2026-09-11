@@ -13,7 +13,7 @@ export default function ServiceIcon({ service, size = "md" }) {
   useEffect(() => {
     setIndex(0);
     setFailed(false);
-  }, [service.id, service.imageUrl, service.updatedAt]);
+  }, [service.id, service.imageUrl, service.imageData, service.updatedAt]);
 
   const imageUrl = !failed ? candidates[index] : null;
 

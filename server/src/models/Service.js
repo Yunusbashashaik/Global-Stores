@@ -1,4 +1,5 @@
 import { getDb } from "../db/connection.js";
+import { loadImageData } from "../services/serviceImages.js";
 
 function rowToService(row) {
   if (!row) return null;
@@ -17,6 +18,7 @@ function rowToService(row) {
     descriptionAr: row.description_ar,
     prices: { month, year },
     imageUrl: row.image_url || null,
+    imageData: row.image_data || null,
     outOfStock,
     sortOrder: row.sort_order,
     updatedAt: row.updated_at || null,
@@ -45,12 +47,20 @@ export function listServices() {
   const rows = getDb()
     .prepare("SELECT * FROM services ORDER BY sort_order ASC, name_en ASC")
     .all();
-  return rows.map(rowToService);
+  return rows.map((row) => hydrateInlineImage(rowToService(row)));
+}
+
+function hydrateInlineImage(service) {
+  if (!service) return service;
+  if (service.imageData) return service;
+  const data = loadImageData(service.id, service.imageUrl);
+  if (!data) return service;
+  return { ...service, imageData: data };
 }
 
 function getServiceById(id) {
   const row = getDb().prepare("SELECT * FROM services WHERE id = ?").get(id);
-  return rowToService(row);
+  return hydrateInlineImage(rowToService(row));
 }
 
 function countServices() {
@@ -71,11 +81,11 @@ export function insertService(data) {
     `INSERT INTO services (
       id, icon, accent, type_en, type_ar, name_en, name_ar,
       description_en, description_ar, price_month, price_year,
-      image_url, out_of_stock, sort_order, updated_at
+      image_url, image_data, out_of_stock, sort_order, updated_at
     ) VALUES (
       @id, @icon, @accent, @typeEn, @typeAr, @nameEn, @nameAr,
       @descriptionEn, @descriptionAr, @priceMonth, @priceYear,
-      @imageUrl, @outOfStock, @sortOrder, datetime('now')
+      @imageUrl, @imageData, @outOfStock, @sortOrder, datetime('now')
     )`,
   ).run({
     id: data.id,
@@ -90,6 +100,7 @@ export function insertService(data) {
     priceMonth: month,
     priceYear: year,
     imageUrl: data.imageUrl || null,
+    imageData: data.imageData || loadImageData(data.id, data.imageUrl) || null,
     outOfStock: outOfStock ? 1 : 0,
     sortOrder: data.sortOrder ?? nextOrder,
   });
@@ -134,6 +145,8 @@ export function updateService(id, patch) {
     typeAr: typeof patch.typeAr === "string" ? patch.typeAr : current.typeAr,
     imageUrl:
       patch.imageUrl !== undefined ? patch.imageUrl : current.imageUrl,
+    imageData:
+      patch.imageData !== undefined ? patch.imageData : current.imageData,
     priceMonth: outOfStock ? 0 : nextPrices.month,
     priceYear: outOfStock ? 0 : nextPrices.year,
     outOfStock: outOfStock ? 1 : 0,
@@ -151,6 +164,7 @@ export function updateService(id, patch) {
         type_en = @typeEn,
         type_ar = @typeAr,
         image_url = @imageUrl,
+        image_data = @imageData,
         price_month = @priceMonth,
         price_year = @priceYear,
         out_of_stock = @outOfStock,
@@ -177,6 +191,7 @@ export function seedServicesIfEmpty(defaults) {
         ...service,
         sortOrder: index,
         imageUrl: service.imageUrl || null,
+        imageData: service.imageData || null,
       });
     });
   });

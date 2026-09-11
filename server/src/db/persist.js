@@ -27,6 +27,7 @@ function rowToPatch(item) {
       descriptionAr: item.descriptionAr,
       prices: item.prices,
       imageUrl: item.imageUrl,
+      imageData: item.imageData || null,
       outOfStock: item.outOfStock,
       sortOrder: item.sortOrder,
     };
@@ -47,6 +48,7 @@ function rowToPatch(item) {
       year: outOfStock ? 0 : Number(item.price_year),
     },
     imageUrl: item.image_url || null,
+    imageData: item.image_data || item.imageData || null,
     outOfStock,
     sortOrder: item.sort_order,
   };
@@ -65,14 +67,27 @@ function rewriteRestoredImageUrls(services) {
   const restored = restoreServiceImageFiles(services);
   restored.forEach((service) => {
     const live = services.find((item) => item.id === service.id);
-    if (!live || live.imageUrl === service.imageUrl) return;
-    if (service.imageUrl) updateService(service.id, { imageUrl: service.imageUrl });
+    const patch = {};
+    if (service.imageUrl && service.imageUrl !== live?.imageUrl) {
+      patch.imageUrl = service.imageUrl;
+    }
+    if (service.imageData && service.imageData !== live?.imageData) {
+      patch.imageData = service.imageData;
+    }
+    if (Object.keys(patch).length) updateService(service.id, patch);
   });
 }
 
 export function persistLiveCatalog() {
   try {
     persistServiceImageFiles(listServices());
+    listServices().forEach((service) => {
+      if (!service.imageData) return;
+      const row = getDb().prepare("SELECT * FROM services WHERE id = ?").get(service.id);
+      if (!row?.image_data) {
+        updateService(service.id, { imageData: service.imageData });
+      }
+    });
     const rows = getDb().prepare("SELECT * FROM services").all();
     writeDurableCatalog({
       services: rows,
@@ -101,6 +116,7 @@ function serviceFingerprint(service) {
     typeEn: service.typeEn,
     typeAr: service.typeAr,
     imageUrl: service.imageUrl || null,
+    hasImageData: Boolean(service.imageData || service.image_data),
     prices: {
       month: Number(service.prices?.month),
       year: Number(service.prices?.year),
