@@ -17,6 +17,7 @@ import Logo from "./Logo.jsx";
 import OwnerBlock from "./OwnerBlock.jsx";
 import SocialLinks from "./SocialLinks.jsx";
 import { useCart } from "../cart/CartContext.jsx";
+import useScrollMotion from "../hooks/useScrollMotion.js";
 
 function formatWhatsAppDisplay(num) {
   const digits = String(num || "").replace(/\D/g, "");
@@ -37,7 +38,9 @@ export default function Layout({ lang, setLang, t }) {
   const subsRef = useRef(null);
   const cartRef = useRef(null);
   const langRef = useRef(null);
+  const shellRef = useRef(null);
   const [cartOpen, setCartOpen] = useState(false);
+  useScrollMotion(shellRef);
   const { totalItems } = useCart();
 
   const whatsappNumbers = useMemo(
@@ -183,7 +186,7 @@ export default function Layout({ lang, setLang, t }) {
   }, [openModal]);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" ref={shellRef}>
       <header className="site-header">
         <div className="container header-inner">
           <Link to="/" className="logo" aria-label="Global Store" onClick={reloadHome}>
@@ -407,7 +410,7 @@ export default function Layout({ lang, setLang, t }) {
 
       <Outlet />
 
-      <footer className="site-footer">
+      <footer className="site-footer" data-reveal="up">
         <div className="container footer-grid footer-grid--compact">
           <div className="footer-brand-block">
             <strong className="footer-brand">
