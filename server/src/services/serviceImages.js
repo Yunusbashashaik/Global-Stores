@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { getServiceUploadsDir } from "../db/connection.js";
+import { getDb, getServiceUploadsDir } from "../db/connection.js";
 import { getGodaddySyncDir } from "./godaddySync.js";
 
 const REPO_ROOT = path.join(
@@ -21,7 +21,11 @@ export function serviceImageFilename(id) {
 }
 
 export function serviceImagePublicUrl(id) {
-  return `/api/uploads/services/${serviceImageFilename(id)}`;
+  return `/api/services/${safeServiceId(id)}/image`;
+}
+
+function clientPublicServiceImagesDir() {
+  return path.join(REPO_ROOT, "client", "public", "service-images");
 }
 
 function ensureDir(dir) {
@@ -49,14 +53,14 @@ export function mirrorServiceImageFile(filename) {
   const source = path.join(getServiceUploadsDir(), safe);
   if (!fs.existsSync(source)) return;
   copyFileIfPresent(source, path.join(godaddyServiceImagesDir(), safe));
-  const distDir = clientDistServiceImagesDir();
-  if (fs.existsSync(path.dirname(distDir))) {
-    copyFileIfPresent(source, path.join(distDir, safe));
-  }
+  copyFileIfPresent(source, path.join(clientPublicServiceImagesDir(), safe));
+  copyFileIfPresent(source, path.join(clientDistServiceImagesDir(), safe));
 }
 
 function filenameFromImageUrl(imageUrl) {
   const value = String(imageUrl || "").split("?")[0];
+  const imageRoute = value.match(/\/api\/services\/([^/]+)\/image$/);
+  if (imageRoute) return `${imageRoute[1]}.jpg`;
   const marker = "/api/uploads/services/";
   const index = value.indexOf(marker);
   if (index === -1) {
@@ -73,6 +77,8 @@ function imageSearchDirs() {
     getServiceUploadsDir(),
     godaddyServiceImagesDir(),
     path.join(REPO_ROOT, "server", "data", "uploads", "services"),
+    path.join(REPO_ROOT, "client", "public", "service-images"),
+    path.join(REPO_ROOT, "client", "dist", "service-images"),
   ];
 }
 
@@ -112,7 +118,32 @@ export function commitServiceImage(id, tempPath) {
     }
   }
   mirrorServiceImageFile(serviceImageFilename(id));
-  return serviceImagePublicUrl(id);
+  return {
+    imageUrl: serviceImagePublicUrl(id),
+    imageData: fs.readFileSync(dest).toString("base64"),
+  };
+}
+
+export function loadImageData(id, imageUrl) {
+  const file = getServiceImagePath(id, imageUrl);
+  if (!file) return null;
+  try {
+    return fs.readFileSync(file).toString("base64");
+  } catch {
+    return null;
+  }
+}
+
+export function writeImageDataFile(id, imageData) {
+  const raw = String(imageData || "");
+  const payload = raw.includes("base64,") ? raw.split("base64,").pop() : raw;
+  if (!payload) return null;
+  const destDir = getServiceUploadsDir();
+  ensureDir(destDir);
+  const dest = path.join(destDir, serviceImageFilename(id));
+  fs.writeFileSync(dest, Buffer.from(payload, "base64"));
+  mirrorServiceImageFile(serviceImageFilename(id));
+  return dest;
 }
 
 export function removeServiceImage(id) {
@@ -139,17 +170,61 @@ export function persistServiceImageFiles(services = []) {
   }
 }
 
+export function getServiceImagePath(id, imageUrl) {
+  const dest = path.join(getServiceUploadsDir(), serviceImageFilename(id));
+  if (fs.existsSync(dest) && fs.statSync(dest).isFile()) return dest;
+  return findExistingImage(id, imageUrl);
+}
+
+export function sendServiceImage(req, res) {
+  const id = req.params.id;
+  const filePath = getServiceImagePath(id);
+  if (filePath) {
+    res.setHeader("Content-Type", "image/jpeg");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.sendFile(path.resolve(filePath));
+    return;
+  }
+  try {
+    const row = getDb().prepare("SELECT image_data FROM services WHERE id = ?").get(id);
+    const payload = imagePayload(row?.image_data);
+    if (payload) {
+      res.setHeader("Content-Type", "image/jpeg");
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      res.end(payload);
+      return;
+    }
+  } catch {
+    /* fall through */
+  }
+  res.status(404).type("application/json").json({ error: "Image not found" });
+}
+
+function imagePayload(imageData) {
+  const raw = String(imageData || "");
+  const encoded = raw.includes("base64,") ? raw.split("base64,").pop() : raw;
+  if (!encoded) return null;
+  try {
+    const buf = Buffer.from(encoded, "base64");
+    return buf.length ? buf : null;
+  } catch {
+    return null;
+  }
+}
+
 export function restoreServiceImageFiles(services = []) {
   persistServiceImageFiles(services);
   return services.map((service) => {
     if (!service?.id) return service;
+    const data = service.imageData || service.image_data;
+    if (data) writeImageDataFile(service.id, data);
     const dest = path.join(
       getServiceUploadsDir(),
       serviceImageFilename(service.id),
     );
     if (!fs.existsSync(dest)) return service;
     const nextUrl = serviceImagePublicUrl(service.id);
-    if (service.imageUrl === nextUrl) return service;
-    return { ...service, imageUrl: nextUrl };
+    if (service.imageUrl === nextUrl && (service.imageData || !data)) return service;
+    return { ...service, imageUrl: nextUrl, imageData: data || service.imageData };
   });
 }

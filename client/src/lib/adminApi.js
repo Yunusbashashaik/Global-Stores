@@ -1,12 +1,28 @@
 import { SERVICES } from "../data/catalog.js";
 
-const CATALOG_CACHE_KEY = "globalstores_services_v1";
+const CATALOG_CACHE_KEY = "globalstores_services_v2";
+const API_BASE_KEY = "globalstores_api_base_v1";
+
+function forCache(service) {
+  if (!service || typeof service !== "object") return service;
+  const next = { ...service };
+  delete next.imageData;
+  const imageUrl = String(next.imageUrl || "");
+  if (imageUrl.startsWith("data:") || imageUrl.startsWith("blob:")) {
+    next.imageUrl = next.id ? `/api/services/${next.id}/image` : null;
+  }
+  return next;
+}
+
+function sanitizeService(service) {
+  return forCache(service);
+}
 
 function readCachedServices() {
   if (typeof window === "undefined") return null;
   try {
     const parsed = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "null");
-    if (Array.isArray(parsed) && parsed.length) return parsed;
+    if (Array.isArray(parsed) && parsed.length) return parsed.map(sanitizeService);
   } catch {
     /* ignore */
   }
@@ -17,7 +33,7 @@ function writeCachedServices(services) {
   if (typeof window === "undefined") return;
   if (!Array.isArray(services) || !services.length) return;
   try {
-    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(services));
+    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(services.map(forCache)));
   } catch {
     /* ignore quota */
   }
@@ -81,13 +97,33 @@ function candidateBases() {
 let resolvedBase;
 let backendAvailable;
 
+function persistApiBase(base) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(API_BASE_KEY, trimSlash(base));
+  } catch {
+    /* ignore */
+  }
+}
+
+function readPersistedApiBase() {
+  if (typeof window === "undefined") return "";
+  try {
+    return trimSlash(localStorage.getItem(API_BASE_KEY) || "");
+  } catch {
+    return "";
+  }
+}
+
 function getApiBase() {
   if (resolvedBase !== undefined) return resolvedBase;
   if (typeof window !== "undefined") {
     const runtime = window.__GLOBALSTORE_CONFIG__?.apiUrl;
     if (runtime) return trimSlash(runtime);
+    const persisted = readPersistedApiBase();
+    if (persisted) return persisted;
   }
-  return trimSlash(import.meta.env.VITE_API_URL || "");
+  return "";
 }
 
 export function apiUrl(path) {
@@ -107,6 +143,7 @@ async function discoverApiBase() {
       if (await isLiveHealth(base)) {
         resolvedBase = base;
         backendAvailable = true;
+        persistApiBase(base);
         return base;
       }
     } catch {

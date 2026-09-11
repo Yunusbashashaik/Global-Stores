@@ -44,6 +44,10 @@ const clientDist = path.join(__dirname, "..", "..", "client", "dist");
 app.use(express.static(clientDist));
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api")) return next();
+  if (req.path.startsWith("/service-images")) return next();
+  if (/\.(jpe?g|png|webp|gif|svg|js|css|ico|map|woff2?)$/i.test(req.path)) {
+    return next();
+  }
   res.sendFile(path.join(clientDist, "index.html"), (err) => {
     if (err) next();
   });

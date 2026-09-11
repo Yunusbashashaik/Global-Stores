@@ -270,7 +270,11 @@ export default function AdminPanel({ open, onClose, t }) {
     const service = services.find((s) => s.id === id);
     if (service) {
       setDraft(toDraft(service));
-      setImagePreview(service.imageUrl || "");
+      setImagePreview(
+        service.imageData
+          ? `data:image/jpeg;base64,${service.imageData}`
+          : service.imageUrl || "",
+      );
     }
     setImageFile(null);
     setError("");
@@ -382,7 +386,11 @@ export default function AdminPanel({ open, onClose, t }) {
       notifyServicesUpdated(next);
       setDraft(toDraft(updated));
       setImageFile(null);
-      setImagePreview(updated.imageUrl || "");
+      setImagePreview(
+        updated.imageData
+          ? `data:image/jpeg;base64,${updated.imageData}`
+          : updated.imageUrl || "",
+      );
       showToast(t.adminSaved);
     } catch (err) {
       setError(err.message);

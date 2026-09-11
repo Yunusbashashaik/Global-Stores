@@ -132,8 +132,8 @@ describe("admin catalog survives restarts", () => {
     );
     const tmpUpload = path.join(dir, "fresh.jpg");
     fs.writeFileSync(tmpUpload, jpeg);
-    const imageUrl = commitServiceImage("netflix-private", tmpUpload);
-    updateService("netflix-private", { imageUrl });
+    const committed = commitServiceImage("netflix-private", tmpUpload);
+    updateService("netflix-private", committed);
     persistLiveCatalog();
     const uploadsDir = getServiceUploadsDir();
     closeDatabase();
@@ -145,7 +145,8 @@ describe("admin catalog survives restarts", () => {
     seedDatabase();
 
     const restored = listServices().find((s) => s.id === "netflix-private");
-    assert.equal(restored.imageUrl, "/api/uploads/services/netflix-private.jpg");
+    assert.equal(restored.imageUrl, "/api/services/netflix-private/image");
+    assert.ok(restored.imageData && restored.imageData.length > 20);
     assert.equal(
       fs.existsSync(path.join(getServiceUploadsDir(), "netflix-private.jpg")),
       true,

@@ -94,9 +94,13 @@ export function createAdminService(req, res) {
     }
 
     const id = uniqueServiceId(nameEn);
-    const imageUrl = req.file
-      ? commitServiceImage(id, req.file.path)
-      : body.imageUrl || null;
+    let imageUrl = body.imageUrl || null;
+    let imageData = null;
+    if (req.file) {
+      const committed = commitServiceImage(id, req.file.path);
+      imageUrl = committed.imageUrl;
+      imageData = committed.imageData;
+    }
 
     const service = insertService({
       id,
@@ -107,6 +111,7 @@ export function createAdminService(req, res) {
       prices,
       outOfStock: parseOutOfStock(body),
       imageUrl,
+      imageData,
       icon: body.icon || "✨",
       accent: body.accent || "#38bdf8",
       typeEn: body.typeEn || "Shared / Private",
@@ -144,7 +149,9 @@ export function updateAdminService(req, res) {
     };
 
     if (req.file) {
-      patch.imageUrl = commitServiceImage(req.params.id, req.file.path);
+      const committed = commitServiceImage(req.params.id, req.file.path);
+      patch.imageUrl = committed.imageUrl;
+      patch.imageData = committed.imageData;
     } else if (typeof body.imageUrl === "string") {
       patch.imageUrl = body.imageUrl;
     }
