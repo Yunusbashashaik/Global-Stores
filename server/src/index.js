@@ -8,6 +8,7 @@ import { adminRouter } from "./routes/admin.js";
 import { complaintRouter } from "./routes/complaints.js";
 import { servicesRouter } from "./routes/services.js";
 import { settingsRouter } from "./routes/settings.js";
+import { listServices } from "./models/Service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 3001;
@@ -27,6 +28,7 @@ app.get("/api/health", (_req, res) => {
     ok: true,
     service: "global-store-api",
     db: getDbEngine(),
+    services: listServices().length,
     time: new Date().toISOString(),
   });
 });

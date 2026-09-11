@@ -50,9 +50,27 @@ const SCHEMA_SQL = `
 
 let db;
 let dbEngine = "none";
+let activeDbPath;
+let activeJsonPath;
 
 function getDbPath() {
   return process.env.DATABASE_PATH || path.join(DATA_DIR, "globalstore.db");
+}
+
+export function getDataDir() {
+  return DATA_DIR;
+}
+
+export function getActiveDbPath() {
+  return activeDbPath || getDbPath();
+}
+
+export function getActiveJsonPath() {
+  if (activeJsonPath) return activeJsonPath;
+  return (
+    process.env.JSON_DATABASE_PATH ||
+    path.join(path.dirname(getActiveDbPath()), "globalstore.json")
+  );
 }
 
 export function getDbEngine() {
@@ -70,6 +88,7 @@ function openSqlite(dbPath) {
   const Database = require("better-sqlite3");
   const sqlite = new Database(dbPath);
   sqlite.pragma("journal_mode = WAL");
+  sqlite.pragma("synchronous = FULL");
   sqlite.pragma("foreign_keys = ON");
   sqlite.exec(SCHEMA_SQL);
   return sqlite;
@@ -89,6 +108,13 @@ export function initDatabase(dbPath = getDbPath(), options = {}) {
     db = undefined;
   }
 
+  activeDbPath = dbPath;
+  const jsonPath =
+    options.jsonPath ||
+    process.env.JSON_DATABASE_PATH ||
+    path.join(path.dirname(dbPath), "globalstore.json");
+  activeJsonPath = jsonPath;
+
   const engine = options.engine || process.env.DATABASE_ENGINE;
   const forceJson = engine === "json";
   if (!forceJson) {
@@ -104,10 +130,7 @@ export function initDatabase(dbPath = getDbPath(), options = {}) {
     }
   }
 
-  const jsonPath =
-    options.jsonPath ||
-    process.env.JSON_DATABASE_PATH ||
-    path.join(DATA_DIR, "globalstore.json");
+  fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
   db = new JsonDatabase(jsonPath);
   dbEngine = "json";
   return db;
@@ -123,4 +146,6 @@ export function closeDatabase() {
     db = undefined;
   }
   dbEngine = "none";
+  activeDbPath = undefined;
+  activeJsonPath = undefined;
 }

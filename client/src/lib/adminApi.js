@@ -1,5 +1,59 @@
 import { SERVICES } from "../data/catalog.js";
 
+const CATALOG_CACHE_KEY = "globalstores_services_v1";
+
+function readCachedServices() {
+  if (typeof window === "undefined") return null;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "null");
+    if (Array.isArray(parsed) && parsed.length) return parsed;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function writeCachedServices(services) {
+  if (typeof window === "undefined") return;
+  if (!Array.isArray(services) || !services.length) return;
+  try {
+    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(services));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+const SETTINGS_CACHE_KEY = "globalstores_settings_v1";
+
+function readCachedSettings() {
+  if (typeof window === "undefined") return null;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SETTINGS_CACHE_KEY) || "null");
+    if (parsed && typeof parsed === "object" && parsed.complaintEmail) return parsed;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function writeCachedSettings(settings) {
+  if (typeof window === "undefined") return;
+  if (!settings || typeof settings !== "object") return;
+  try {
+    localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+export function cachedPublicServices() {
+  return readCachedServices();
+}
+
+export function cachedPublicSettings() {
+  return readCachedSettings();
+}
+
 function trimSlash(value) {
   return String(value || "").replace(/\/$/, "");
 }
@@ -221,6 +275,7 @@ export async function adminSaveSettings(token, patch) {
     body: patch,
   });
   window.dispatchEvent(new Event("gs:settings-updated"));
+  writeCachedSettings(data.settings);
   return data.settings;
 }
 
@@ -229,6 +284,7 @@ export async function adminDeleteService(token, id) {
 }
 
 export function notifyServicesUpdated(services) {
+  if (Array.isArray(services)) writeCachedServices(services);
   window.dispatchEvent(
     new CustomEvent("gs:services-updated", {
       detail: Array.isArray(services) ? { services } : undefined,
@@ -249,11 +305,16 @@ export async function fetchPublicServices() {
   if (await hasBackendApi()) {
     try {
       const data = await requestJson("/api/services");
-      return data.services;
+      if (Array.isArray(data.services) && data.services.length) {
+        writeCachedServices(data.services);
+        return data.services;
+      }
     } catch {
-      /* fall through */
+      /* fall through to last live catalog, never baked defaults */
     }
   }
+  const cached = readCachedServices();
+  if (cached) return cached;
   return JSON.parse(JSON.stringify(SERVICES));
 }
 
@@ -261,10 +322,13 @@ export async function fetchPublicSettings() {
   if (await hasBackendApi()) {
     try {
       const data = await requestJson("/api/settings");
-      return data.settings;
+      if (data.settings) {
+        writeCachedSettings(data.settings);
+        return data.settings;
+      }
     } catch {
-      /* fall through */
+      /* fall through to last live settings */
     }
   }
-  return null;
+  return readCachedSettings();
 }
