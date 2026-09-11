@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { SERVICE_UPLOADS_DIR } from "../db/connection.js";
+import { getServiceUploadsDir } from "../db/connection.js";
 import { listServices } from "../models/Service.js";
 import { getAllSettings } from "../models/Settings.js";
 
@@ -27,7 +27,7 @@ function filenameFromImageUrl(imageUrl) {
 function copyUploadedFile(filename) {
   const safe = path.basename(String(filename || ""));
   if (!safe) return null;
-  const source = path.join(SERVICE_UPLOADS_DIR, safe);
+  const source = path.join(getServiceUploadsDir(), safe);
   if (!fs.existsSync(source)) return null;
   const destDir = path.join(getGodaddySyncDir(), "admin-uploads", "services");
   ensureDir(destDir);

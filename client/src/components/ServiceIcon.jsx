@@ -1,17 +1,21 @@
-import { serviceImageUrl } from "../data/serviceImages.js";
-import { apiUrl } from "../lib/adminApi.js";
+import { useEffect, useState } from "react";
+import { serviceImageCandidates } from "../lib/serviceImageSrc.js";
 
 /** Brand artwork from DB upload or static public assets, with SVG fallback. */
 export default function ServiceIcon({ service, size = "md" }) {
   const accent = service.accent || "#0055ff";
   const id = service.id || "";
-  const uploaded = service.imageUrl
-    ? service.imageUrl.startsWith("http")
-      ? service.imageUrl
-      : apiUrl(service.imageUrl)
-    : null;
-  const imageUrl = uploaded || serviceImageUrl(id);
   const name = service.nameEn || id;
+  const candidates = serviceImageCandidates(service);
+  const [index, setIndex] = useState(0);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setIndex(0);
+    setFailed(false);
+  }, [service.id, service.imageUrl, service.updatedAt]);
+
+  const imageUrl = !failed ? candidates[index] : null;
 
   return (
     <div
@@ -28,10 +32,12 @@ export default function ServiceIcon({ service, size = "md" }) {
             alt=""
             loading="lazy"
             decoding="async"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-              const fallback = e.currentTarget.nextElementSibling;
-              if (fallback) fallback.hidden = false;
+            onError={() => {
+              if (index + 1 < candidates.length) {
+                setIndex((current) => current + 1);
+                return;
+              }
+              setFailed(true);
             }}
           />
         ) : null}

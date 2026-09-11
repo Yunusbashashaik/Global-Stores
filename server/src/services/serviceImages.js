@@ -1,0 +1,155 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { getServiceUploadsDir } from "../db/connection.js";
+import { getGodaddySyncDir } from "./godaddySync.js";
+
+const REPO_ROOT = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+);
+
+export function safeServiceId(id) {
+  const safe = String(id || "").replace(/[^a-zA-Z0-9._-]/g, "_");
+  return safe || "service";
+}
+
+export function serviceImageFilename(id) {
+  return `${safeServiceId(id)}.jpg`;
+}
+
+export function serviceImagePublicUrl(id) {
+  return `/api/uploads/services/${serviceImageFilename(id)}`;
+}
+
+function ensureDir(dir) {
+  fs.mkdirSync(dir, { recursive: true });
+}
+
+function godaddyServiceImagesDir() {
+  return path.join(getGodaddySyncDir(), "admin-uploads", "services");
+}
+
+function clientDistServiceImagesDir() {
+  return path.join(REPO_ROOT, "client", "dist", "service-images");
+}
+
+function copyFileIfPresent(source, dest) {
+  if (!source || !fs.existsSync(source) || source === dest) return false;
+  ensureDir(path.dirname(dest));
+  fs.copyFileSync(source, dest);
+  return true;
+}
+
+export function mirrorServiceImageFile(filename) {
+  const safe = path.basename(String(filename || ""));
+  if (!safe) return;
+  const source = path.join(getServiceUploadsDir(), safe);
+  if (!fs.existsSync(source)) return;
+  copyFileIfPresent(source, path.join(godaddyServiceImagesDir(), safe));
+  const distDir = clientDistServiceImagesDir();
+  if (fs.existsSync(path.dirname(distDir))) {
+    copyFileIfPresent(source, path.join(distDir, safe));
+  }
+}
+
+function filenameFromImageUrl(imageUrl) {
+  const value = String(imageUrl || "").split("?")[0];
+  const marker = "/api/uploads/services/";
+  const index = value.indexOf(marker);
+  if (index === -1) {
+    const alt = "/service-images/";
+    const altIndex = value.indexOf(alt);
+    if (altIndex === -1) return path.basename(value);
+    return path.basename(value.slice(altIndex + alt.length));
+  }
+  return path.basename(value.slice(index + marker.length));
+}
+
+function imageSearchDirs() {
+  return [
+    getServiceUploadsDir(),
+    godaddyServiceImagesDir(),
+    path.join(REPO_ROOT, "server", "data", "uploads", "services"),
+  ];
+}
+
+function findExistingImage(id, imageUrl) {
+  const names = [
+    serviceImageFilename(id),
+    filenameFromImageUrl(imageUrl),
+  ].filter(Boolean);
+  const unique = [...new Set(names)];
+  for (const dir of imageSearchDirs()) {
+    for (const name of unique) {
+      const candidate = path.join(dir, path.basename(name));
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        return candidate;
+      }
+    }
+  }
+  return null;
+}
+
+export function commitServiceImage(id, tempPath) {
+  if (!id || !tempPath || !fs.existsSync(tempPath)) {
+    throw new Error("Service image upload is missing");
+  }
+  const destDir = getServiceUploadsDir();
+  ensureDir(destDir);
+  const dest = path.join(destDir, serviceImageFilename(id));
+  if (path.resolve(tempPath) !== path.resolve(dest)) {
+    fs.copyFileSync(tempPath, dest);
+    const tmpName = path.basename(tempPath);
+    if (tmpName.startsWith("tmp-") && path.dirname(tempPath) === destDir) {
+      try {
+        fs.unlinkSync(tempPath);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+  mirrorServiceImageFile(serviceImageFilename(id));
+  return serviceImagePublicUrl(id);
+}
+
+export function removeServiceImage(id) {
+  const dest = path.join(getServiceUploadsDir(), serviceImageFilename(id));
+  try {
+    fs.unlinkSync(dest);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function persistServiceImageFiles(services = []) {
+  ensureDir(getServiceUploadsDir());
+  ensureDir(godaddyServiceImagesDir());
+  for (const service of services) {
+    if (!service?.id) continue;
+    const found = findExistingImage(service.id, service.imageUrl);
+    if (!found) continue;
+    const dest = path.join(getServiceUploadsDir(), serviceImageFilename(service.id));
+    if (path.resolve(found) !== path.resolve(dest)) {
+      fs.copyFileSync(found, dest);
+    }
+    mirrorServiceImageFile(serviceImageFilename(service.id));
+  }
+}
+
+export function restoreServiceImageFiles(services = []) {
+  persistServiceImageFiles(services);
+  return services.map((service) => {
+    if (!service?.id) return service;
+    const dest = path.join(
+      getServiceUploadsDir(),
+      serviceImageFilename(service.id),
+    );
+    if (!fs.existsSync(dest)) return service;
+    const nextUrl = serviceImagePublicUrl(service.id);
+    if (service.imageUrl === nextUrl) return service;
+    return { ...service, imageUrl: nextUrl };
+  });
+}

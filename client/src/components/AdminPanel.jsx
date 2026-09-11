@@ -13,6 +13,7 @@ import {
   notifyServicesUpdated,
 } from "../lib/adminApi.js";
 import { compressJpeg } from "../lib/compressJpeg.js";
+import { serviceImagePreviewSrc } from "../lib/serviceImageSrc.js";
 
 const TOKEN_KEY = "globalstores_admin_token";
 const TOAST_MS = 3200;
@@ -952,7 +953,7 @@ function ServiceForm({
       </label>
       {imagePreview ? (
         <div className="admin-image-preview">
-          <img src={imagePreview} alt="" />
+          <img src={serviceImagePreviewSrc(imagePreview, draft)} alt="" />
         </div>
       ) : null}
       <div className="admin-field-head">

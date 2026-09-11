@@ -9,9 +9,12 @@ import {
   updateService,
 } from "../models/Service.js";
 import { getAllSettings, updateSettings } from "../models/Settings.js";
-import { serviceImagePublicUrl } from "../middleware/upload.js";
 import { snapshotAdminChange } from "../services/godaddySync.js";
 import { persistLiveCatalog } from "../db/persist.js";
+import {
+  commitServiceImage,
+  removeServiceImage,
+} from "../services/serviceImages.js";
 
 function slugify(name) {
   const base = String(name || "service")
@@ -90,12 +93,13 @@ export function createAdminService(req, res) {
       return;
     }
 
+    const id = uniqueServiceId(nameEn);
     const imageUrl = req.file
-      ? serviceImagePublicUrl(req.file.filename)
+      ? commitServiceImage(id, req.file.path)
       : body.imageUrl || null;
 
     const service = insertService({
-      id: uniqueServiceId(nameEn),
+      id,
       nameEn,
       nameAr: String(body.nameAr || nameEn).trim(),
       descriptionEn: String(body.descriptionEn || "").trim(),
@@ -140,7 +144,7 @@ export function updateAdminService(req, res) {
     };
 
     if (req.file) {
-      patch.imageUrl = serviceImagePublicUrl(req.file.filename);
+      patch.imageUrl = commitServiceImage(req.params.id, req.file.path);
     } else if (typeof body.imageUrl === "string") {
       patch.imageUrl = body.imageUrl;
     }
@@ -174,6 +178,7 @@ export function deleteAdminService(req, res) {
       res.status(404).json({ error: "Service not found" });
       return;
     }
+    removeServiceImage(req.params.id);
     snapshotAdminChange({ action: "delete-service" });
     persistLiveCatalog();
     res.json({ ok: true, id: req.params.id });

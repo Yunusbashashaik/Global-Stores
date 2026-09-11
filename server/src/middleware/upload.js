@@ -1,7 +1,7 @@
 import fs from "fs";
 import multer from "multer";
-import path from "path";
-import { SERVICE_UPLOADS_DIR, UPLOADS_DIR } from "../db/connection.js";
+import { getServiceUploadsDir, getUploadsDir } from "../db/connection.js";
+import { serviceImagePublicUrl as stableServiceImageUrl } from "../services/serviceImages.js";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 const MAX_SERVICE_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -10,10 +10,11 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-function makeStorage(destDir) {
+function makeStorage(getDest, { jpegName = false } = {}) {
   return multer.diskStorage({
     destination: (_req, _file, cb) => {
       try {
+        const destDir = getDest();
         ensureDir(destDir);
         cb(null, destDir);
       } catch (err) {
@@ -21,6 +22,10 @@ function makeStorage(destDir) {
       }
     },
     filename: (_req, file, cb) => {
+      if (jpegName) {
+        cb(null, `tmp-${Date.now()}-${Math.random().toString(16).slice(2)}.jpg`);
+        return;
+      }
       const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
       cb(null, `${Date.now()}-${safe || "upload"}`);
     },
@@ -51,13 +56,13 @@ const anyImage = (_req, file, cb) => {
 };
 
 export const uploadServiceImage = multer({
-  storage: makeStorage(SERVICE_UPLOADS_DIR),
+  storage: makeStorage(getServiceUploadsDir, { jpegName: true }),
   limits: { fileSize: MAX_SERVICE_IMAGE_BYTES },
   fileFilter: jpegOnly,
 }).single("image");
 
 export const uploadComplaintScreenshot = multer({
-  storage: makeStorage(path.join(UPLOADS_DIR)),
+  storage: makeStorage(getUploadsDir),
   limits: { fileSize: MAX_SCREENSHOT_BYTES },
   fileFilter: anyImage,
 }).single("screenshot");
@@ -83,5 +88,9 @@ export function handleUpload(uploader) {
 }
 
 export function serviceImagePublicUrl(filename) {
+  if (!filename) return null;
+  if (String(filename).includes("/")) return filename;
   return `/api/uploads/services/${filename}`;
 }
+
+export { stableServiceImageUrl };
