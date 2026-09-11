@@ -4,11 +4,14 @@ import ServicesSection from "../components/ServicesSection.jsx";
 import { UiIcon } from "../components/UiIcon.jsx";
 import ViewPlansModal from "../components/ViewPlansModal.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
+import { cachedPublicServices } from "../lib/adminApi.js";
 import { wallpaperUrl } from "../data/serviceImages.js";
 import { filterCatalog } from "../lib/filterCatalog.js";
 
 export default function HomePage({ lang, t }) {
-  const [services, setServices] = useState(SERVICES);
+  const [services, setServices] = useState(
+    () => cachedPublicServices() || SERVICES,
+  );
   const [loadError, setLoadError] = useState("");
   const [plansService, setPlansService] = useState(null);
   const [query, setQuery] = useState("");
@@ -35,7 +38,7 @@ export default function HomePage({ lang, t }) {
       }
       fetchServices()
         .then((list) => {
-          if (!cancelled) {
+          if (!cancelled && Array.isArray(list) && list.length) {
             setServices(list);
             setLoadError("");
           }

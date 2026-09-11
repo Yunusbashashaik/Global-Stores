@@ -19,6 +19,7 @@ function rowToService(row) {
     imageUrl: row.image_url || null,
     outOfStock,
     sortOrder: row.sort_order,
+    updatedAt: row.updated_at || null,
   };
 }
 

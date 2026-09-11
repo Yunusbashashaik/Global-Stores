@@ -11,6 +11,7 @@ import {
 import { getAllSettings, updateSettings } from "../models/Settings.js";
 import { serviceImagePublicUrl } from "../middleware/upload.js";
 import { snapshotAdminChange } from "../services/godaddySync.js";
+import { persistLiveCatalog } from "../db/persist.js";
 
 function slugify(name) {
   const base = String(name || "service")
@@ -113,6 +114,7 @@ export function createAdminService(req, res) {
       uploadedFilename: req.file?.filename,
       imageUrl,
     });
+    persistLiveCatalog();
 
     res.status(201).json({ service });
   } catch (err) {
@@ -157,6 +159,7 @@ export function updateAdminService(req, res) {
       uploadedFilename: req.file?.filename,
       imageUrl: updated.imageUrl,
     });
+    persistLiveCatalog();
     res.json({ service: updated });
   } catch (err) {
     console.error("Service update failed:", err);
@@ -172,6 +175,7 @@ export function deleteAdminService(req, res) {
       return;
     }
     snapshotAdminChange({ action: "delete-service" });
+    persistLiveCatalog();
     res.json({ ok: true, id: req.params.id });
   } catch (err) {
     console.error("Service delete failed:", err);
@@ -240,6 +244,7 @@ export function putAdminSettings(req, res) {
   try {
     const settings = updateSettings(req.body || {});
     snapshotAdminChange({ action: "update-settings" });
+    persistLiveCatalog();
     res.json({ settings });
   } catch (err) {
     console.error("Settings update failed:", err);

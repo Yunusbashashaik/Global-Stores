@@ -70,7 +70,7 @@ export class JsonDatabase {
   }
 
   dispatch(sql, mode, params) {
-    if (sql.startsWith("select * from services order by")) {
+    if (sql.startsWith("select * from services order by") || sql === "select * from services") {
       const rows = [...this.data.services].sort((a, b) => {
         const order = (a.sort_order ?? 0) - (b.sort_order ?? 0);
         if (order !== 0) return order;
@@ -160,6 +160,18 @@ export class JsonDatabase {
       this.data.services = this.data.services.filter((s) => s.id !== id);
       this.save();
       return { changes: before - this.data.services.length };
+    }
+
+    if (
+      sql.startsWith("select key, value from settings") ||
+      sql === "select * from settings" ||
+      sql.startsWith("select * from settings")
+    ) {
+      const rows = Object.entries(this.data.settings).map(([key, value]) => ({
+        key,
+        value,
+      }));
+      return mode === "get" ? rows[0] : rows;
     }
 
     if (sql.startsWith("select value from settings")) {

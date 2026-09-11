@@ -8,6 +8,7 @@ import {
   nextSupportNumber,
   setSupportNumbers,
 } from "../data/catalog.js";
+import { cachedPublicServices } from "../lib/adminApi.js";
 import { useSettings } from "../context/SettingsContext.jsx";
 import AdminPanel from "./AdminPanel.jsx";
 import ComplaintForm from "./ComplaintForm.jsx";
@@ -34,7 +35,9 @@ export default function Layout({ lang, setLang, t }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [subsOpen, setSubsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [services, setServices] = useState(SERVICES);
+  const [services, setServices] = useState(
+    () => cachedPublicServices() || SERVICES,
+  );
   const subsRef = useRef(null);
   const cartRef = useRef(null);
   const langRef = useRef(null);

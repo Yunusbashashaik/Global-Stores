@@ -82,6 +82,10 @@ window.__GLOBALSTORE_CONFIG__ = { apiUrl: "https://your-node-api-url" };
 
 Keep `server/data/` on a persistent disk so SQLite and uploads survive restarts.
 
+Admin price/service edits are written to **both** `server/data/globalstore.db` (or the JSON fallback) **and** `server/data/globalstore.json`. On every app start the server restores that backup **before** seeding defaults, so a GoDaddy/Passenger restart or a sqlite↔JSON engine switch cannot wipe admin prices back to the bundled catalog.
+
+The public homepage also keeps the last live catalog in the browser (`localStorage` key `globalstores_services_v1`) and will not replace it with old built-in prices if `/api` blips.
+
 ### Admin backup folder (`godaddy-sync/`)
 
 Every admin create/edit/delete of a service (and settings saves) writes a copy into **`godaddy-sync/`** for manual backup before you copy a GitHub release onto GoDaddy:

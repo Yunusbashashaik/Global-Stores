@@ -1,5 +1,32 @@
 import { SERVICES } from "../data/catalog.js";
 
+const CATALOG_CACHE_KEY = "globalstores_services_v1";
+
+function readCachedServices() {
+  if (typeof window === "undefined") return null;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "null");
+    if (Array.isArray(parsed) && parsed.length) return parsed;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function writeCachedServices(services) {
+  if (typeof window === "undefined") return;
+  if (!Array.isArray(services) || !services.length) return;
+  try {
+    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(services));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+export function cachedPublicServices() {
+  return readCachedServices();
+}
+
 function trimSlash(value) {
   return String(value || "").replace(/\/$/, "");
 }
@@ -229,6 +256,7 @@ export async function adminDeleteService(token, id) {
 }
 
 export function notifyServicesUpdated(services) {
+  if (Array.isArray(services)) writeCachedServices(services);
   window.dispatchEvent(
     new CustomEvent("gs:services-updated", {
       detail: Array.isArray(services) ? { services } : undefined,
@@ -249,11 +277,16 @@ export async function fetchPublicServices() {
   if (await hasBackendApi()) {
     try {
       const data = await requestJson("/api/services");
-      return data.services;
+      if (Array.isArray(data.services) && data.services.length) {
+        writeCachedServices(data.services);
+        return data.services;
+      }
     } catch {
-      /* fall through */
+      /* fall through to last live catalog, never baked defaults */
     }
   }
+  const cached = readCachedServices();
+  if (cached) return cached;
   return JSON.parse(JSON.stringify(SERVICES));
 }
 
