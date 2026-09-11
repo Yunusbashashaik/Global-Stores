@@ -43,5 +43,5 @@ export function serviceImageUrl(serviceId) {
 }
 
 export function wallpaperUrl() {
-  return `${assetBase}Global_bg.JPG`;
+  return `${assetBase}kuwait-living-room.jpg`;
 }
