@@ -18,6 +18,8 @@ import OwnerBlock from "./OwnerBlock.jsx";
 import SocialLinks from "./SocialLinks.jsx";
 import { useCart } from "../cart/CartContext.jsx";
 import useScrollMotion from "../hooks/useScrollMotion.js";
+import { useCatalogSearch } from "../context/CatalogSearchContext.jsx";
+import CatalogSearchBar from "./CatalogSearchBar.jsx";
 
 function formatWhatsAppDisplay(num) {
   const digits = String(num || "").replace(/\D/g, "");
@@ -42,6 +44,7 @@ export default function Layout({ lang, setLang, t }) {
   const [cartOpen, setCartOpen] = useState(false);
   useScrollMotion(shellRef);
   const { totalItems } = useCart();
+  const { query, setQuery } = useCatalogSearch();
 
   const whatsappNumbers = useMemo(
     () =>
@@ -291,6 +294,17 @@ export default function Layout({ lang, setLang, t }) {
           </nav>
 
           <div className="header-actions">
+            <CatalogSearchBar
+              id="header-catalog-search"
+              className="catalog-search--header"
+              query={query}
+              onQueryChange={(value) => {
+                setQuery(value, { scrollToCatalog: true });
+                if (!isHome) navigate("/");
+              }}
+              placeholder={t.catalogSearchPlaceholder}
+              label={t.catalogSearchLabel}
+            />
             <button
               type="button"
               className="header-icon-btn header-whatsapp"

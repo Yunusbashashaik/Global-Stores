@@ -82,6 +82,17 @@ window.__GLOBALSTORE_CONFIG__ = { apiUrl: "https://your-node-api-url" };
 
 Keep `server/data/` on a persistent disk so SQLite and uploads survive restarts.
 
+### Admin backup folder (`godaddy-sync/`)
+
+Every admin create/edit/delete of a service (and settings saves) writes a copy into **`godaddy-sync/`** for manual backup before you copy a GitHub release onto GoDaddy:
+
+- `godaddy-sync/latest-catalog.json`
+- `godaddy-sync/latest-settings.json`
+- `godaddy-sync/admin-uploads/services/` (uploaded JPEGs)
+- `godaddy-sync/changelog.jsonl`
+
+Those runtime files are gitignored. Copy the folder off-box, then restore images into `server/data/uploads/services/` on the server. See `godaddy-sync/README.md`. Optional env: `GODADDY_SYNC_DIR`.
+
 ### Complaint email
 
 Complaints are sent by **email only** (not WhatsApp). The destination address is stored in the database (default `global2stor2@gmail.com`) and can be changed from the admin panel.

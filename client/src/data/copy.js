@@ -40,6 +40,9 @@ export const COPY = {
     brandIntro:
       "At Global Store, we bring world-class entertainment right to your screen without breaking the bank. We offer instant access to top premium OTT subscriptions in Kuwait at reasonable, budget-friendly prices—making streaming simple, affordable, and seamless.",
     catalogTitle: "Popular Subscriptions",
+    catalogSearchLabel: "Search subscriptions",
+    catalogSearchPlaceholder: "Search subscriptions and services…",
+    catalogSearchEmpty: "No matching subscriptions. Try another name or service.",
     month: "1 Month",
     year: "1 Year",
     startingFrom: "Starting from",
@@ -215,6 +218,9 @@ export const COPY = {
     brandIntro:
       "في Global Store، نقدم لك ترفيهاً عالمياً على شاشتك دون إرهاق ميزانيتك. نوفر وصولاً فورياً إلى أفضل اشتراكات OTT المميزة في الكويت بأسعار معقولة وصديقة للميزانية—لتجعل البث بسيطاً وميسور التكلفة وسلساً.",
     catalogTitle: "الاشتراكات الشائعة",
+    catalogSearchLabel: "بحث الاشتراكات",
+    catalogSearchPlaceholder: "ابحث عن الاشتراكات والخدمات…",
+    catalogSearchEmpty: "لا توجد اشتراكات مطابقة. جرّب اسماً أو خدمة أخرى.",
     month: "شهر واحد",
     year: "سنة واحدة",
     startingFrom: "يبدأ من",

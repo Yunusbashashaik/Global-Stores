@@ -13,6 +13,7 @@ import { servicesRouter } from "../src/routes/services.js";
 import { settingsRouter } from "../src/routes/settings.js";
 
 const testDir = fs.mkdtempSync(path.join(os.tmpdir(), "gs-admin-"));
+process.env.GODADDY_SYNC_DIR = path.join(testDir, "godaddy-sync");
 
 describe("services + admin API", () => {
   let app;
@@ -105,6 +106,14 @@ describe("services + admin API", () => {
     const item = listed.body.services.find((s) => s.nameEn === "Test Stream");
     assert.ok(item);
     assert.equal(listed.body.services[0].nameEn, "Test Stream");
+
+    const catalogSnap = path.join(
+      process.env.GODADDY_SYNC_DIR,
+      "latest-catalog.json",
+    );
+    assert.equal(fs.existsSync(catalogSnap), true);
+    const snap = JSON.parse(fs.readFileSync(catalogSnap, "utf8"));
+    assert.equal(snap.services[0].nameEn, "Test Stream");
   });
 
   it("marks zero-price services as out of stock", async () => {

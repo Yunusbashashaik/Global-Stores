@@ -12,9 +12,7 @@ export default function useScrollMotion(rootRef) {
     if (!root) return undefined;
 
     const header = root.querySelector(".site-header");
-    const heroMedia = root.querySelector(".hero-banner-media");
     const heroCopy = root.querySelector(".hero-copy");
-    const heroVisual = root.querySelector(".hero-visual");
 
     if (prefersReducedMotion()) {
       root.querySelectorAll(REVEAL_SELECTOR).forEach((el) => {
@@ -51,14 +49,8 @@ export default function useScrollMotion(rootRef) {
         frame = 0;
         const y = window.scrollY;
         header?.classList.toggle("is-scrolled", y > 12);
-        if (heroMedia) {
-          heroMedia.style.setProperty("--hero-parallax", `${Math.round(y * 0.22)}px`);
-        }
         if (heroCopy) {
           heroCopy.style.setProperty("--hero-shift", `${Math.round(y * 0.06)}px`);
-        }
-        if (heroVisual) {
-          heroVisual.style.setProperty("--hero-shift", `${Math.round(y * 0.1)}px`);
         }
       });
     };
