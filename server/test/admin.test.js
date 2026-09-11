@@ -250,19 +250,21 @@ describe("services + admin API", () => {
     assert.equal(update.status, 200);
     assert.equal(
       update.body.service.imageUrl,
-      "/api/uploads/services/netflix-private.jpg",
+      "/api/services/netflix-private/image",
     );
 
     const listed = await request(app).get("/api/services");
     const item = listed.body.services.find((s) => s.id === "netflix-private");
-    assert.equal(item.imageUrl, "/api/uploads/services/netflix-private.jpg");
+    assert.equal(item.imageUrl, "/api/services/netflix-private/image");
 
-    const file = await request(app).get("/api/uploads/services/netflix-private.jpg");
+    const file = await request(app).get("/api/services/netflix-private/image");
     assert.equal(file.status, 200);
     assert.ok(Number(file.headers["content-length"] || file.body?.length || 0) > 0);
 
     const alias = await request(app).get("/service-images/netflix-private.jpg");
     assert.equal(alias.status, 200);
+    const uploadAlias = await request(app).get("/api/uploads/services/netflix-private.jpg");
+    assert.equal(uploadAlias.status, 200);
   });
 
   it("rejects unauthenticated translate and delete", async () => {

@@ -27,17 +27,18 @@ export default function ServiceIcon({ service, size = "md" }) {
       <span className="service-icon-mark" data-brand={id}>
         {imageUrl ? (
           <img
+            key={`${id}:${imageUrl}`}
             className="service-icon-img"
             src={imageUrl}
             alt=""
-            loading={service.imageUrl ? "eager" : "lazy"}
+            loading="eager"
             decoding="async"
             onError={() => {
-              if (index + 1 < candidates.length) {
-                setIndex((current) => current + 1);
-                return;
-              }
-              setFailed(true);
+              setIndex((current) => {
+                if (current + 1 < candidates.length) return current + 1;
+                setFailed(true);
+                return current;
+              });
             }}
           />
         ) : null}

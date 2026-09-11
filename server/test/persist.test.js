@@ -145,7 +145,7 @@ describe("admin catalog survives restarts", () => {
     seedDatabase();
 
     const restored = listServices().find((s) => s.id === "netflix-private");
-    assert.equal(restored.imageUrl, "/api/uploads/services/netflix-private.jpg");
+    assert.equal(restored.imageUrl, "/api/services/netflix-private/image");
     assert.equal(
       fs.existsSync(path.join(getServiceUploadsDir(), "netflix-private.jpg")),
       true,

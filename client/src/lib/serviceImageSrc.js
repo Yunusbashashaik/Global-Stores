@@ -1,40 +1,43 @@
 import { serviceImageUrl } from "../data/serviceImages.js";
-import { apiUrl } from "./adminApi.js";
+
+const API_BASE_KEY = "globalstores_api_base_v1";
+
+function readPersistedApiBase() {
+  if (typeof window === "undefined") return "";
+  try {
+    return String(localStorage.getItem(API_BASE_KEY) || "").replace(/\/$/, "");
+  } catch {
+    return "";
+  }
+}
 
 function withCacheBust(url, updatedAt) {
   if (!url) return "";
-  if (!updatedAt || url.includes("v=")) return url;
+  if (url.includes("v=")) return url;
+  const bust = encodeURIComponent(String(updatedAt || "1").replace(/\s/g, "T"));
   const sep = url.includes("?") ? "&" : "?";
-  return `${url}${sep}v=${encodeURIComponent(String(updatedAt).replace(/\s/g, "T"))}`;
+  return `${url}${sep}v=${bust}`;
 }
 
-function toAbsolute(pathOrUrl) {
-  if (!pathOrUrl) return "";
-  if (
-    pathOrUrl.startsWith("http://") ||
-    pathOrUrl.startsWith("https://") ||
-    pathOrUrl.startsWith("blob:")
-  ) {
-    return pathOrUrl;
-  }
-  return apiUrl(pathOrUrl);
+function hasCustomUpload(service) {
+  return Boolean(String(service?.imageUrl || "").trim());
 }
 
-/** Uploaded artwork first; bundled brand files only when no custom image is stored. */
+/** Same-origin JPEG routes only — never blob URLs and never a guessed API host. */
 export function serviceImageCandidates(service) {
   const id = service?.id || "";
   const updatedAt = service?.updatedAt || "";
-  const uploaded = String(service?.imageUrl || "").trim();
-  if (uploaded) {
-    return [
-      ...new Set(
-        [
-          withCacheBust(toAbsolute(uploaded), updatedAt),
-          withCacheBust(toAbsolute(`/api/uploads/services/${id}.jpg`), updatedAt),
-          withCacheBust(toAbsolute(`/service-images/${id}.jpg`), updatedAt),
-        ].filter(Boolean),
-      ),
+  if (hasCustomUpload(service) && id) {
+    const relative = [
+      `/api/services/${id}/image`,
+      `/service-images/${id}.jpg`,
+      `/api/uploads/services/${id}.jpg`,
     ];
+    const persisted = readPersistedApiBase();
+    const withHost = persisted
+      ? relative.map((path) => `${persisted}${path}`)
+      : [];
+    return [...new Set([...relative, ...withHost].map((url) => withCacheBust(url, updatedAt)))];
   }
   const bundled = serviceImageUrl(id);
   return bundled ? [bundled] : [];
@@ -43,5 +46,7 @@ export function serviceImageCandidates(service) {
 export function serviceImagePreviewSrc(preview, service) {
   if (!preview) return "";
   if (preview.startsWith("blob:")) return preview;
-  return serviceImageCandidates({ ...service, imageUrl: preview })[0] || toAbsolute(preview);
+  return (
+    serviceImageCandidates({ ...service, imageUrl: preview })[0] || preview
+  );
 }

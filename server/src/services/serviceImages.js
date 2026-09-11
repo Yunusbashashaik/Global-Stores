@@ -21,7 +21,11 @@ export function serviceImageFilename(id) {
 }
 
 export function serviceImagePublicUrl(id) {
-  return `/api/uploads/services/${serviceImageFilename(id)}`;
+  return `/api/services/${safeServiceId(id)}/image`;
+}
+
+function clientPublicServiceImagesDir() {
+  return path.join(REPO_ROOT, "client", "public", "service-images");
 }
 
 function ensureDir(dir) {
@@ -49,14 +53,14 @@ export function mirrorServiceImageFile(filename) {
   const source = path.join(getServiceUploadsDir(), safe);
   if (!fs.existsSync(source)) return;
   copyFileIfPresent(source, path.join(godaddyServiceImagesDir(), safe));
-  const distDir = clientDistServiceImagesDir();
-  if (fs.existsSync(path.dirname(distDir))) {
-    copyFileIfPresent(source, path.join(distDir, safe));
-  }
+  copyFileIfPresent(source, path.join(clientPublicServiceImagesDir(), safe));
+  copyFileIfPresent(source, path.join(clientDistServiceImagesDir(), safe));
 }
 
 function filenameFromImageUrl(imageUrl) {
   const value = String(imageUrl || "").split("?")[0];
+  const imageRoute = value.match(/\/api\/services\/([^/]+)\/image$/);
+  if (imageRoute) return `${imageRoute[1]}.jpg`;
   const marker = "/api/uploads/services/";
   const index = value.indexOf(marker);
   if (index === -1) {
@@ -73,6 +77,8 @@ function imageSearchDirs() {
     getServiceUploadsDir(),
     godaddyServiceImagesDir(),
     path.join(REPO_ROOT, "server", "data", "uploads", "services"),
+    path.join(REPO_ROOT, "client", "public", "service-images"),
+    path.join(REPO_ROOT, "client", "dist", "service-images"),
   ];
 }
 
@@ -137,6 +143,23 @@ export function persistServiceImageFiles(services = []) {
     }
     mirrorServiceImageFile(serviceImageFilename(service.id));
   }
+}
+
+export function getServiceImagePath(id, imageUrl) {
+  const dest = path.join(getServiceUploadsDir(), serviceImageFilename(id));
+  if (fs.existsSync(dest) && fs.statSync(dest).isFile()) return dest;
+  return findExistingImage(id, imageUrl);
+}
+
+export function sendServiceImage(req, res) {
+  const filePath = getServiceImagePath(req.params.id);
+  if (!filePath) {
+    res.status(404).type("application/json").json({ error: "Image not found" });
+    return;
+  }
+  res.setHeader("Content-Type", "image/jpeg");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.sendFile(path.resolve(filePath));
 }
 
 export function restoreServiceImageFiles(services = []) {
