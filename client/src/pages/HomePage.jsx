@@ -29,7 +29,6 @@ export default function HomePage({ lang, t }) {
   const [services, setServices] = useState(SERVICES);
   const [loadError, setLoadError] = useState("");
   const [plansService, setPlansService] = useState(null);
-  const [showAll, setShowAll] = useState(false);
   const wallpaper = wallpaperUrl();
 
   useEffect(() => {
@@ -191,18 +190,8 @@ export default function HomePage({ lang, t }) {
           <div className="catalog-header">
             <h2>
               <span className="catalog-bar" aria-hidden="true" />
-              {showAll ? t.allServicesTitle : t.catalogTitle}
+              {t.catalogTitle}
             </h2>
-            {services.length > 6 ? (
-              <button
-                type="button"
-                className="catalog-view-all catalog-view-all--header"
-                onClick={() => setShowAll((v) => !v)}
-              >
-                {showAll ? t.showLess || "Show Less" : t.viewAll}
-                <span aria-hidden="true">{showAll ? "↑" : "→"}</span>
-              </button>
-            ) : null}
           </div>
           {loadError ? <p className="catalog-note">{loadError}</p> : null}
           <ServicesSection
@@ -210,7 +199,6 @@ export default function HomePage({ lang, t }) {
             lang={lang}
             t={t}
             onViewPlans={setPlansService}
-            showAll={showAll}
           />
         </div>
       </section>

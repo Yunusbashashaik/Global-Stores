@@ -187,7 +187,7 @@ export default function Layout({ lang, setLang, t }) {
       <header className="site-header">
         <div className="container header-inner">
           <Link to="/" className="logo" aria-label="Global Store" onClick={reloadHome}>
-            <Logo showTagline />
+            <Logo />
           </Link>
 
           <nav className={`site-nav${menuOpen ? " open" : ""}`} aria-label="Primary">

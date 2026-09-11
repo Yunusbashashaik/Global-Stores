@@ -40,7 +40,7 @@ describe("JSON file database fallback", () => {
       prices: { month: 2, year: 9 },
     });
     assert.equal(created.nameEn, "JSON Service");
-    assert.ok(listServices().some((s) => s.id === "json-test-service"));
+    assert.equal(listServices()[0].id, "json-test-service");
 
     const settings = updateSettings({ complaintEmail: "json@example.com" });
     assert.equal(settings.complaintEmail, "json@example.com");

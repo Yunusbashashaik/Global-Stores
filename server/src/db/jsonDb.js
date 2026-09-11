@@ -89,6 +89,14 @@ export class JsonDatabase {
       return { n: this.data.services.length };
     }
 
+    if (sql.includes("select coalesce(min(sort_order)")) {
+      const min = this.data.services.reduce(
+        (m, s) => Math.min(m, Number(s.sort_order) || 0),
+        1,
+      );
+      return { m: this.data.services.length ? min : 1 };
+    }
+
     if (sql.includes("select coalesce(max(sort_order)")) {
       const max = this.data.services.reduce(
         (m, s) => Math.max(m, Number(s.sort_order) || 0),

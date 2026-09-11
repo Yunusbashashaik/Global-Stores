@@ -156,8 +156,10 @@ button,
 .brand-mark {
   flex-shrink: 0;
   display: block;
-  width: 46px;
-  height: 46px;
+  width: auto;
+  height: 56px;
+  max-width: min(220px, 42vw);
+  object-fit: contain;
   filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.35));
 }
 
@@ -193,17 +195,9 @@ button,
   max-width: 220px;
 }
 
-.logo-footer .brand-wordmark {
-  font-size: 1rem;
-}
-
 .logo-footer .brand-mark {
-  width: 34px;
-  height: 34px;
-}
-
-.logo-footer .brand-tagline {
-  display: none;
+  height: 48px;
+  max-width: min(180px, 48vw);
 }
 
 .nav-muted {
