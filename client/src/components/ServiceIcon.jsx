@@ -30,7 +30,7 @@ export default function ServiceIcon({ service, size = "md" }) {
             className="service-icon-img"
             src={imageUrl}
             alt=""
-            loading="lazy"
+            loading={service.imageUrl ? "eager" : "lazy"}
             decoding="async"
             onError={() => {
               if (index + 1 < candidates.length) {
