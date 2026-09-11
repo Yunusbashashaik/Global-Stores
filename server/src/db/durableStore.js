@@ -32,11 +32,13 @@ function stampOf(services) {
 function catalogFromUnknown(parsed) {
   if (!parsed) return null;
   const services = Array.isArray(parsed.services) ? parsed.services : [];
-  if (!services.length) return null;
+  const settings = parsed.settings && typeof parsed.settings === "object" ? parsed.settings : null;
+  if (!services.length && !settings) return null;
+  const exported = Date.parse(parsed.exportedAt || "") || 0;
   return {
     services,
-    settings: parsed.settings || null,
-    stamp: stampOf(services),
+    settings,
+    stamp: Math.max(stampOf(services), exported),
     count: services.length,
   };
 }

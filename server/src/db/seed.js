@@ -5,7 +5,7 @@ import { seedSettingsIfEmpty } from "../models/Settings.js";
 
 export function seedDatabase() {
   const restored = restoreCatalogFromBackup();
-  const servicesSeeded = restored ? false : seedServicesIfEmpty(DEFAULT_SERVICES);
+  const servicesSeeded = seedServicesIfEmpty(DEFAULT_SERVICES);
   const settingsSeeded = seedSettingsIfEmpty();
   persistLiveCatalog();
   return { servicesSeeded, settingsSeeded, restored };

@@ -6,7 +6,8 @@ import path from "path";
 import { closeDatabase, initDatabase } from "../src/db/connection.js";
 import { persistLiveCatalog } from "../src/db/persist.js";
 import { seedDatabase } from "../src/db/seed.js";
-import { listServices, updateService } from "../src/models/Service.js";
+import { insertService, listServices, updateService } from "../src/models/Service.js";
+import { getAllSettings, updateSettings } from "../src/models/Settings.js";
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "gs-persist-"));
@@ -65,5 +66,55 @@ describe("admin catalog survives restarts", () => {
     const restored = listServices().find((s) => s.id === "netflix-private");
     assert.equal(restored.prices.month, 7);
     assert.equal(restored.prices.year, 30);
+  });
+
+  it("restores new services, descriptions, email, WhatsApp, and About Us", () => {
+    dir = tmpDir();
+    process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
+    initDatabase(path.join(dir, "live.db"));
+    seedDatabase();
+
+    updateService("netflix-private", {
+      descriptionEn: "Admin custom Netflix desc",
+      descriptionAr: "وصف مخصص",
+      prices: { month: 4, year: 22 },
+    });
+    insertService({
+      id: "admin-special",
+      nameEn: "Admin Special",
+      nameAr: "خاص",
+      descriptionEn: "Added by admin",
+      descriptionAr: "أضيف",
+      prices: { month: 3, year: 12 },
+    });
+    updateSettings({
+      complaintEmail: "ops-forever@example.com",
+      whatsappNumbers: ["96550001111", "96550002222"],
+      aboutEn: "Custom about forever",
+      aboutAr: "نبذة مخصصة",
+      socialLinks: { instagram: "https://instagram.com/globalstore-kuwait" },
+    });
+    persistLiveCatalog();
+    closeDatabase();
+
+    wipeSqlite(dir);
+    initDatabase(path.join(dir, "live.db"));
+    seedDatabase();
+
+    const netflix = listServices().find((s) => s.id === "netflix-private");
+    const added = listServices().find((s) => s.id === "admin-special");
+    const settings = getAllSettings();
+    assert.equal(netflix.prices.month, 4);
+    assert.equal(netflix.descriptionEn, "Admin custom Netflix desc");
+    assert.equal(added?.nameEn, "Admin Special");
+    assert.equal(added?.prices.year, 12);
+    assert.equal(settings.complaintEmail, "ops-forever@example.com");
+    assert.deepEqual(settings.whatsappNumbers, ["96550001111", "96550002222"]);
+    assert.equal(settings.aboutEn, "Custom about forever");
+    assert.equal(settings.aboutAr, "نبذة مخصصة");
+    assert.equal(
+      settings.socialLinks.instagram,
+      "https://instagram.com/globalstore-kuwait",
+    );
   });
 });

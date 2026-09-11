@@ -1,11 +1,13 @@
 import { getDb, getDbEngine } from "./connection.js";
 import { readDurableCatalog, writeDurableCatalog } from "./durableStore.js";
+import { DEFAULT_SERVICES } from "../config/defaultServices.js";
+import { DEFAULT_SETTINGS } from "../config/defaults.js";
 import {
   insertService,
   listServices,
   updateService,
 } from "../models/Service.js";
-import { updateSettings } from "../models/Settings.js";
+import { getAllSettings } from "../models/Settings.js";
 
 function rowToPatch(item) {
   if (item.prices && item.nameEn) {
@@ -67,23 +69,109 @@ export function persistLiveCatalog() {
   }
 }
 
-function restoreSettings(settings) {
-  if (!settings || typeof settings !== "object") return;
-  if (
-    "complaintEmail" in settings ||
-    "whatsappNumbers" in settings ||
-    "aboutEn" in settings
-  ) {
-    updateSettings(settings);
-    return;
-  }
-  const db = getDb();
+function stamp(value) {
+  const t = Date.parse(String(value || "").replace(" ", "T"));
+  return Number.isFinite(t) ? t : 0;
+}
+
+function stable(value) {
+  return JSON.stringify(value ?? null);
+}
+
+function serviceFingerprint(service) {
+  return stable({
+    nameEn: service.nameEn,
+    nameAr: service.nameAr,
+    descriptionEn: service.descriptionEn,
+    descriptionAr: service.descriptionAr,
+    typeEn: service.typeEn,
+    typeAr: service.typeAr,
+    imageUrl: service.imageUrl || null,
+    prices: {
+      month: Number(service.prices?.month),
+      year: Number(service.prices?.year),
+    },
+    outOfStock: Boolean(service.outOfStock),
+  });
+}
+
+function isDefaultService(service) {
+  const fallback = DEFAULT_SERVICES.find((item) => item.id === service.id);
+  if (!fallback) return false;
+  return serviceFingerprint(service) === serviceFingerprint(fallback);
+}
+
+function settingsToRaw(settings) {
+  if (!settings || typeof settings !== "object") return null;
+  const raw = {};
   for (const [key, value] of Object.entries(settings)) {
+    if (value === undefined || value === null) continue;
+    raw[key] = typeof value === "string" ? value : JSON.stringify(value);
+  }
+  return Object.keys(raw).length ? raw : null;
+}
+
+function parseSettingValue(value) {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+function settingsFingerprint(settings) {
+  return stable({
+    complaintEmail: settings.complaintEmail,
+    whatsappNumbers: settings.whatsappNumbers,
+    aboutEn: settings.aboutEn,
+    aboutAr: settings.aboutAr,
+    ownersEn: settings.ownersEn,
+    ownersAr: settings.ownersAr,
+    socialLinks: settings.socialLinks,
+  });
+}
+
+function parsedSettingsFromRaw(raw) {
+  if (!raw) return null;
+  if (Array.isArray(raw.whatsappNumbers) || typeof raw.socialLinks === "object") {
+    return raw;
+  }
+  return {
+    complaintEmail: parseSettingValue(raw.complaintEmail),
+    whatsappNumbers: parseSettingValue(raw.whatsappNumbers),
+    aboutEn: parseSettingValue(raw.aboutEn),
+    aboutAr: parseSettingValue(raw.aboutAr),
+    ownersEn: parseSettingValue(raw.ownersEn),
+    ownersAr: parseSettingValue(raw.ownersAr),
+    socialLinks: parseSettingValue(raw.socialLinks),
+  };
+}
+
+function isDefaultSettings(settings) {
+  if (!settings) return true;
+  return settingsFingerprint(settings) === settingsFingerprint(DEFAULT_SETTINGS);
+}
+
+function restoreSettings(settings) {
+  const raw = settingsToRaw(settings);
+  if (!raw) return false;
+  const db = getDb();
+  for (const [key, value] of Object.entries(raw)) {
     db.prepare(
       `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')`,
-    ).run(key, typeof value === "string" ? value : JSON.stringify(value));
+    ).run(key, value);
   }
+  return true;
+}
+
+function shouldPreferBackup({ liveDefault, backupDefault, liveStamp, backupStamp, contentDiffers }) {
+  if (!contentDiffers) return false;
+  if (liveDefault && !backupDefault) return true;
+  if (!liveDefault && backupDefault) return false;
+  if (backupStamp && liveStamp) return backupStamp >= liveStamp;
+  return true;
 }
 
 export function restoreCatalogFromBackup() {
@@ -91,53 +179,65 @@ export function restoreCatalogFromBackup() {
   const backup = readDurableCatalog({
     skipActiveJson: getDbEngine() === "json" && live.length > 0,
   });
-  if (!backup?.services?.length) return false;
+  if (!backup?.services?.length && !backup?.settings) return false;
 
-  if (live.length === 0) {
-    backup.services.forEach((item, index) => {
-      const patch = rowToPatch(item);
-      insertService({
-        ...patch,
-        sortOrder: patch.sortOrder ?? index,
+  let changed = false;
+
+  if (backup.services?.length) {
+    if (live.length === 0) {
+      backup.services.forEach((item, index) => {
+        const patch = rowToPatch(item);
+        insertService({
+          ...patch,
+          sortOrder: patch.sortOrder ?? index,
+        });
       });
-    });
-    restoreSettings(backup.settings);
-    return true;
+      changed = true;
+    } else {
+      const byId = new Map(live.map((service) => [service.id, service]));
+      backup.services.forEach((item) => {
+        const patch = rowToPatch(item);
+        if (!patch.id) return;
+        const current = byId.get(patch.id);
+        if (!current) {
+          insertService(patch);
+          changed = true;
+          return;
+        }
+        const contentDiffers = serviceFingerprint(current) !== serviceFingerprint(patch);
+        if (
+          shouldPreferBackup({
+            liveDefault: isDefaultService(current),
+            backupDefault: isDefaultService(patch),
+            liveStamp: stamp(current.updatedAt),
+            backupStamp: stamp(item.updated_at || item.updatedAt),
+            contentDiffers,
+          })
+        ) {
+          updateService(patch.id, patch);
+          changed = true;
+        }
+      });
+    }
   }
 
-  const byId = new Map(live.map((service) => [service.id, service]));
-  let changed = false;
-  backup.services.forEach((item) => {
-    const patch = rowToPatch(item);
-    if (!patch.id) return;
-    const current = byId.get(patch.id);
-    if (!current) {
-      insertService(patch);
-      changed = true;
-      return;
-    }
-    const samePrice =
-      Number(current.prices?.month) === Number(patch.prices?.month) &&
-      Number(current.prices?.year) === Number(patch.prices?.year) &&
-      Boolean(current.outOfStock) === Boolean(patch.outOfStock) &&
-      current.nameEn === patch.nameEn;
-    if (samePrice) return;
-    const backupStamp = Date.parse(
-      String(item.updated_at || item.updatedAt || "").replace(" ", "T"),
-    );
-    const liveStamp = Date.parse(
-      String(current.updatedAt || "").replace(" ", "T"),
-    );
+  if (backup.settings) {
+    const liveSettings = getAllSettings();
+    const backupSettings = parsedSettingsFromRaw(backup.settings);
     if (
-      (Number.isFinite(backupStamp) &&
-        Number.isFinite(liveStamp) &&
-        backupStamp > liveStamp) ||
-      !Number.isFinite(liveStamp)
+      shouldPreferBackup({
+        liveDefault: isDefaultSettings(liveSettings),
+        backupDefault: isDefaultSettings(backupSettings),
+        liveStamp: 0,
+        backupStamp: backup.stamp || 1,
+        contentDiffers:
+          settingsFingerprint(liveSettings) !== settingsFingerprint(backupSettings),
+      })
     ) {
-      updateService(patch.id, patch);
+      restoreSettings(backup.settings);
       changed = true;
     }
-  });
-  if (backup.settings && live.length === 0) restoreSettings(backup.settings);
+  }
+
   return changed;
 }
