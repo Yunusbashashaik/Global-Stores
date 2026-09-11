@@ -1,34 +1,17 @@
-import { useEffect, useState } from "react";
-import ServiceIcon from "../components/ServiceIcon.jsx";
+import { useEffect, useMemo, useState } from "react";
+import CatalogSearchBar from "../components/CatalogSearchBar.jsx";
 import ServicesSection from "../components/ServicesSection.jsx";
 import { UiIcon } from "../components/UiIcon.jsx";
 import ViewPlansModal from "../components/ViewPlansModal.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
 import { wallpaperUrl } from "../data/serviceImages.js";
-
-const HERO_LOGO_IDS = [
-  "netflix-private",
-  "netflix-prime",
-  "youtube-premium",
-  "disney-plus",
-  "hbo-max",
-  "iptv",
-  "shahid",
-  "apple-tv-plus",
-  "zee5",
-  "sonyliv",
-  "canva",
-  "expressvpn",
-  "paramount-plus",
-  "hulu",
-  "spotify-premium",
-  "osn-plus",
-];
+import { filterCatalog } from "../lib/filterCatalog.js";
 
 export default function HomePage({ lang, t }) {
   const [services, setServices] = useState(SERVICES);
   const [loadError, setLoadError] = useState("");
   const [plansService, setPlansService] = useState(null);
+  const [query, setQuery] = useState("");
   const wallpaper = wallpaperUrl();
 
   useEffect(() => {
@@ -71,11 +54,10 @@ export default function HomePage({ lang, t }) {
     };
   }, [t.servicesLoadFallback]);
 
-  const heroLogos = (() => {
-    const byId = new Map(services.map((s) => [s.id, s]));
-    const picked = HERO_LOGO_IDS.map((id) => byId.get(id)).filter(Boolean);
-    return picked.length ? picked.slice(0, 16) : services.slice(0, 16);
-  })();
+  const visibleServices = useMemo(
+    () => filterCatalog(services, query),
+    [services, query],
+  );
 
   const headline = t.heroHeadlineParts || {
     before: t.heroHeadline,
@@ -95,8 +77,6 @@ export default function HomePage({ lang, t }) {
         style={{ "--hero-wallpaper": `url(${wallpaper})` }}
       >
         <div className="hero-banner-media" aria-hidden="true" />
-        <div className="hero-banner-glow" aria-hidden="true" />
-        <div className="hero-fiber-lines" aria-hidden="true" />
         <div className="container hero">
           <div className="hero-layout">
             <div className="hero-copy">
@@ -154,21 +134,6 @@ export default function HomePage({ lang, t }) {
                 ))}
               </ul>
             </div>
-
-            <div className="hero-visual" aria-hidden="true" data-reveal="zoom">
-              <div
-                className="hero-planet"
-                style={{ backgroundImage: `url(${wallpaper})` }}
-              />
-              <div className="hero-orb" />
-              <div className="hero-logo-grid">
-                {heroLogos.map((service) => (
-                  <div key={service.id} className="hero-logo-tile">
-                    <ServiceIcon service={service} size="sm" />
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -201,14 +166,27 @@ export default function HomePage({ lang, t }) {
               <span className="catalog-bar" aria-hidden="true" />
               {t.catalogTitle}
             </h2>
+            <CatalogSearchBar
+              id="catalog-search"
+              query={query}
+              onQueryChange={setQuery}
+              placeholder={t.catalogSearchPlaceholder}
+              label={t.catalogSearchLabel}
+            />
           </div>
           {loadError ? <p className="catalog-note">{loadError}</p> : null}
-          <ServicesSection
-            services={services}
-            lang={lang}
-            t={t}
-            onViewPlans={setPlansService}
-          />
+          {visibleServices.length ? (
+            <ServicesSection
+              services={visibleServices}
+              lang={lang}
+              t={t}
+              onViewPlans={setPlansService}
+            />
+          ) : (
+            <p className="catalog-empty" role="status">
+              {t.catalogSearchEmpty}
+            </p>
+          )}
         </div>
       </section>
 

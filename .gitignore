@@ -5,3 +5,5 @@ dist/
 server/data/
 *.log
 .DS_Store
+godaddy-sync/*
+!godaddy-sync/README.md

@@ -10,6 +10,7 @@ import {
 } from "../models/Service.js";
 import { getAllSettings, updateSettings } from "../models/Settings.js";
 import { serviceImagePublicUrl } from "../middleware/upload.js";
+import { snapshotAdminChange } from "../services/godaddySync.js";
 
 function slugify(name) {
   const base = String(name || "service")
@@ -107,6 +108,12 @@ export function createAdminService(req, res) {
       typeAr: body.typeAr || "مشترك / خاص",
     });
 
+    snapshotAdminChange({
+      action: "create-service",
+      uploadedFilename: req.file?.filename,
+      imageUrl,
+    });
+
     res.status(201).json({ service });
   } catch (err) {
     console.error("Service create failed:", err);
@@ -145,6 +152,11 @@ export function updateAdminService(req, res) {
       res.status(404).json({ error: "Service not found" });
       return;
     }
+    snapshotAdminChange({
+      action: "update-service",
+      uploadedFilename: req.file?.filename,
+      imageUrl: updated.imageUrl,
+    });
     res.json({ service: updated });
   } catch (err) {
     console.error("Service update failed:", err);
@@ -159,6 +171,7 @@ export function deleteAdminService(req, res) {
       res.status(404).json({ error: "Service not found" });
       return;
     }
+    snapshotAdminChange({ action: "delete-service" });
     res.json({ ok: true, id: req.params.id });
   } catch (err) {
     console.error("Service delete failed:", err);
@@ -226,6 +239,7 @@ export function getAdminSettings(_req, res) {
 export function putAdminSettings(req, res) {
   try {
     const settings = updateSettings(req.body || {});
+    snapshotAdminChange({ action: "update-settings" });
     res.json({ settings });
   } catch (err) {
     console.error("Settings update failed:", err);
