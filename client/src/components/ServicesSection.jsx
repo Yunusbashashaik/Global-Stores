@@ -1,23 +1,17 @@
 import ServiceCard from "./ServiceCard.jsx";
 
-const POPULAR_COUNT = 6;
-
 export default function ServicesSection({
   services,
   lang,
   t,
   onViewPlans,
-  showAll,
 }) {
-  const popular = services.slice(0, POPULAR_COUNT);
-  const list = showAll ? services : popular;
-
   return (
     <div
-      className={`services-grid ${showAll ? "all-services-grid catalog-expanded" : "popular-grid"}`}
-      data-count={list.length}
+      className="services-grid all-services-grid catalog-expanded"
+      data-count={services.length}
     >
-      {list.map((service) => (
+      {services.map((service) => (
         <ServiceCard
           key={service.id}
           service={service}
