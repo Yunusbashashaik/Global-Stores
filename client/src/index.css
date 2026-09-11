@@ -1134,7 +1134,7 @@ body.rtl .nav-dropdown-panel {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(105deg, rgba(2, 8, 20, 0.58) 0%, rgba(2, 10, 24, 0.28) 38%, rgba(3, 12, 30, 0.08) 62%, transparent 100%),
+    linear-gradient(90deg, rgba(2, 8, 20, 0.82) 0%, rgba(2, 10, 24, 0.5) 26%, rgba(3, 12, 30, 0.16) 46%, transparent 64%),
     var(--hero-wallpaper, var(--wallpaper-image, none));
   background-size: contain;
   background-position: center center;
@@ -1198,7 +1198,7 @@ body.rtl .nav-dropdown-panel {
   letter-spacing: -0.03em;
   text-wrap: balance;
   color: #fff;
-  filter: drop-shadow(0 10px 30px rgba(14, 165, 233, 0.18));
+  text-shadow: 0 2px 18px rgba(2, 8, 20, 0.7);
 }
 
 .hero-highlight {
@@ -1209,10 +1209,11 @@ body.rtl .nav-dropdown-panel {
 }
 
 .hero-tagline {
-  color: rgba(226, 232, 240, 0.88);
+  color: rgba(226, 232, 240, 0.95);
   max-width: 46ch;
   margin: 0 0 1.45rem;
   font-size: 1.02rem;
+  text-shadow: 0 2px 14px rgba(2, 8, 20, 0.65);
 }
 
 .hero-actions {
