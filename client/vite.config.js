@@ -25,6 +25,10 @@ export default defineConfig({
         target: "http://localhost:3001",
         changeOrigin: true,
       },
+      "/service-images": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
     },
   },
 });

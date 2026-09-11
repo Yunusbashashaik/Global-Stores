@@ -8,6 +8,10 @@ import {
   updateService,
 } from "../models/Service.js";
 import { getAllSettings } from "../models/Settings.js";
+import {
+  persistServiceImageFiles,
+  restoreServiceImageFiles,
+} from "../services/serviceImages.js";
 
 function rowToPatch(item) {
   if (item.prices && item.nameEn) {
@@ -57,8 +61,18 @@ function rawSettingsFromDb() {
   }
 }
 
+function rewriteRestoredImageUrls(services) {
+  const restored = restoreServiceImageFiles(services);
+  restored.forEach((service) => {
+    const live = services.find((item) => item.id === service.id);
+    if (!live || live.imageUrl === service.imageUrl) return;
+    if (service.imageUrl) updateService(service.id, { imageUrl: service.imageUrl });
+  });
+}
+
 export function persistLiveCatalog() {
   try {
+    persistServiceImageFiles(listServices());
     const rows = getDb().prepare("SELECT * FROM services").all();
     writeDurableCatalog({
       services: rows,
@@ -179,7 +193,11 @@ export function restoreCatalogFromBackup() {
   const backup = readDurableCatalog({
     skipActiveJson: getDbEngine() === "json" && live.length > 0,
   });
-  if (!backup?.services?.length && !backup?.settings) return false;
+  if (!backup?.services?.length && !backup?.settings) {
+    rewriteRestoredImageUrls(listServices());
+    persistServiceImageFiles(listServices());
+    return false;
+  }
 
   let changed = false;
 
@@ -238,6 +256,9 @@ export function restoreCatalogFromBackup() {
       changed = true;
     }
   }
+
+  rewriteRestoredImageUrls(listServices());
+  persistServiceImageFiles(listServices());
 
   return changed;
 }

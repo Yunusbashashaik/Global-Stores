@@ -8,6 +8,8 @@ import { persistLiveCatalog } from "../src/db/persist.js";
 import { seedDatabase } from "../src/db/seed.js";
 import { insertService, listServices, updateService } from "../src/models/Service.js";
 import { getAllSettings, updateSettings } from "../src/models/Settings.js";
+import { commitServiceImage } from "../src/services/serviceImages.js";
+import { getServiceUploadsDir } from "../src/db/connection.js";
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "gs-persist-"));
@@ -115,6 +117,38 @@ describe("admin catalog survives restarts", () => {
     assert.equal(
       settings.socialLinks.instagram,
       "https://instagram.com/globalstore-kuwait",
+    );
+  });
+
+  it("restores uploaded JPEGs after sqlite and the uploads folder are wiped", () => {
+    dir = tmpDir();
+    process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
+    initDatabase(path.join(dir, "live.db"));
+    seedDatabase();
+
+    const jpeg = Buffer.from(
+      "ffd8ffe000104a46494600010100000100010000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720222c231c1c2837292c30313434341f27393d38323c2e333432ffc0000b080001000101011100ffc40014100100000000000000000000000000000000ffda00080001000100003f00fbffd9",
+      "hex",
+    );
+    const tmpUpload = path.join(dir, "fresh.jpg");
+    fs.writeFileSync(tmpUpload, jpeg);
+    const imageUrl = commitServiceImage("netflix-private", tmpUpload);
+    updateService("netflix-private", { imageUrl });
+    persistLiveCatalog();
+    const uploadsDir = getServiceUploadsDir();
+    closeDatabase();
+
+    wipeSqlite(dir);
+    fs.rmSync(uploadsDir, { recursive: true, force: true });
+
+    initDatabase(path.join(dir, "live.db"));
+    seedDatabase();
+
+    const restored = listServices().find((s) => s.id === "netflix-private");
+    assert.equal(restored.imageUrl, "/api/uploads/services/netflix-private.jpg");
+    assert.equal(
+      fs.existsSync(path.join(getServiceUploadsDir(), "netflix-private.jpg")),
+      true,
     );
   });
 });

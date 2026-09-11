@@ -10,6 +10,14 @@ const DATA_DIR = path.join(__dirname, "..", "..", "data");
 export const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 export const SERVICE_UPLOADS_DIR = path.join(UPLOADS_DIR, "services");
 
+export function getUploadsDir() {
+  return path.join(path.dirname(getActiveJsonPath()), "uploads");
+}
+
+export function getServiceUploadsDir() {
+  return path.join(getUploadsDir(), "services");
+}
+
 const SCHEMA_SQL = `
     CREATE TABLE IF NOT EXISTS services (
       id TEXT PRIMARY KEY,
@@ -114,6 +122,7 @@ export function initDatabase(dbPath = getDbPath(), options = {}) {
     process.env.JSON_DATABASE_PATH ||
     path.join(path.dirname(dbPath), "globalstore.json");
   activeJsonPath = jsonPath;
+  fs.mkdirSync(getServiceUploadsDir(), { recursive: true });
 
   const engine = options.engine || process.env.DATABASE_ENGINE;
   const forceJson = engine === "json";

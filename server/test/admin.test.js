@@ -11,9 +11,15 @@ import { DEFAULT_SERVICES } from "../src/config/defaultServices.js";
 import { adminRouter } from "../src/routes/admin.js";
 import { servicesRouter } from "../src/routes/services.js";
 import { settingsRouter } from "../src/routes/settings.js";
+import { mountUploadStatic } from "../src/middleware/staticUploads.js";
 
 const testDir = fs.mkdtempSync(path.join(os.tmpdir(), "gs-admin-"));
 process.env.GODADDY_SYNC_DIR = path.join(testDir, "godaddy-sync");
+
+const JPEG_1x1 = Buffer.from(
+  "ffd8ffe000104a46494600010100000100010000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720222c231c1c2837292c30313434341f27393d38323c2e333432ffc0000b080001000101011100ffc40014100100000000000000000000000000000000ffda00080001000100003f00fbffd9",
+  "hex",
+);
 
 describe("services + admin API", () => {
   let app;
@@ -26,6 +32,7 @@ describe("services + admin API", () => {
     app.use(express.urlencoded({ extended: true }));
     app.use("/api/services", servicesRouter);
     app.use("/api/settings", settingsRouter);
+    mountUploadStatic(app);
     app.use("/api/admin", adminRouter);
   });
 
@@ -227,6 +234,35 @@ describe("services + admin API", () => {
 
     const again = await request(app).get("/api/settings");
     assert.equal(again.body.settings.ownersEn, "Owned by Test Owners");
+  });
+
+  it("keeps a newly uploaded service JPEG after listing public services", async () => {
+    const login = await request(app)
+      .post("/api/admin/login")
+      .send({ username: "admin", password: "Wz%861?01" });
+    const token = login.body.token;
+
+    const update = await request(app)
+      .put("/api/admin/services/netflix-private")
+      .set("Authorization", `Bearer ${token}`)
+      .attach("image", JPEG_1x1, "custom-netflix.jpg");
+
+    assert.equal(update.status, 200);
+    assert.equal(
+      update.body.service.imageUrl,
+      "/api/uploads/services/netflix-private.jpg",
+    );
+
+    const listed = await request(app).get("/api/services");
+    const item = listed.body.services.find((s) => s.id === "netflix-private");
+    assert.equal(item.imageUrl, "/api/uploads/services/netflix-private.jpg");
+
+    const file = await request(app).get("/api/uploads/services/netflix-private.jpg");
+    assert.equal(file.status, 200);
+    assert.ok(Number(file.headers["content-length"] || file.body?.length || 0) > 0);
+
+    const alias = await request(app).get("/service-images/netflix-private.jpg");
+    assert.equal(alias.status, 200);
   });
 
   it("rejects unauthenticated translate and delete", async () => {
