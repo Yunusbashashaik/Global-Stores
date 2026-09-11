@@ -3,7 +3,6 @@ import CatalogSearchBar from "../components/CatalogSearchBar.jsx";
 import ServicesSection from "../components/ServicesSection.jsx";
 import { UiIcon } from "../components/UiIcon.jsx";
 import ViewPlansModal from "../components/ViewPlansModal.jsx";
-import { useCatalogSearch } from "../context/CatalogSearchContext.jsx";
 import { SERVICES, fetchServices } from "../data/catalog.js";
 import { wallpaperUrl } from "../data/serviceImages.js";
 import { filterCatalog } from "../lib/filterCatalog.js";
@@ -12,7 +11,7 @@ export default function HomePage({ lang, t }) {
   const [services, setServices] = useState(SERVICES);
   const [loadError, setLoadError] = useState("");
   const [plansService, setPlansService] = useState(null);
-  const { query, setQuery } = useCatalogSearch();
+  const [query, setQuery] = useState("");
   const wallpaper = wallpaperUrl();
 
   useEffect(() => {

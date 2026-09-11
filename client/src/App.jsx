@@ -1,7 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import { CartProvider } from "./cart/CartContext.jsx";
-import { CatalogSearchProvider } from "./context/CatalogSearchContext.jsx";
 import { SettingsProvider } from "./context/SettingsContext.jsx";
 import { COPY } from "./data/copy.js";
 import ComplaintPage from "./pages/ComplaintPage.jsx";
@@ -32,16 +31,14 @@ export default function App() {
   return (
     <SettingsProvider>
       <CartProvider>
-        <CatalogSearchProvider>
-          <BrowserRouter basename={import.meta.env.BASE_URL}>
-            <Routes>
-              <Route element={<Layout lang={lang} setLang={setLang} t={t} />}>
-                <Route index element={<HomePage lang={lang} t={t} />} />
-                <Route path="complaint" element={<ComplaintPage t={t} />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </CatalogSearchProvider>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <Routes>
+            <Route element={<Layout lang={lang} setLang={setLang} t={t} />}>
+              <Route index element={<HomePage lang={lang} t={t} />} />
+              <Route path="complaint" element={<ComplaintPage t={t} />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </CartProvider>
     </SettingsProvider>
   );
