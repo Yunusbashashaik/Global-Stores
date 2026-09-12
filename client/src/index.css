@@ -3143,6 +3143,10 @@ body.rtl .catalog-view-all--header:hover {
   margin: 0;
 }
 
+.cart-item-icon .service-icon-img {
+  object-fit: cover;
+}
+
 .cart-item-meta {
   display: grid;
   gap: 0.15rem;
