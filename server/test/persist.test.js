@@ -10,6 +10,7 @@ import { insertService, listServices, updateService } from "../src/models/Servic
 import { getAllSettings, updateSettings } from "../src/models/Settings.js";
 import { commitServiceImage } from "../src/services/serviceImages.js";
 import { getServiceUploadsDir } from "../src/db/connection.js";
+import { RETIRED_FACTORY_SERVICE_IDS } from "../src/config/defaultServices.js";
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "gs-persist-"));
@@ -23,6 +24,17 @@ function wipeSqlite(dir) {
   }
 }
 
+function addFixture() {
+  return insertService({
+    id: "fixture-service",
+    nameEn: "Fixture Service",
+    nameAr: "خدمة",
+    descriptionEn: "EN",
+    descriptionAr: "AR",
+    prices: { month: 2, year: 10 },
+  });
+}
+
 describe("admin catalog survives restarts", () => {
   let dir;
 
@@ -31,13 +43,52 @@ describe("admin catalog survives restarts", () => {
     if (dir) fs.rmSync(dir, { recursive: true, force: true });
   });
 
+  it("starts empty and does not seed the retired factory catalog", () => {
+    dir = tmpDir();
+    process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
+    initDatabase(path.join(dir, "live.db"));
+    seedDatabase();
+    const ids = listServices().map((s) => s.id);
+    assert.equal(ids.length, 0);
+    assert.equal(ids.includes("netflix-private"), false);
+  });
+
+  it("does not restore a leftover factory catalog dump", () => {
+    dir = tmpDir();
+    process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
+    fs.mkdirSync(process.env.GODADDY_SYNC_DIR, { recursive: true });
+    const factory = {
+      exportedAt: new Date().toISOString(),
+      services: RETIRED_FACTORY_SERVICE_IDS.map((id, index) => ({
+        id,
+        nameEn: `Factory ${id}`,
+        nameAr: id,
+        descriptionEn: "OLD",
+        descriptionAr: "قديم",
+        typeEn: "Shared Screen",
+        typeAr: "شاشة مشتركة",
+        prices: { month: 1, year: 8 },
+        sortOrder: index,
+      })),
+    };
+    fs.writeFileSync(
+      path.join(process.env.GODADDY_SYNC_DIR, "latest-catalog.json"),
+      `${JSON.stringify(factory, null, 2)}\n`,
+    );
+
+    initDatabase(path.join(dir, "live.db"));
+    seedDatabase();
+    assert.equal(listServices().length, 0);
+  });
+
   it("restores edited prices after the sqlite file is deleted", () => {
     dir = tmpDir();
     process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
     initDatabase(path.join(dir, "live.db"));
     seedDatabase();
+    addFixture();
 
-    const updated = updateService("netflix-private", {
+    const updated = updateService("fixture-service", {
       prices: { month: 9.5, year: 40 },
     });
     assert.equal(updated.prices.month, 9.5);
@@ -48,7 +99,7 @@ describe("admin catalog survives restarts", () => {
     initDatabase(path.join(dir, "live.db"));
     seedDatabase();
 
-    const restored = listServices().find((s) => s.id === "netflix-private");
+    const restored = listServices().find((s) => s.id === "fixture-service");
     assert.equal(restored.prices.month, 9.5);
     assert.equal(restored.prices.year, 40);
   });
@@ -59,13 +110,14 @@ describe("admin catalog survives restarts", () => {
     const jsonPath = path.join(dir, "globalstore.json");
     initDatabase(path.join(dir, "unused.db"), { engine: "json", jsonPath });
     seedDatabase();
-    updateService("netflix-private", { prices: { month: 7, year: 30 } });
+    addFixture();
+    updateService("fixture-service", { prices: { month: 7, year: 30 } });
     persistLiveCatalog();
     closeDatabase();
 
     initDatabase(path.join(dir, "live.db"), { jsonPath });
     seedDatabase();
-    const restored = listServices().find((s) => s.id === "netflix-private");
+    const restored = listServices().find((s) => s.id === "fixture-service");
     assert.equal(restored.prices.month, 7);
     assert.equal(restored.prices.year, 30);
   });
@@ -75,9 +127,10 @@ describe("admin catalog survives restarts", () => {
     process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
     initDatabase(path.join(dir, "live.db"));
     seedDatabase();
+    addFixture();
 
-    updateService("netflix-private", {
-      descriptionEn: "Admin custom Netflix desc",
+    updateService("fixture-service", {
+      descriptionEn: "Admin custom desc",
       descriptionAr: "وصف مخصص",
       prices: { month: 4, year: 22 },
     });
@@ -103,11 +156,11 @@ describe("admin catalog survives restarts", () => {
     initDatabase(path.join(dir, "live.db"));
     seedDatabase();
 
-    const netflix = listServices().find((s) => s.id === "netflix-private");
+    const fixture = listServices().find((s) => s.id === "fixture-service");
     const added = listServices().find((s) => s.id === "admin-special");
     const settings = getAllSettings();
-    assert.equal(netflix.prices.month, 4);
-    assert.equal(netflix.descriptionEn, "Admin custom Netflix desc");
+    assert.equal(fixture.prices.month, 4);
+    assert.equal(fixture.descriptionEn, "Admin custom desc");
     assert.equal(added?.nameEn, "Admin Special");
     assert.equal(added?.prices.year, 12);
     assert.equal(settings.complaintEmail, "ops-forever@example.com");
@@ -125,6 +178,7 @@ describe("admin catalog survives restarts", () => {
     process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
     initDatabase(path.join(dir, "live.db"));
     seedDatabase();
+    addFixture();
 
     const jpeg = Buffer.from(
       "ffd8ffe000104a46494600010100000100010000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720222c231c1c2837292c30313434341f27393d38323c2e333432ffc0000b080001000101011100ffc40014100100000000000000000000000000000000ffda00080001000100003f00fbffd9",
@@ -132,8 +186,8 @@ describe("admin catalog survives restarts", () => {
     );
     const tmpUpload = path.join(dir, "fresh.jpg");
     fs.writeFileSync(tmpUpload, jpeg);
-    const committed = commitServiceImage("netflix-private", tmpUpload);
-    updateService("netflix-private", committed);
+    const committed = commitServiceImage("fixture-service", tmpUpload);
+    updateService("fixture-service", committed);
     persistLiveCatalog();
     const uploadsDir = getServiceUploadsDir();
     closeDatabase();
@@ -144,11 +198,11 @@ describe("admin catalog survives restarts", () => {
     initDatabase(path.join(dir, "live.db"));
     seedDatabase();
 
-    const restored = listServices().find((s) => s.id === "netflix-private");
-    assert.equal(restored.imageUrl, "/api/services/netflix-private/image");
+    const restored = listServices().find((s) => s.id === "fixture-service");
+    assert.equal(restored.imageUrl, "/api/services/fixture-service/image");
     assert.ok(restored.imageData && restored.imageData.length > 20);
     assert.equal(
-      fs.existsSync(path.join(getServiceUploadsDir(), "netflix-private.jpg")),
+      fs.existsSync(path.join(getServiceUploadsDir(), "fixture-service.jpg")),
       true,
     );
   });

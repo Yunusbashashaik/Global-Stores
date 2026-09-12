@@ -1,1 +1,4 @@
-export { DEFAULT_SERVICES } from "../../../shared/defaultServices.js";
+export {
+  DEFAULT_SERVICES,
+  RETIRED_FACTORY_SERVICE_IDS,
+} from "../../../shared/defaultServices.js";

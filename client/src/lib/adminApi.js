@@ -1,6 +1,6 @@
 import { SERVICES } from "../data/catalog.js";
 
-const CATALOG_CACHE_KEY = "globalstores_services_v2";
+const CATALOG_CACHE_KEY = "globalstores_services_v3";
 const API_BASE_KEY = "globalstores_api_base_v1";
 
 function forCache(service) {
@@ -342,7 +342,7 @@ export async function fetchPublicServices() {
   if (await hasBackendApi()) {
     try {
       const data = await requestJson("/api/services");
-      if (Array.isArray(data.services) && data.services.length) {
+      if (Array.isArray(data.services)) {
         writeCachedServices(data.services);
         return data.services;
       }
