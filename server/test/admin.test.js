@@ -8,6 +8,7 @@ import request from "supertest";
 import { closeDatabase, initDatabase } from "../src/db/connection.js";
 import { seedDatabase } from "../src/db/seed.js";
 import { DEFAULT_SERVICES } from "../src/config/defaultServices.js";
+import { insertService } from "../src/models/Service.js";
 import { adminRouter } from "../src/routes/admin.js";
 import { servicesRouter } from "../src/routes/services.js";
 import { settingsRouter } from "../src/routes/settings.js";
@@ -21,12 +22,22 @@ const JPEG_1x1 = Buffer.from(
   "hex",
 );
 
+const FIXTURE_ID = "fixture-service";
+
 describe("services + admin API", () => {
   let app;
 
   before(() => {
     initDatabase(path.join(testDir, "test.db"));
     seedDatabase();
+    insertService({
+      id: FIXTURE_ID,
+      nameEn: "Fixture Service",
+      nameAr: "خدمة تجريبية",
+      descriptionEn: "EN",
+      descriptionAr: "AR",
+      prices: { month: 2, year: 10 },
+    });
     app = express();
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
@@ -45,7 +56,7 @@ describe("services + admin API", () => {
     const res = await request(app).get("/api/services");
     assert.equal(res.status, 200);
     assert.ok(Array.isArray(res.body.services));
-    assert.ok(res.body.services.length >= 1);
+    assert.ok(res.body.services.some((s) => s.id === FIXTURE_ID));
   });
 
   it("lists public settings from the database", async () => {
@@ -71,7 +82,7 @@ describe("services + admin API", () => {
 
     const token = login.body.token;
     const update = await request(app)
-      .put("/api/admin/services/netflix-private")
+      .put(`/api/admin/services/${FIXTURE_ID}`)
       .set("Authorization", `Bearer ${token}`)
       .send({
         prices: { month: 3, year: 20 },
@@ -84,7 +95,7 @@ describe("services + admin API", () => {
     assert.equal(update.body.service.descriptionEn, "Updated EN desc");
 
     const listed = await request(app).get("/api/services");
-    const item = listed.body.services.find((s) => s.id === "netflix-private");
+    const item = listed.body.services.find((s) => s.id === FIXTURE_ID);
     assert.equal(item.prices.month, 3);
     assert.equal(item.descriptionAr, "وصف محدث");
   });
@@ -130,7 +141,7 @@ describe("services + admin API", () => {
     const token = login.body.token;
 
     const update = await request(app)
-      .put("/api/admin/services/netflix-private")
+      .put(`/api/admin/services/${FIXTURE_ID}`)
       .set("Authorization", `Bearer ${token}`)
       .send({ prices: { month: 0, year: 0 } });
 
@@ -173,19 +184,20 @@ describe("services + admin API", () => {
 
   it("requires auth for updates", async () => {
     const res = await request(app)
-      .put("/api/admin/services/netflix-private")
+      .put(`/api/admin/services/${FIXTURE_ID}`)
       .send({ prices: { month: 9 } });
     assert.equal(res.status, 401);
   });
 
-  it("includes newly seeded catalog services", async () => {
+  it("starts with no baked-in factory catalog", async () => {
+    assert.equal(DEFAULT_SERVICES.length, 0);
     const res = await request(app).get("/api/services");
     assert.equal(res.status, 200);
     const ids = res.body.services.map((s) => s.id);
-    assert.ok(ids.includes("disney-plus"));
-    assert.ok(ids.includes("chatgpt-plus"));
-    assert.ok(ids.includes("expressvpn"));
-    assert.ok(res.body.services.length >= DEFAULT_SERVICES.length);
+    assert.equal(ids.includes("disney-plus"), false);
+    assert.equal(ids.includes("chatgpt-plus"), false);
+    assert.equal(ids.includes("expressvpn"), false);
+    assert.equal(ids.includes("netflix-private"), false);
   });
 
   it("deletes a service from the public catalog", async () => {
@@ -243,28 +255,28 @@ describe("services + admin API", () => {
     const token = login.body.token;
 
     const update = await request(app)
-      .put("/api/admin/services/netflix-private")
+      .put(`/api/admin/services/${FIXTURE_ID}`)
       .set("Authorization", `Bearer ${token}`)
-      .attach("image", JPEG_1x1, "custom-netflix.jpg");
+      .attach("image", JPEG_1x1, "custom-fixture.jpg");
 
     assert.equal(update.status, 200);
     assert.equal(
       update.body.service.imageUrl,
-      "/api/services/netflix-private/image",
+      `/api/services/${FIXTURE_ID}/image`,
     );
 
     const listed = await request(app).get("/api/services");
-    const item = listed.body.services.find((s) => s.id === "netflix-private");
-    assert.equal(item.imageUrl, "/api/services/netflix-private/image");
+    const item = listed.body.services.find((s) => s.id === FIXTURE_ID);
+    assert.equal(item.imageUrl, `/api/services/${FIXTURE_ID}/image`);
     assert.ok(item.imageData && item.imageData.length > 20);
 
-    const file = await request(app).get("/api/services/netflix-private/image");
+    const file = await request(app).get(`/api/services/${FIXTURE_ID}/image`);
     assert.equal(file.status, 200);
     assert.ok(Number(file.headers["content-length"] || file.body?.length || 0) > 0);
 
-    const alias = await request(app).get("/service-images/netflix-private.jpg");
+    const alias = await request(app).get(`/service-images/${FIXTURE_ID}.jpg`);
     assert.equal(alias.status, 200);
-    const uploadAlias = await request(app).get("/api/uploads/services/netflix-private.jpg");
+    const uploadAlias = await request(app).get(`/api/uploads/services/${FIXTURE_ID}.jpg`);
     assert.equal(uploadAlias.status, 200);
   });
 
@@ -274,7 +286,7 @@ describe("services + admin API", () => {
       .send({ text: "Hello" });
     assert.equal(translate.status, 401);
 
-    const del = await request(app).delete("/api/admin/services/netflix-private");
+    const del = await request(app).delete(`/api/admin/services/${FIXTURE_ID}`);
     assert.equal(del.status, 401);
   });
 });

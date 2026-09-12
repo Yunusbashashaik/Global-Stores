@@ -82,9 +82,11 @@ window.__GLOBALSTORE_CONFIG__ = { apiUrl: "https://your-node-api-url" };
 
 Keep `server/data/` on a persistent disk so SQLite and uploads survive restarts.
 
-Admin price/service edits are written to **both** `server/data/globalstore.db` (or the JSON fallback) **and** `server/data/globalstore.json`. That backup includes **all** Admin Dashboard fields: added/edited services (prices, names, descriptions, images, stock), complaint email, WhatsApp/contact numbers, About Us, and social links. On every app start the server restores that backup **before** seeding defaults, so a GoDaddy/Passenger restart cannot roll those edits back.
+The storefront ships with an **empty catalog**. Add services one by one in Admin after publish. There is no baked-in Netflix/Prime/etc. list, and leftover factory backups are not re-imported.
 
-The public homepage also keeps the last live catalog in the browser (`localStorage` key `globalstores_services_v1`) and will not replace it with old built-in prices if `/api` blips.
+Admin adds/edits are written to **both** `server/data/globalstore.db` (or the JSON fallback) **and** `server/data/globalstore.json`. That backup includes services you added (prices, names, descriptions, images, stock), complaint email, WhatsApp/contact numbers, About Us, and social links. On every app start the server restores **your** backup — not the old factory catalog.
+
+The public homepage also keeps the last live catalog in the browser (`localStorage` key `globalstores_services_v3`).
 
 ### Admin backup folder (`godaddy-sync/`)
 

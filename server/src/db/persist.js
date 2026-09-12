@@ -12,6 +12,7 @@ import {
   persistServiceImageFiles,
   restoreServiceImageFiles,
 } from "../services/serviceImages.js";
+import { filterFactoryDumpServices } from "./factoryCatalog.js";
 
 function rowToPatch(item) {
   if (item.prices && item.nameEn) {
@@ -217,9 +218,10 @@ export function restoreCatalogFromBackup() {
 
   let changed = false;
 
-  if (backup.services?.length) {
+  const incoming = filterFactoryDumpServices(backup.services);
+  if (incoming.length) {
     if (live.length === 0) {
-      backup.services.forEach((item, index) => {
+      incoming.forEach((item, index) => {
         const patch = rowToPatch(item);
         insertService({
           ...patch,
@@ -229,7 +231,7 @@ export function restoreCatalogFromBackup() {
       changed = true;
     } else {
       const byId = new Map(live.map((service) => [service.id, service]));
-      backup.services.forEach((item) => {
+      incoming.forEach((item) => {
         const patch = rowToPatch(item);
         if (!patch.id) return;
         const current = byId.get(patch.id);

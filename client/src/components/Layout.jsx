@@ -69,7 +69,7 @@ export default function Layout({ lang, setLang, t }) {
     }
     fetchServices()
       .then((next) => {
-        if (Array.isArray(next) && next.length) {
+        if (Array.isArray(next)) {
           setServices(next);
         }
       })

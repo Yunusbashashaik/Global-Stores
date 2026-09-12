@@ -24,10 +24,10 @@ describe("JSON file database fallback", () => {
     fs.rmSync(testDir, { recursive: true, force: true });
   });
 
-  it("seeds services using the JSON engine", () => {
+  it("starts with an empty catalog on the JSON engine", () => {
     assert.equal(getDbEngine(), "json");
-    const services = listServices();
-    assert.ok(services.length >= 1);
+    assert.equal(listServices().length, 0);
+    assert.ok(getAllSettings().complaintEmail);
   });
 
   it("creates a service and updates settings", () => {

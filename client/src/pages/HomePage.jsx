@@ -38,7 +38,7 @@ export default function HomePage({ lang, t }) {
       }
       fetchServices()
         .then((list) => {
-          if (!cancelled && Array.isArray(list) && list.length) {
+          if (!cancelled && Array.isArray(list)) {
             setServices(list);
             setLoadError("");
           }
@@ -187,7 +187,7 @@ export default function HomePage({ lang, t }) {
             />
           ) : (
             <p className="catalog-empty" role="status">
-              {t.catalogSearchEmpty}
+              {query.trim() ? t.catalogSearchEmpty : t.catalogEmpty}
             </p>
           )}
         </div>
