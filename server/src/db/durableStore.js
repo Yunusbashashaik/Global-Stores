@@ -43,6 +43,20 @@ function catalogFromUnknown(parsed) {
   };
 }
 
+function catalogLooksCustom(catalog) {
+  if (!catalog) return false;
+  const services = catalog.services || [];
+  const hasCustomService = services.some((item) => {
+    const updated = item.updated_at || item.updatedAt;
+    return Boolean(item.image_url || item.imageUrl || item.image_data || item.imageData || updated);
+  });
+  const settings = catalog.settings;
+  const hasCustomSettings = Boolean(
+    settings && (settings.complaintEmail || settings.aboutEn || settings.whatsappNumbers),
+  );
+  return hasCustomService || hasCustomSettings || catalog.stamp > 0;
+}
+
 export function readDurableCatalog({ skipActiveJson = false } = {}) {
   const candidates = [];
   if (!skipActiveJson) {
@@ -59,9 +73,10 @@ export function readDurableCatalog({ skipActiveJson = false } = {}) {
     candidates.push(syncCatalog);
   }
 
-  return candidates
-    .filter(Boolean)
-    .sort((a, b) => b.stamp - a.stamp || b.count - a.count)[0] || null;
+  const usable = candidates.filter(Boolean);
+  const custom = usable.filter(catalogLooksCustom);
+  const pool = custom.length ? custom : usable;
+  return pool.sort((a, b) => b.stamp - a.stamp || b.count - a.count)[0] || null;
 }
 
 export function writeDurableCatalog(payload) {

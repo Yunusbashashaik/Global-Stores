@@ -49,13 +49,14 @@ export function snapshotAdminChange({ action, uploadedFilename, imageUrl } = {})
 
     const catalogPath = path.join(dir, "latest-catalog.json");
     const settingsPath = path.join(dir, "latest-settings.json");
+    const exportedAt = new Date().toISOString();
     fs.writeFileSync(
       catalogPath,
-      `${JSON.stringify({ services: listServices() }, null, 2)}\n`,
+      `${JSON.stringify({ services: listServices(), exportedAt }, null, 2)}\n`,
     );
     fs.writeFileSync(
       settingsPath,
-      `${JSON.stringify({ settings: getAllSettings() }, null, 2)}\n`,
+      `${JSON.stringify({ settings: getAllSettings(), exportedAt }, null, 2)}\n`,
     );
 
     const logLine = `${JSON.stringify({

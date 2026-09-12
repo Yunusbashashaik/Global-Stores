@@ -12,6 +12,7 @@ import {
   persistServiceImageFiles,
   restoreServiceImageFiles,
 } from "../services/serviceImages.js";
+import { snapshotAdminChange } from "../services/godaddySync.js";
 
 function rowToPatch(item) {
   if (item.prices && item.nameEn) {
@@ -93,14 +94,10 @@ export function persistLiveCatalog() {
       services: rows,
       settings: rawSettingsFromDb(),
     });
+    snapshotAdminChange({ action: "persist-catalog" });
   } catch (err) {
     console.error("Durable catalog write failed:", err);
   }
-}
-
-function stamp(value) {
-  const t = Date.parse(String(value || "").replace(" ", "T"));
-  return Number.isFinite(t) ? t : 0;
 }
 
 function stable(value) {
@@ -196,12 +193,10 @@ function restoreSettings(settings) {
   return true;
 }
 
-function shouldPreferBackup({ liveDefault, backupDefault, liveStamp, backupStamp, contentDiffers }) {
+function shouldPreferBackup({ liveDefault, backupDefault, contentDiffers }) {
   if (!contentDiffers) return false;
-  if (liveDefault && !backupDefault) return true;
-  if (!liveDefault && backupDefault) return false;
-  if (backupStamp && liveStamp) return backupStamp >= liveStamp;
-  return true;
+  // Only refill factory defaults after a wipe/reseed. Live admin data always wins.
+  return Boolean(liveDefault && !backupDefault);
 }
 
 export function restoreCatalogFromBackup() {
@@ -243,8 +238,6 @@ export function restoreCatalogFromBackup() {
           shouldPreferBackup({
             liveDefault: isDefaultService(current),
             backupDefault: isDefaultService(patch),
-            liveStamp: stamp(current.updatedAt),
-            backupStamp: stamp(item.updated_at || item.updatedAt),
             contentDiffers,
           })
         ) {
@@ -262,8 +255,6 @@ export function restoreCatalogFromBackup() {
       shouldPreferBackup({
         liveDefault: isDefaultSettings(liveSettings),
         backupDefault: isDefaultSettings(backupSettings),
-        liveStamp: 0,
-        backupStamp: backup.stamp || 1,
         contentDiffers:
           settingsFingerprint(liveSettings) !== settingsFingerprint(backupSettings),
       })

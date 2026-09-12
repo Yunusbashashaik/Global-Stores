@@ -152,4 +152,64 @@ describe("admin catalog survives restarts", () => {
       true,
     );
   });
+
+  it("does not overwrite live admin edits with a stale newer-stamped backup", () => {
+    dir = tmpDir();
+    process.env.GODADDY_SYNC_DIR = path.join(dir, "godaddy-sync");
+    initDatabase(path.join(dir, "live.db"));
+    seedDatabase();
+
+    updateService("netflix-private", {
+      nameEn: "Netflix Admin Live",
+      descriptionEn: "Keep this description",
+      prices: { month: 8.25, year: 33 },
+    });
+    updateSettings({
+      complaintEmail: "live-admin@example.com",
+      aboutEn: "Live about must stay",
+    });
+    persistLiveCatalog();
+
+    const syncDir = process.env.GODADDY_SYNC_DIR;
+    fs.mkdirSync(syncDir, { recursive: true });
+    const stale = {
+      exportedAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      services: [
+        {
+          id: "netflix-private",
+          nameEn: "Netflix Shared Screen",
+          nameAr: "نتفلكس",
+          descriptionEn: "OLD description",
+          descriptionAr: "قديم",
+          typeEn: "Shared Screen",
+          typeAr: "شاشة مشتركة",
+          prices: { month: 1, year: 10 },
+          updatedAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        },
+      ],
+      settings: {
+        complaintEmail: "old-backup@example.com",
+        aboutEn: "OLD about",
+        whatsappNumbers: ["96550000000"],
+      },
+    };
+    fs.writeFileSync(
+      path.join(syncDir, "latest-catalog.json"),
+      `${JSON.stringify(stale, null, 2)}\n`,
+    );
+    fs.writeFileSync(
+      path.join(syncDir, "latest-settings.json"),
+      `${JSON.stringify({ settings: stale.settings, exportedAt: stale.exportedAt }, null, 2)}\n`,
+    );
+
+    seedDatabase();
+
+    const netflix = listServices().find((s) => s.id === "netflix-private");
+    const settings = getAllSettings();
+    assert.equal(netflix.nameEn, "Netflix Admin Live");
+    assert.equal(netflix.descriptionEn, "Keep this description");
+    assert.equal(netflix.prices.month, 8.25);
+    assert.equal(settings.complaintEmail, "live-admin@example.com");
+    assert.equal(settings.aboutEn, "Live about must stay");
+  });
 });
