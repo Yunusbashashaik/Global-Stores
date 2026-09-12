@@ -24,6 +24,18 @@ function itemKey(serviceId, duration) {
   return `${serviceId}:${duration}`;
 }
 
+function cartImageUrl(service) {
+  const uploaded = String(service?.imageUrl || "").trim();
+  if (
+    uploaded &&
+    !uploaded.startsWith("data:") &&
+    !uploaded.startsWith("blob:")
+  ) {
+    return uploaded;
+  }
+  return service?.id ? `/api/services/${service.id}/image` : null;
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => loadCart());
 
@@ -37,7 +49,15 @@ export function CartProvider({ children }) {
       const existing = prev.find((i) => i.key === key);
       if (existing) {
         return prev.map((i) =>
-          i.key === key ? { ...i, qty: i.qty + 1, unitPrice } : i,
+          i.key === key
+            ? {
+                ...i,
+                qty: i.qty + 1,
+                unitPrice,
+                imageUrl: i.imageUrl || cartImageUrl(service),
+                updatedAt: service.updatedAt || i.updatedAt,
+              }
+            : i,
         );
       }
       return [
@@ -48,6 +68,8 @@ export function CartProvider({ children }) {
           nameEn: service.nameEn,
           nameAr: service.nameAr,
           accent: service.accent,
+          imageUrl: cartImageUrl(service),
+          updatedAt: service.updatedAt || null,
           duration,
           unitPrice,
           qty: 1,

@@ -5,7 +5,26 @@ import {
   nextSupportNumber,
 } from "../data/catalog.js";
 import { useCart } from "../cart/CartContext.jsx";
+import { cachedPublicServices } from "../lib/adminApi.js";
 import ServiceIcon from "./ServiceIcon.jsx";
+
+function cartServiceForIcon(item) {
+  const live = (cachedPublicServices() || []).find(
+    (service) => service.id === item.serviceId,
+  );
+  const imageUrl =
+    live?.imageUrl ||
+    item.imageUrl ||
+    (item.serviceId ? `/api/services/${item.serviceId}/image` : null);
+  return {
+    id: item.serviceId,
+    nameEn: item.nameEn || live?.nameEn,
+    accent: item.accent || live?.accent,
+    imageUrl,
+    imageData: live?.imageData || item.imageData || null,
+    updatedAt: live?.updatedAt || item.updatedAt,
+  };
+}
 
 function durationLabel(duration, t) {
   return duration === "month" ? t.month : t.year;
@@ -115,11 +134,7 @@ export default function CartPopup({ open, onClose, lang, t }) {
                   <li key={item.key} className="cart-item">
                     <div className="cart-item-icon" aria-hidden="true">
                       <ServiceIcon
-                        service={{
-                          id: item.serviceId,
-                          nameEn: item.nameEn,
-                          accent: item.accent,
-                        }}
+                        service={cartServiceForIcon(item)}
                         size="sm"
                       />
                     </div>
