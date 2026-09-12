@@ -280,6 +280,28 @@ describe("services + admin API", () => {
     assert.equal(uploadAlias.status, 200);
   });
 
+  it("translates English service copy to Arabic", async () => {
+    const previousFetch = globalThis.fetch;
+    globalThis.fetch = async () => ({
+      ok: true,
+      json: async () => [[["خدمة الاختبار اليدوي", "Manual Test Service"]]],
+    });
+    try {
+      const login = await request(app)
+        .post("/api/admin/login")
+        .send({ username: "admin", password: "Wz%861?01" });
+      const res = await request(app)
+        .post("/api/admin/translate")
+        .set("Authorization", `Bearer ${login.body.token}`)
+        .send({ text: "Manual Test Service" });
+      assert.equal(res.status, 200);
+      assert.match(res.body.text, /[\u0600-\u06FF]/);
+      assert.equal(res.body.text.includes("Manual Test Service"), false);
+    } finally {
+      globalThis.fetch = previousFetch;
+    }
+  });
+
   it("rejects unauthenticated translate and delete", async () => {
     const translate = await request(app)
       .post("/api/admin/translate")
